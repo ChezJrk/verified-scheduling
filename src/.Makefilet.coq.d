@@ -1,0 +1,3 @@
+GenTest.vo GenTest.glob GenTest.v.beautified GenTest.required_vo: GenTest.v ./ATL.vo ./Common.vo ./CommonTactics.vo ./Div.vo ./IdentParsing.vo ./GatherScatter.vo ./NatToString.vo ./IntToString.vo ./Convolution.vo ./Im2col.vo ./Blur.vo ./CodeGen.vo
+GenTest.vio: GenTest.v ./ATL.vio ./Common.vio ./CommonTactics.vio ./Div.vio ./IdentParsing.vio ./GatherScatter.vio ./NatToString.vio ./IntToString.vio ./Convolution.vio ./Im2col.vio ./Blur.vio ./CodeGen.vio
+GenTest.vos GenTest.vok GenTest.required_vos: GenTest.v ./ATL.vos ./Common.vos ./CommonTactics.vos ./Div.vos ./IdentParsing.vos ./GatherScatter.vos ./NatToString.vos ./IntToString.vos ./Convolution.vos ./Im2col.vos ./Blur.vos ./CodeGen.vos
