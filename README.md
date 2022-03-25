@@ -1,7 +1,7 @@
 # Verified ATL Scheduling Framework
 
 This repository contains the implementation and demonstrations of the verified
-ATL user-scheduling framework.
+ATL user-scheduling framework. It is compatible with Coq 8.13.2.
 
 To build the framework, simply run `make` in the `src` directory.
 
