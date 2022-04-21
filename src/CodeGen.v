@@ -8,6 +8,9 @@ From Coq Require Import ZArith.Int.
 From Coq Require Import ZArith.Znat.
 From Coq Require Import Strings.String.
 From Coq Require Import Logic.FunctionalExtensionality.
+From Coq Require Import Lists.List.
+
+Import ListNotations.
 
 Require Import Ltac2.Ltac2.
 Require Import Ltac2.Option.
@@ -21,10 +24,10 @@ Open Scope string_scope.
 Set Default Proof Mode "Classic".
 
 Definition HEADERS :=
-  "#include <stdlib.h>\n"++ 
-  "#include <stdio.h>\n"++                        
-  "#include <time.h>\n"++
-  "#include <assert.h>\n".
+  ["#include <stdlib.h>";
+  "#include <stdio.h>";
+  "#include <time.h>";
+  "#include <assert.h>"].
 
 Definition scalar := "float".
 Definition align := "4".
@@ -443,16 +446,16 @@ Ltac fth5 tup :=
 
 Ltac wrap_gets sh :=
   match sh with
-  | tt => constr:(("","",""))
+  | tt => constr:((@nil string,"",@nil string))
   | (?nn,tt) =>
     let _ := match goal with _ => assert Z by exact 0%Z end in
     let i' := match goal with H : Z |- _ => H end in
     let i := constr:(ltac:(to_str i')) in
     let n := stringify_nat nn in
 
-    constr:(("for (int "++i++" = 0; "++i++" < "++n++"; "++i++"++) {\n"
+    constr:((["for (int "++i++" = 0; "++i++" < "++n++"; "++i++"++) {"]
              , " + "++i
-             , "}\n"))
+             , ["}"]))
   | (?nn,(?mm,?s)) =>
     let _ := match goal with _ => assert Z by exact 0%Z end in
     let i' := match goal with H : Z |- _ => H end in
@@ -465,10 +468,10 @@ Ltac wrap_gets sh :=
     let accum := snd3 inner in
     let tails := thd3 inner in
 
-    constr:(("for (int "++i++" = 0; "++i++" < "++n++"; "++i++"++) {\n"++
+    constr:((("for (int "++i++" = 0; "++i++" < "++n++"; "++i++"++) {")::
                heads
              , " + ("++m++" * "++i++")"++accum
-             , tails++"}\n"))
+             , "}"::tails))
   end.
 
 Inductive indty :=
@@ -646,7 +649,7 @@ Ltac access_indty_expr acc :=
 Ltac assign_indty src acc expr :=
   let accapp := constr:(acc (LIST "1" (@nil indty))) in
   let accexpr := access_indty_expr accapp in
-  constr:(src++accexpr++" = "++expr++";\n").
+  constr:(src++accexpr++" = "++expr++";").
 
 Definition indty_cons x xs :=
   let xtot := get_total x in
@@ -664,7 +667,7 @@ Ltac tensoradd aref bref sh src srcacc sumaccl sumaccr c :=
     let accr := access_indty_expr sumaccrapp in
     let assn := assign_indty src srcacc
                        constr:(aref++accl++" + "++bref++accr) in
-    constr:((assn, c))
+    constr:(([assn], c))
   | (?nn,?s) =>
     let n := stringify_nat nn in
     let i := fresh_str c in
@@ -675,9 +678,8 @@ Ltac tensoradd aref bref sh src srcacc sumaccl sumaccr c :=
                             constr:(S c) in
     let assn := fst2 assntup in
     let c' := snd2 assntup in
-    constr:(("for (int "++i++" = 0; "++i++" < "++n++"; "++i++"++) {\n"++
-                        assn++
-     "}\n", c'))
+    constr:((app (("for (int "++i++" = 0; "++i++" < "++n++"; "++i++"++) {")::
+                        assn) ["}"], c'))
   end.
 
 (* Lowering is meant to be executed on a normalized program *)
@@ -688,10 +690,10 @@ Ltac L prog src srcacc par c :=
   lazymatch prog with
   | 1%R =>
     let ret := assign_indty src srcacc constr:("1") in
-    constr:(("",ret,"",c))
+    constr:((@nil string,[ret],@nil string,c))
   | 0%R =>
     let ret := assign_indty src srcacc constr:("0") in
-    constr:(("",ret,"",c))             
+    constr:((@nil string,[ret],@nil string,c))             
   | _ _[_] =>
     let gettup := flatten_get prog in
     let index := fst2 gettup in 
@@ -706,12 +708,11 @@ Ltac L prog src srcacc par c :=
     let c' := fth5 vec_ref_alloc_free_c in
 
     let ret := assign_indty src srcacc constr:(vecref++"["++index++"]") in
-    constr:((""
-             , vecallocs++
+    constr:(( @nil string
+             , (vecallocs++
                veclower++
-               ret++
-               vecfrees
-             , ""
+               (ret :: vecfrees))%list
+             , @nil string
              , c'))
     | (?a * ?b)%R =>
     let a_ref_alloc_free_c :=
@@ -731,15 +732,14 @@ Ltac L prog src srcacc par c :=
     let c'' := fth5 b_ref_alloc_free_c in    
 
     let ret := assign_indty src srcacc constr:(aref++" * "++bref) in
-    constr:((""
-             , aallocs++
+    constr:(( @nil string
+             , app (aallocs++
                ballocs++
                alower++
-               blower++
-               ret++
-               afrees++
-               bfrees
-             , ""
+               blower)%list
+               (ret::
+               (afrees++bfrees)%list)
+             , @nil string
              ,c''))
     | (?a / ?b)%R =>
     let a_ref_alloc_free_c :=
@@ -759,15 +759,15 @@ Ltac L prog src srcacc par c :=
     let c'' := fth5 b_ref_alloc_free_c in    
 
     let ret := assign_indty src srcacc constr:("("++aref++") / ("++bref++")") in
-    constr:((""
-             , aallocs++
+    constr:(( @nil string
+             , app (aallocs++
                ballocs++
                alower++
-               blower++
-               ret++
-               afrees++
-               bfrees
-             , ""
+               blower)%list
+               (ret::
+               (afrees++
+               bfrees)%list)
+             , @nil string
              ,c''))             
     | (?a + ?b)%R =>
     let a_ref_alloc_free_c :=
@@ -786,15 +786,15 @@ Ltac L prog src srcacc par c :=
     let bfrees := frt5 b_ref_alloc_free_c in
     let c'' := fth5 b_ref_alloc_free_c in    
     let ret := assign_indty src srcacc constr:(aref++" + "++bref) in
-    constr:((""
-             , aallocs++
+    constr:(( @nil string
+             , app (aallocs++
                ballocs++
                alower++
-               blower++
-               ret++
-               afrees++
-               bfrees
-             , ""
+               blower)%list
+               (ret::
+               (afrees++
+               bfrees)%list)
+             , @nil string
              ,c''))
   | |[ ?p ]| ?e =>
     let pstr := stringify_bool p in
@@ -805,13 +805,12 @@ Ltac L prog src srcacc par c :=
     let frees := thd tup in
     let c' := frt tup in
 
-    constr:((""
-             , allocs++
-             "if ("++pstr++") {\n"++
-                   lower++
-                   "}\n"++
-                   frees
-             , ""
+    constr:(( @nil string
+             ,
+             app allocs
+             (app (("if ("++pstr++") {")::lower)
+                   ("}"::frees))
+             , @nil string
              , c'))
   | GEN [ ii < ?nn ] @?f ii =>
       let _ := match goal with _ => assert Z by exact 0%Z end in
@@ -833,17 +832,16 @@ Ltac L prog src srcacc par c :=
       let frees := thd tup in
       let c' := frt tup in
       let pragma := match par with
-                    | true => constr:("#pragma omp parallel for\n")
+                    | true => constr:("#pragma omp parallel for")
                     | false => constr:("")
                     end in
-      constr:((""
-               ,  allocs++
-                pragma++
-               "for (int "++i++" = 0; "++i++" < "++n++"; "++i++"++) {\n"++
-                          lower++
-                          "}\n"++
-                          frees
-               , ""
+      constr:((@nil string
+               , app allocs
+                (app (pragma::
+                ("for (int "++i++" = 0; "++i++" < "++n++"; "++i++"++) {")::
+                          lower)
+                          ("}"::frees))
+               , @nil string
                , c'))
   | GEN [ ?mm <= ii < ?nn ] @?f ii =>
     let _ := match goal with _ => assert Z by exact 0%Z end in
@@ -869,17 +867,16 @@ Ltac L prog src srcacc par c :=
     let frees := thd tup in
     let c' := frt tup in
     let pragma := match par with
-                    | true => constr:("#pragma omp parallel for\n")
+                    | true => constr:("#pragma omp parallel for")
                     | false => constr:("")
                     end in    
-    constr:((""
-             , allocs++
-             pragma++
-             "for (int "++i++" = "++m++"; "++i++" < "++n++"; "++i++"++) {\n"++
-                        lower++
-                        "}\n"++
-                        frees
-             , ""
+    constr:((@nil string
+             , app allocs
+             (app (pragma::
+             ("for (int "++i++" = "++m++"; "++i++" < "++n++"; "++i++"++) {")::
+                        lower)
+                        ("}"::frees) )
+             , @nil string
              , c'))
   | let_binding ?e1 ?e2 =>
     match type of e1 with
@@ -905,12 +902,12 @@ Ltac L prog src srcacc par c :=
     let frees := thd tup in
     let c'' := frt tup in
 
-    constr:((""
-             , allocs++
-               "int "++xstr++" = "++e1str++";\n"
-               lower++
-               frees
-             , ""
+    constr:((@nil string
+             , app allocs
+               (app (("int "++xstr++" = "++e1str++";")::
+               lower)
+               frees)
+             , @nil string
              , c''))              
     
     | _ =>
@@ -950,15 +947,16 @@ Ltac L prog src srcacc par c :=
                               e1ref
     in
     
-    constr:((""
-             , e1allocs++
+    constr:((@nil string
+             , app (e1allocs++
                allocs++
-               e1lower++
-               e1tstr++" "++ret++
-               lower++
+               e1lower)%list
+                   
+               ((e1tstr++" "++ret)::
+               (lower++
                e1frees++
-               frees
-             , ""
+               frees)%list)
+             , @nil string
              , c''))              
     end
   | SUM [ ii < ?nn ] @?f ii =>
@@ -985,14 +983,13 @@ Ltac L prog src srcacc par c :=
                        c' in
     let add := fst2 addtup in
     let c'' := snd2 addtup in
-    constr:((""
-             , ballocs++
-             "for (int "++i++" = 0; "++i++" < "++n++"; "++i++"++) {\n"++
-                       blower++
-                       add++
-                       "}\n"++
-                       bfrees
-             , ""
+    constr:((@nil string
+             , app ballocs
+             (app (("for (int "++i++" = 0; "++i++" < "++n++"; "++i++"++) {")::
+                       (blower++
+                       add)%list)
+                       ("}"::bfrees))
+             , @nil string
              , c''))             
   | transpose ?e =>
     L e src constr:(fun s => srcacc (transpose_indty s)) par
@@ -1054,18 +1051,18 @@ Ltac L prog src srcacc par c :=
     let bfrees := thd btup in
     let c'' := frt btup in
 
-    constr:((""
-             , aallocs++ballocs++
+    constr:((@nil string
+             , (aallocs++ballocs++
                alower++blower++
-               afrees++bfrees
-             , ""
+               afrees++bfrees)%list
+             , @nil string
              , c''))
   | ?etc =>
     let s := constr:(ltac:(to_str etc)) in
     let ret := assign_indty src srcacc s in
-    constr:((""
-             , ret
-             , ""
+    constr:((@nil string
+             , [ret]
+             , @nil string
              , c))
   end
 with isvar_or_alloc e c :=
@@ -1074,35 +1071,35 @@ with isvar_or_alloc e c :=
   | _ => match e with
          | 0%R =>
            constr:(( "0.f"
-                   , ""
-                   , ""
-                   , ""
+                   , @nil string
+                   , @nil string
+                   , @nil string
                    , c))           
          | 1%R =>
            constr:(( "1.f"
-                    , ""
-                    , ""
-                    , ""
+                   , @nil string
+                   , @nil string
+                   , @nil string
                     , c))            
          | 2%R =>
            constr:(( "2.f"
-                    , ""
-                    , ""
-                    , ""
+                   , @nil string
+                   , @nil string
+                   , @nil string
                     , c))                       
          | 3%R =>
            constr:(( "3.f"
-                    , ""
-                    , ""
-                    , ""
+                   , @nil string
+                   , @nil string
+                   , @nil string
                     , c))            
          end           
   | _ => let _ := match goal with _ => is_var e end in
          let estr := constr:(ltac:(to_str e)) in
          constr:((estr
-                  , ""
-                  , ""
-                  , ""
+                   , @nil string
+                   , @nil string
+                   , @nil string
                   , c))
   | _ => let size := alloc_size e in
          let t := type of e in
@@ -1119,15 +1116,16 @@ with isvar_or_alloc e c :=
          | R =>
            constr:((eref
                     , eallocs
-                    , tstr++" "++eref++" = 0;\n"
-                      ++elower
+                    , (tstr++" "++eref++" = 0;")::elower
                     , efrees
                     , c'))           
          | list _ =>
            constr:((eref
-                    , eallocs++tstr++" "++eref++" = ("++scalar++"*) calloc(1,"++size++");\n"
+                    , (tstr++" "++eref++
+                           " = ("++scalar++"*) calloc(1,"++size++");")
+                        ::eallocs
                     , elower
-                    , "free("++eref++");\n"++efrees
+                    , ("free("++eref++");")::efrees
                     , c'))
          end
   end.
@@ -1148,13 +1146,14 @@ Ltac allocs_for_call :=
     let x := constr:(ltac:(to_str x')) in
     let _ := match goal with _ => clear x' end in
     let dims := alloc_dim s in
-    constr:((scalar++" *"++var++" = ("++scalar++"*) calloc(1,"++size++");\n"++
-             "for (int "++x++" = 0; "++x++" < "++dims++"; "++x++"++) {\n"++
-             var++"["++x++"] = random() % 10;\n"++
-             "}\n"++         
-                      allocs,
-             "free("++var++");\n"++frees))
-  | _ => constr:(("",""))
+    constr:((
+             (scalar++" *"++var++" = ("++scalar++"*) calloc(1,"++size++");")::
+             ("for (int "++x++" = 0; "++x++" < "++dims++"; "++x++"++) {")::
+             (var++"["++x++"] = random() % 10;")::
+             "}"::         
+             allocs,
+             ("free("++var++");")::frees))
+  | _ => constr:((@nil string,@nil string))
   end.
 
 Ltac args_for_call dim :=
@@ -1163,20 +1162,18 @@ Ltac args_for_call dim :=
     match type of T with
     | Set => 
       let var := constr:(ltac:(to_str H)) in
-      let allocs_args_frees := match T with
-                               | Z => constr:(("int "++var++" = "++
-                                                     dim++";\n"
-                                               , var,""))
-                               | nat => constr:(("int "++var++" = "++
-                                                       dim++";\n"
-                                               , var,""))
-                               | R => constr:((scalar++" "++var++" = "++
-                                                       dim++";\n"
-                                               , var,""))
-                               | _ => constr:(( ""
-                                               , var
-                                               , ""))
-                               end in
+      let allocs_args_frees :=
+          match T with
+          | Z => constr:(("int "++var++" = "++dim++";"
+                          , var,""))
+          | nat => constr:(("int "++var++" = "++dim++";"
+                            , var,""))
+          | R => constr:((scalar++" "++var++" = "++dim++";"
+                          , var,""))
+          | _ => constr:(( ""
+                           , var
+                           , ""))
+          end in
       
       let _ := match goal with _ => generalize dependent H end in
       
@@ -1187,9 +1184,9 @@ Ltac args_for_call dim :=
       let allocs := fst3 rest in
       let args := snd3 rest in
       let frees := thd3 rest in
-      constr:((allocs++alloc,","++arg++args,free++frees))
+      constr:((alloc::allocs,","++arg++args,free::frees))
     end
-  | _ => constr:(("","",""))
+  | _ => constr:((@nil string,"",@nil string))
   end.
 
 Ltac args_for_decl :=
@@ -1209,3 +1206,10 @@ Ltac args_for_decl :=
   | _ => constr:("")
   end.
 
+
+Ltac idtac_list l :=
+  lazymatch l with
+  | ?x::?xs => idtac x; idtac_list xs
+  | _ => idtac
+  end.
+           

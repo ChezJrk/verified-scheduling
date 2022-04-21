@@ -1,6 +1,7 @@
 From Coq Require Import Arith.Arith.
 From Coq Require Import Arith.PeanoNat. Import Nat.
-From Coq Require Import omega.Omega.
+From Coq Require Import micromega.Lia.
+From Coq Require Import micromega.Zify.
 From Coq Require Import Lists.List.
 From Coq Require Import Reals.Reals. Import RIneq. Import Rdefinitions.
 From Coq Require Import ZArith.Int.
@@ -9,7 +10,7 @@ From Coq Require Import Logic.FunctionalExtensionality.
 
 Import ListNotations.
 
-Set Warnings "-omega-is-deprecated,-deprecated".
+Set Warnings "-deprecate-hint-without-locality,-deprecated".
 
 Class TensorElem (A : Set) :=
   { null : A;
@@ -40,7 +41,8 @@ Class TensorElem (A : Set) :=
         scalar_mul c (bin a b) = bin (scalar_mul c a) (scalar_mul c b);
     shape_dec : forall (s1 s2 : shape), s1 = s2 \/ s1 <> s2;
     eq_dec : forall (s1 s2 : A), s1 = s2 \/ s1 <> s2;
-    mul_0_null : scalar_mul 0 null = null
+    mul_0_null : scalar_mul 0 null = null;
+    bin_mul_0_self_id : forall e, bin (scalar_mul 0 e) e = e    
   }.
 
 Infix "<+>" := bin (at level 34, left associativity).
@@ -207,10 +209,18 @@ Proof.
   auto.
 
   ring.
+
+  intros. ring.
 Defined.
 
 Lemma get_empty_null {X} `{TensorElem X} : forall i, [] _[ i ] = null.
 Proof. destruct i; simpl; unfold get; reflexivity. Qed.
+
+Lemma nth_error_inc {X} `{TensorElem X} : forall i (l : list X) a,
+    nth_error l i = nth_error (a::l) (S i).
+Proof.
+  destruct i; intros; reflexivity.
+Qed.
 
 Theorem gen_helper_eq_bound {X} `{TensorElem X} : forall n m f g,
     (forall i, 0 <= i -> i < n ->
@@ -221,12 +231,28 @@ Proof.
   - reflexivity.
   - simpl.
     f_equal.
-    apply (H0 0); omega.
+    apply (H0 0); lia.
     apply IHn. intros.
     replace (Z.of_nat i + m + 1)%Z with ((Z.of_nat (S i)) + m)%Z by
-        (rewrite Nat2Z.inj_succ; omega).
-    apply H0; omega.
+        (rewrite Nat2Z.inj_succ; lia).
+    apply H0; lia.
 Qed.    
+
+Lemma get_cons {X} `{TensorElem X} : forall a l i,
+    (0 <= i)%Z ->
+    (i < Z.of_nat (length l))%Z ->
+    (a :: l) _[ i+1] = l _[ i ].
+Proof.
+  intros; destruct i; destruct l; simpl in *; try lia.
+  - unfold get. reflexivity.
+  - unfold get. simpl.
+    rewrite Pos.add_1_r.
+    rewrite Pos2Nat.inj_succ.
+    simpl.
+    rewrite nth_error_nth' with (d:=null).
+    reflexivity.
+    zify. simpl. zify. lia.
+Qed.
 
 Lemma tensor_add_empty_l {X} `{TensorElem X} : forall l,
     tensor_add [] l = l.
@@ -250,7 +276,9 @@ Proof.
     repeat rewrite get_empty_null.
     f_equal.
     rewrite Z.add_0_r.
-Admitted.
+    rewrite get_cons by lia.
+    reflexivity.
+Qed.
 
 Lemma tensor_add_empty_r {X} `{TensorElem X} : forall l,
     tensor_add l [] = l.
@@ -275,26 +303,29 @@ Proof.
     repeat rewrite get_empty_null.
     f_equal.
     rewrite Z.add_0_r.
-Admitted.
+    rewrite get_cons by lia.
+    reflexivity.
+Qed.
   
 Lemma tensor_add_step {X} `{TensorElem X} :
   forall (h h' : X) (tl tl' : list X),
     tensor_add (h :: tl) (h' :: tl') = (bin h h') :: (tensor_add tl tl').
-Proof. intros.
-       unfold tensor_add.
-       simpl.
-       rewrite Zpos_P_of_succ_nat.
-       unfold gen, genr.
-       repeat rewrite Z.sub_0_r.
-       rewrite <- Nat2Z.inj_succ.
-       repeat rewrite Nat2Z.id.
-       simpl.
-       unfold get at 1.
-       simpl. unfold get at 1. simpl.
-       f_equal.
-       apply gen_helper_eq_bound; intros.
-       rewrite Z.add_0_r.
-       f_equal.
+Proof.
+  intros.
+  unfold tensor_add.
+  simpl.
+  rewrite Zpos_P_of_succ_nat.
+  unfold gen, genr.
+  repeat rewrite Z.sub_0_r.
+  rewrite <- Nat2Z.inj_succ.
+  repeat rewrite Nat2Z.id.
+  simpl.
+  unfold get at 1.
+  simpl. unfold get at 1. simpl.
+  f_equal.
+  apply gen_helper_eq_bound; intros.
+  rewrite Z.add_0_r.
+  apply max_lt_iff in H1.       
 Admitted.
 
 Inductive tensor_consistent {X} `{TensorElem X} :
@@ -316,7 +347,7 @@ Proof.
   - rewrite <- H0 in H1. discriminate.
   - rewrite <- H1 in H0. discriminate.
   - rewrite tensor_add_step.
-    destruct n; try omega.
+    destruct n; try lia.
     inversion H0. inversion H1.
     rewrite H0. simpl. auto with crunch.
 Qed.
@@ -329,7 +360,7 @@ Proof.
   inversion H0.
   constructor.
   inversion H6. auto. inversion H6. auto.
-  simpl in *. omega.
+  simpl in *. lia.
 Qed.
 
 #[refine]Instance TensorTensorElem {X} `{TensorElem X} : TensorElem (list X) :=
@@ -369,10 +400,10 @@ Proof.
         * auto.
       + inversion H0. inversion H1. subst.
         simpl in H8. simpl in H15.
-        omega.
+        lia.
       + inversion H1. inversion H0. subst.
         simpl in H15. simpl in H8.
-        omega.
+        lia.
       + inversion H1. inversion H0. subst.
         rewrite map_cons.
         rewrite tensor_add_step.
@@ -398,9 +429,9 @@ Proof.
       + simpl. inversion H0. inversion H1. subst.
         f_equal. eapply mul_0_absorb; eauto.
       + inversion H0. inversion H1. subst.
-        simpl in H15. simpl in H8. omega.
+        simpl in H15. simpl in H8. lia.
       + inversion H0. inversion H1. subst.
-        simpl in H15. simpl in H8. omega.
+        simpl in H15. simpl in H8. lia.
       + rewrite map_cons.
         symmetry. rewrite map_cons.
         inversion H0. inversion H1. subst.
@@ -424,8 +455,8 @@ Proof.
         inversion H1. inversion H0. subst.
         constructor.
         eapply consistent_bin; eauto. constructor. auto.
-      + inversion H0. inversion H1. simpl in *. omega.
-      + inversion H0. inversion H1. simpl in *. omega.
+      + inversion H0. inversion H1. simpl in *. lia.
+      + inversion H0. inversion H1. simpl in *. lia.
       + inversion H0. inversion H1. subst.
         rewrite tensor_add_step.
         constructor.
@@ -461,7 +492,7 @@ Proof.
         simpl. constructor. auto.
         auto.
         simpl in *.
-        rewrite map_length in *. omega.
+        rewrite map_length in *. lia.
   }
 
   {
@@ -521,6 +552,16 @@ Proof.
   {
     reflexivity.
   }
+
+  {
+    intros.
+    induction e.
+    - simpl. reflexivity.
+    - simpl. rewrite tensor_add_step.
+      f_equal.
+      apply bin_mul_0_self_id.
+      eauto.
+  }
 Defined.
 
 #[refine] Instance TupleTensorElem {X Y} `{TensorElem X} `{TensorElem Y} :
@@ -544,7 +585,7 @@ Proof.
   destruct a. autorewrite with crunch. auto.
 
   destruct a; destruct b;
-  destruct s; destruct s'.
+    destruct s; destruct s'.
   intros [? ?] [? ?] ?.
   inversion H5.
   f_equal; eapply bin_mul_0_id; eauto.
@@ -576,6 +617,8 @@ Proof.
   decide equality; apply eq_dec.
 
   f_equal; apply mul_0_null.
+
+  intros. destruct e. f_equal; apply bin_mul_0_self_id.
 Defined.
 
 Arguments iverson : simpl never.
@@ -594,9 +637,9 @@ Arguments N.mul : simpl nomatch.
 Arguments N.sub : simpl nomatch.
 Arguments N.add : simpl nomatch.
 
-Definition fuse {X} `{TensorElem X} (l1 l2 : list X) : list X :=
+Definition concat {X} `{TensorElem X} (l1 l2 : list X) : list X :=
   GEN [ i < Z.of_nat (length l1 + length l2) ]
       (|[i <? Z.of_nat (length l1)]| l1 _[i]) <+>
       (|[Z.of_nat (length l1) <=? i]| l2 _[i - Z.of_nat (length l1)]).
 
-Infix "<++>" := fuse (at level 34, left associativity).
+Infix "<++>" := concat (at level 34, left associativity).

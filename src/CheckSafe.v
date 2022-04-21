@@ -1,7 +1,8 @@
 From Coq Require Import Arith.Arith.
 From Coq Require Import Arith.EqNat.
 From Coq Require Import Arith.PeanoNat. Import Nat.
-From Coq Require Import omega.Omega.
+From Coq Require Import micromega.Lia.
+From Coq Require Import micromega.Zify.
 From Coq Require Import Lists.List.
 From Coq Require Import Bool.Bool.
 From Coq Require Import Reals.Reals. Import Rdefinitions. Import RIneq.
@@ -16,7 +17,7 @@ Import ListNotations.
 From ATL Require Import ATL Tactics Div Common CommonTactics Blur. 
 
 Generalizable All Variables.
-
+(*
 Inductive safe {X} `{TensorElem X} : X -> Prop :=
 | acc : forall v i,
     safe' v ->
@@ -29,7 +30,7 @@ with
 | acc' : forall v i,
     safe' v ->
     safe' (v _[i]).
-
+ *)
 Ltac safe :=
   lazymatch goal with
   | |- let_binding ?x ?f = _ =>
@@ -40,7 +41,8 @@ Ltac safe :=
     assert (x = ?ex) as Hx by
           (safe; reflexivity));
     eapply let_extensionality;
-    [ subst; consistent_shape; eauto with crunch | intros; safe ]
+    [ subst; consistent_shape; try reflexivity; eauto with crunch
+    | intros; safe ]
   | |- flatten _ = _ =>
     apply flatten_eq; safe
   | |- transpose _ = _ =>
@@ -97,7 +99,7 @@ Goal forall X (H : TensorElem X) N M (v : list (list X)) s,
     0 < N ->
     0 < M ->
     consistent v (N,(M,s)) ->
-    blur_tiles_guarded 4 4 N M v = @nil _.
+    blur_tiles_guarded v N M 4 4 = @nil _.
 Proof.
   intros. autounfold with examples.
   check_safe.

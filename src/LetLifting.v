@@ -1,7 +1,8 @@
 From Coq Require Import Arith.Arith.
 From Coq Require Import Arith.EqNat.
 From Coq Require Import Arith.PeanoNat. Import Nat.
-From Coq Require Import omega.Omega.
+From Coq Require Import micromega.Lia.
+From Coq Require Import micromega.Zify.
 From Coq Require Import Lists.List.
 From Coq Require Import Reals.Reals.
 From Coq Require Import Logic.FunctionalExtensionality.
@@ -9,14 +10,12 @@ Import ListNotations.
 
 From ATL Require Import ATL Common Tactics CommonTactics.
 
-Set Warnings "-omega-is-deprecated,-deprecated".
-
-Theorem ll_fuse_l {X Y} `{TensorElem X} :
+Theorem ll_concat_l {X Y} `{TensorElem X} :
   forall (a : Y -> list X) (b : list X) (e : Y),
     (tlet a' := e in a a') <++> b = tlet a' := e in (a a') <++> b.
 Proof. trivial. Qed.
 
-Theorem ll_fuse_r {X Y} `{TensorElem X} :
+Theorem ll_concat_r {X Y} `{TensorElem X} :
   forall (a : Y -> list X) (b : list X) (e : Y),
     b <++> (tlet a' := e in a a') = tlet a' := e in b <++> (a a').
 Proof. trivial. Qed.
@@ -30,11 +29,11 @@ Theorem ll_bin_r {X Y} `{TensorElem X} : forall (a : Y -> X) (b : X) (e : Y),
 Proof. trivial. Qed.
 
 Theorem ll_plus_l {X} : forall (e0 : X) (e1 : X -> R) (e2 : R),
-    Rplus (tlet x := e0 in e1 x) e2 = let x := e0 in Rplus (e1 x) e2.
+    Rplus (tlet x := e0 in e1 x) e2 = tlet x := e0 in Rplus (e1 x) e2.
 Proof. trivial. Qed.
 
 Theorem ll_plus_r {X} : forall (e0 : X) (e1 : X -> R) (e2 : R),
-    Rplus e2 (tlet x := e0 in e1 x) = let x := e0 in Rplus e2 (e1 x).
+    Rplus e2 (tlet x := e0 in e1 x) = tlet x := e0 in Rplus e2 (e1 x).
 Proof. trivial. Qed.
 
 Theorem ll_mult_l {X} : forall (e0 : X) (e1 : X -> R) (e2 : R),
@@ -109,7 +108,7 @@ Proof.
   - rewrite true_iverson.
     rewrite get_gen_some by auto.
     reflexivity.
-  - rewrite get_gen_null by (zify; omega).
+  - rewrite get_gen_null by lia.
     f_equal.
     unfold iverson. eapply mul_0_absorb; eauto.  
 Qed.
@@ -123,9 +122,8 @@ Proof.
   intros. simpl.
   apply sumr_eq_bound.
   intros. unfold let_binding. 
-  rewrite get_genr_some; try omega.
+  rewrite get_genr_some; try lia.
   rewrite Zplus_minus. reflexivity.
-  apply Z2Nat.inj_lt. omega. omega. omega.
 Qed.
 
 Theorem ll_sum {X Y} `{TensorElem X} `{TensorElem Y}:
@@ -192,12 +190,12 @@ Proof.
   intros. unfold let_binding. reflexivity.
 Qed.
 
-Theorem let_rotate_fuse_right {X Y} `{TensorElem X} `{TensorElem X} :
+Theorem let_rotate_concat_right {X Y} `{TensorElem X} `{TensorElem X} :
   forall (e1 e2 : list X) (f : list X -> Y),
     let_binding (e1 <++> e2) f = let_binding e1 (fun e => f (e <++> e2)).
 Proof. intros. unfold let_binding. reflexivity. Qed.
 
-Theorem let_rotate_fuse_left {X Y} `{TensorElem X} `{TensorElem X} :
+Theorem let_rotate_concat_left {X Y} `{TensorElem X} `{TensorElem X} :
   forall (e1 e2 : list X) (f : list X -> Y),
     let_binding (e1 <++> e2) f = let_binding e2 (fun e => f (e1 <++> e)).
 Proof. intros. unfold let_binding. reflexivity. Qed.

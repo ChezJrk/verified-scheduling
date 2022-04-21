@@ -1,0 +1,8 @@
+src/ctest/*
+src/clib/*
+*.vo*
+*.glob
+*.v.d
+*.aux
+.lia.cache
+Makefile.coq

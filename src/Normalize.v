@@ -8,12 +8,11 @@ From Coq Require Import ZArith.Int.
 From Coq Require Import ZArith.Znat.
 From Coq Require Import Strings.String.
 From Coq Require Import Logic.FunctionalExtensionality.
-From Coq Require Import omega.Omega.
+From Coq Require Import micromega.Lia.
+From Coq Require Import micromega.Zify.
 
 Require Import Ltac2.Ltac2.
 Require Import Ltac2.Option.
-
-Set Warnings "-omega-is-deprecated,-deprecated".
 
 From ATL Require Import ATL Tactics Common CommonTactics Div IdentParsing
      GenPushout Reshape LetLifting.
@@ -192,11 +191,75 @@ Ltac normalize_rec :=
             end
           end).
 
-Ltac normalize_in_get :=
-  match goal with
+Ltac normalize_types :=
+  unfold bin; simpl;
+  etransitivity; [ normalize_rec; auto with crunch | ]; simpl; lazy beta.
+
+Ltac normalize_in_expr :=
+  lazymatch goal with
   | |- ?v _[ _ ] = _ =>
     apply get_eq_index;
-    normalize_in_get
+    normalize_in_expr
+  | |- (?a * ?b)%R = _ =>
+    let ae := fresh "ae" in
+    let Ha := fresh "Ha" in
+    evar (ae : R);
+    assert (a = ?ae) as Ha by (normalize_in_expr; try reflexivity);
+    lift_evar;
+    try rewrite Ha;
+    try clear Ha;
+    try rewrite ll_mult_l;
+    drop_evar;
+    let be := fresh "be" in
+    let Hb := fresh "Hb" in
+    evar (be : R);
+    assert (b = ?be) as Hb by (normalize_in_expr; try reflexivity);
+    lift_evar;
+    try rewrite Hb;
+    try rewrite ll_mult_r;    
+    try clear Hb;
+    drop_evar;
+    reflexivity
+  | |- (?a / ?b)%R = _ =>
+    let ae := fresh "ae" in
+    let Ha := fresh "Ha" in
+    evar (ae : R);
+    assert (a = ?ae) as Ha by (normalize_in_expr; try reflexivity);
+    lift_evar;
+    try rewrite Ha;
+    try rewrite ll_div_l;
+    try clear Ha;
+    drop_evar;
+    let be := fresh "be" in
+    let Hb := fresh "Hb" in
+    evar (be : R);
+    assert (b = ?be) as Hb by (normalize_in_expr; try reflexivity);
+    lift_evar;
+    try rewrite Hb;
+    try rewrite ll_div_r;
+    try clear Hb;
+    drop_evar;
+    reflexivity    
+  | |- (?a + ?b)%R = _ =>
+    let ae := fresh "ae" in
+    let Ha := fresh "Ha" in
+    evar (ae : R);
+    assert (a = ?ae) as Ha by (normalize_in_expr; try reflexivity);
+    lift_evar;
+    try rewrite Ha;
+    try rewrite ll_plus_l;
+    try clear Ha;
+    drop_evar;
+    let be := fresh "be" in
+    let Hb := fresh "Hb" in
+    evar (be : R);
+    assert (b = ?be) as Hb by (normalize_in_expr; try reflexivity);
+    lift_evar;
+    try rewrite Hb;
+    try rewrite ll_plus_r;
+    try clear Hb;
+    drop_evar;
+    reflexivity    
   | |- ?v = _ =>
     match v with
     | _ => is_var v; reflexivity
@@ -242,31 +305,17 @@ Ltac normalize_get :=
     apply iverson_weak;
     normalize_get
   | |- let_binding ?e ?f = _ =>
-    let e := fresh "ee" in
+    let ee := fresh "ee" in
     let He := fresh "He" in
-    evar (ee : R);
-    assert (e = ?ee) as Ha by (normalize_get; try reflexivity);
+    let t := type of e in
+    evar (ee : t);
+    assert (e = ?ee) as He by (normalize_get; try reflexivity);
     lift_evar;
-    try rewrite Ha;
+    try rewrite He;
+    try clear He;
     drop_evar;
     eapply tlet_eq_body; intros;
     normalize_get
-  | |- ?a <+> ?b = _ =>
-    let ae := fresh "ae" in
-    let Ha := fresh "Ha" in
-    evar (ae : R);
-    assert (a = ?ae) as Ha by (normalize_get; try reflexivity);
-    lift_evar;
-    try rewrite Ha;
-    drop_evar;
-    let be := fresh "be" in
-    let Hb := fresh "Hb" in
-    evar (be : R);
-    assert (b = ?be) as Hb by (normalize_get; try reflexivity);
-    lift_evar;
-    try rewrite Hb;
-    drop_evar;
-    reflexivity      
   | |- ?a <++> ?b = _ =>
     let ae := fresh "ae" in
     let Ha := fresh "Ha" in
@@ -284,55 +333,13 @@ Ltac normalize_get :=
     drop_evar;
     reflexivity
   | |- (?a + ?b)%R = _ =>
-    let ae := fresh "ae" in
-    let Ha := fresh "Ha" in
-    evar (ae : R);
-    assert (a = ?ae) as Ha by (normalize_get; try reflexivity);
-    lift_evar;
-    try rewrite Ha;
-    drop_evar;
-    let be := fresh "be" in
-    let Hb := fresh "Hb" in
-    evar (be : R);
-    assert (b = ?be) as Hb by (normalize_get; try reflexivity);
-    lift_evar;
-    try rewrite Hb;
-    drop_evar;
-    reflexivity
+    normalize_in_expr
   | |- (?a / ?b)%R = _ =>
-    let ae := fresh "ae" in
-    let Ha := fresh "Ha" in
-    evar (ae : R);
-    assert (a = ?ae) as Ha by (normalize_get; try reflexivity);
-    lift_evar;
-    try rewrite Ha;
-    drop_evar;
-    let be := fresh "be" in
-    let Hb := fresh "Hb" in
-    evar (be : R);
-    assert (b = ?be) as Hb by (normalize_get; try reflexivity);
-    lift_evar;
-    try rewrite Hb;
-    drop_evar;
-    reflexivity
+    normalize_in_expr
   | |- (?a * ?b)%R = _ =>
-    let ae := fresh "ae" in
-    let Ha := fresh "Ha" in
-    evar (ae : R);
-    assert (a = ?ae) as Ha by (normalize_get; try reflexivity);
-    lift_evar;
-    try rewrite Ha;
-    drop_evar;
-    let be := fresh "be" in
-    let Hb := fresh "Hb" in
-    evar (be : R);
-    assert (b = ?be) as Hb by (normalize_get; try reflexivity);
-    lift_evar;
-    try rewrite Hb;
-    drop_evar;
-    try reflexivity
+    normalize_in_expr
   | |- _ _[_] = _ =>
-    normalize_in_get
+    normalize_in_expr
   | |- _ = _ => try reflexivity                  
   end.
 
@@ -372,33 +379,17 @@ Ltac let_lift :=
     apply iverson_weak;
     let_lift
   | |- let_binding ?e ?f = _ =>
-    let e := fresh "ee" in
+    let ee := fresh "ee" in
     let He := fresh "He" in
-    evar (ee : R);
-    assert (e = ?ee) as Ha by (let_lift; try reflexivity);
+    let t := type of e in
+    evar (ee : t);
+    assert (e = ?ee) as He by (let_lift; try reflexivity);
     lift_evar;
-    try rewrite Ha;
+    try rewrite He;
+    try clear He;
     drop_evar;
     eapply tlet_eq_body; intros;
     let_lift
-  | |- ?a <+> ?b = _ =>
-    let ae := fresh "ae" in
-    let Ha := fresh "Ha" in
-    evar (ae : R);
-    assert (a = ?ae) as Ha by (let_lift; try reflexivity);
-    lift_evar;
-    try rewrite Ha;
-    drop_evar;
-    let be := fresh "be" in
-    let Hb := fresh "Hb" in
-    evar (be : R);
-    assert (b = ?be) as Hb by (let_lift; try reflexivity);
-    lift_evar;
-    try rewrite Hb;
-    drop_evar;
-    repeat rewrite ll_bin_r;        
-    repeat rewrite ll_bin_l;    
-    try reflexivity
   | |- ?a <++> ?b = _ =>
     let ae := fresh "ae" in
     let Ha := fresh "Ha" in
@@ -414,8 +405,8 @@ Ltac let_lift :=
     lift_evar;
     try rewrite Hb;
     drop_evar;
-    repeat rewrite ll_fuse_r;        
-    repeat rewrite ll_fuse_l;        
+    repeat rewrite ll_concat_r;        
+    repeat rewrite ll_concat_l;        
     try reflexivity
   | |- (?a + ?b)%R = _ =>
     let ae := fresh "ae" in
@@ -478,15 +469,21 @@ Ltac let_lift :=
     try reflexivity
   end.
 
-Ltac normalize_types :=
-  unfold bin; simpl;
-  etransitivity; [ normalize_rec; auto with crunch | ]; simpl; lazy beta.
-
 Ltac normalize_ssa :=
   etransitivity; [ normalize_get; try reflexivity | ];
   etransitivity; [ let_lift; try reflexivity | ]; lazy beta.
 
 Ltac normalize := normalize_types; normalize_ssa.
+
+Goal forall (f : list R) n m,
+      consistent f (m,tt) ->
+      (1 < n)%Z ->
+      (tlet buf := GEN [ i < n ] f _[i] in
+           GEN [ i < n ] (|[ 0 <=? i-1 ]| buf _[i-1]) <+> buf _[i])
+      = @nil _.
+Proof.
+  intros. normalize.
+Abort.
 
 Goal forall n i j m c,
     ((GEN [ - m + 1 <= k < n ]

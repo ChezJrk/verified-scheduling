@@ -1,6 +1,7 @@
 From Coq Require Import Arith.Arith.
 From Coq Require Import Arith.PeanoNat. Import Nat.
-From Coq Require Import omega.Omega.
+From Coq Require Import micromega.Lia.
+From Coq Require Import micromega.Zify.
 From Coq Require Import Lists.List.
 From Coq Require Import Vectors.Vector.
 From Coq Require Import Reals.Reals. Import RIneq. Import Rdefinitions.
@@ -9,96 +10,14 @@ Import ListNotations.
 
 From ATL Require Import ATL Common Tactics Div CommonTactics.
 
-Set Warnings "-omega-is-deprecated,-deprecated".
-
-Definition to_val {X} `{TensorElem X} (opt : option X) : X :=
-  match opt with
-  | None => null
-  | Some v => v
-  end.
-
-Lemma nth_map {X} `{TensorElem X} : forall i f v,
-    i < length v ->
-    @nth_error X (List.map f v) i = Some (f (to_val (nth_error v i))).
-Proof.
-  induction i; intros f v H0; destruct v; simpl in *;
-    try contra_crush; auto.
-    apply lt_S_n in H0.
-    eapply IHi in H0.
-    apply H0.
-Qed.
-
-Theorem gp_iverson {X} `{TensorElem X} :
-  forall I p (e : list X),
-    (|[ p ]| e) _[I] = |[ p ]| (e _[I]).
-Proof.
-  intros.
-  destruct (I <? Z.of_nat (length e))%Z eqn:ie;
-    destruct (0 <=? I)%Z eqn: i0; unbool.
-  -  unfold iverson, get. simpl.
-     destruct I.
-     + destruct e.
-       simpl in ie. omega.
-       simpl. auto.
-     + simpl in *. rewrite nth_map by (zify; omega).
-       destruct e. simpl in *. omega.
-       simpl.
-       unfold to_val.
-       assert (Pos.to_nat p0 < length (x::e)) by (zify; omega).
-       apply nth_error_Some in H0.
-       destruct (nth_error (x::e) (Pos.to_nat p0)). auto. contradiction.
-     + contradiction.
-  - destruct e.
-    + simpl. unfold get. simpl. 
-      destruct p.
-      * repeat rewrite true_iverson.
-        reflexivity.
-      * unfold iverson.
-        symmetry.
-        apply mul_0_null.
-    + rewrite get_neg_null; try omega.
-      destruct p.
-      * repeat rewrite true_iverson.
-        rewrite get_neg_null; try omega.
-        auto.
-      * unfold iverson.
-        rewrite mul_0_idemp.
-        unfold scalar_mul at 1. simpl.
-        rewrite get_neg_null; auto.
-        unfold iverson. apply mul_0_idemp.
-  - destruct e.
-    + unfold get. simpl.
-      destruct p.
-      * rewrite true_iverson. auto.
-      * unfold iverson.
-        symmetry.
-        apply mul_0_null.
-    + rewrite get_znlt_null; try omega.
-      destruct p.
-      * repeat rewrite true_iverson.
-        rewrite get_znlt_null; try omega.
-        reflexivity.
-      * unfold iverson.
-        rewrite mul_0_idemp.
-        unfold scalar_mul at 1. simpl.
-        destruct I; try (simpl in *; zify; omega).
-        rewrite get_znlt_null.
-        unfold iverson.
-        rewrite mul_0_idemp.
-        reflexivity.
-        assert (length (scalar_mul 0 x :: List.map (scalar_mul 0) e) <=
-                Pos.to_nat p).
-        { simpl. rewrite map_length. simpl in *. zify. omega. }
-        zify. omega.
-  - zify. omega.
-Qed.
-Hint Rewrite @gp_iverson : crunch.
-
 Lemma gp_genr_iverson {X} `{TensorElem X} :
   forall p N K (body : Z -> X),
     (|[ p ]| (GEN [K <= i < N ] body i )) = GEN [ K <= n' < N ] (|[ p ]| body n' ).
 Proof.
-Admitted.
+  unfold iverson. intros.
+  destruct p. repeat setoid_rewrite mul_1_id. auto.
+  simpl. rewrite <- genr_map. reflexivity.
+Qed.
 
 Theorem gp_gen_iverson {X} `{TensorElem X} :
   forall p N (body : Z -> X),

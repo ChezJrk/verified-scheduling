@@ -1,7 +1,8 @@
 From Coq Require Import Arith.Arith.
 From Coq Require Import Arith.EqNat.
 From Coq Require Import Arith.PeanoNat. Import Nat.
-From Coq Require Import omega.Omega.
+From Coq Require Import micromega.Lia.
+From Coq Require Import micromega.Zify.
 From Coq Require Import Lists.List.
 From Coq Require Import Bool.Bool.
 From Coq Require Import Reals.Reals. Import Rdefinitions. Import RIneq.
@@ -15,7 +16,7 @@ Import ListNotations.
 From ATL Require Import ATL Tactics Common CommonTactics Div GenPushout
      LetLifting.
 
-Set Warnings "-omega-is-deprecated,-deprecated".
+Set Warnings "-deprecate-hint-without-locality,-deprecated".
 
 Generalizable All Variables.
 
@@ -76,7 +77,7 @@ Proof.
   unfold flatten_trunc.
   rewrite of_nat_div_distr.
   rewrite gen_length.
-  rewrite Z2Nat.id by omega. rewrite H7.
+  rewrite Z2Nat.id by lia. rewrite H7.
   erewrite consistent_length by
       (eapply consistent_get;
        eapply @consistent_gen; rewrite <- H7; simpl; auto with crunch;       
@@ -93,7 +94,7 @@ Proof.
   apply sum_eq_bound; intros.
   apply sum_eq_bound; intros.
   replace (i =? i0 * Z.of_nat K + i1)%Z with
-      (i1 =? i - i0 * Z.of_nat K)%Z by (unbool; zify; omega).
+      (i1 =? i - i0 * Z.of_nat K)%Z by (unbool; zify; lia).
   apply iverson_weak.
   rewrite get_gen_some by auto with crunch.
   rewrite get_gen_some by auto with crunch.
@@ -119,18 +120,18 @@ Proof.
   apply sum_eq_bound; intros.
   replace (i - i0 * Z.of_nat K <? Z.of_nat K)%Z with
       (i - Z.of_nat K <? i0 * Z.of_nat K)%Z by
-      (unbool; zify; omega).
+      (unbool; zify; lia).
   replace (0 <=? i - i0 * Z.of_nat K)%Z with
       ( i0 * Z.of_nat K <=? i )%Z by
-      (unbool; zify; omega).
+      (unbool; zify; lia).
   rewrite H10 at 1. rewrite H10 at 1.  
  
   replace (Z.of_nat K * z + z0 - Z.of_nat K <? i0 * Z.of_nat K)%Z with
       (Z.of_nat K * z - Z.of_nat K * 1 - i0 * Z.of_nat K <? - z0)%Z by
-      (unbool; zify; omega).
+      (unbool; zify; lia).
   replace (i0 * Z.of_nat K <=? Z.of_nat K * z + z0)%Z with
       (i0 * Z.of_nat K - Z.of_nat K * z <=? z0)%Z by
-      (unbool; zify; omega).
+      (unbool; zify; lia).
   replace (i0 * Z.of_nat K)%Z with (Z.of_nat K * i0)%Z by apply Z.mul_comm.
   repeat rewrite <- Z.mul_sub_distr_l.
 
@@ -146,18 +147,18 @@ Proof.
   rewrite Z.add_comm.
   rewrite Z.add_sub_assoc.
   rewrite Z.add_opp_r.
-  replace (z - i0 - 1)%Z with (z - 1 -i0)%Z by omega.
+  replace (z - i0 - 1)%Z with (z - 1 -i0)%Z by lia.
   split; intros. auto. auto. }
 
   replace (z0 <? Z.of_nat K * (i0 + 1 - z))%Z with
-      (0 <=? (i0 - z))%Z by (unbool; rewrite mul_lt; omega).
+      (0 <=? (i0 - z))%Z by (unbool; rewrite mul_lt; lia).
 
   replace (Z.of_nat K * (i0 - z) <=? z0)%Z with
       (i0 - z <=? 0)%Z by
-      (unbool; rewrite mul_le; omega).
+      (unbool; rewrite mul_le; lia).
 
   replace ((0 <=? i0 - z)%Z && (i0 - z <=? 0)%Z) with (i0 =? z)%Z by
-      (unbool; zify; omega).
+      (unbool; zify; lia).
 
   pose (div_eucl_div i (Z.of_nat K)). peel_hyp.
   rewrite ee in y. rewrite y.
@@ -173,7 +174,7 @@ Proof.
 
   assert ((i / Z.of_nat K <?
            Z.of_nat n // (Z.of_nat K) )%Z = true).
-  unbool. apply floor_lt_ceil_mono_l; omega.
+  unbool. apply floor_lt_ceil_mono_l; lia.
   rewrite H11. rewrite true_iverson.
   reflexivity. auto with crunch.
   intros. eapply consistent_get; subst; eauto.
@@ -197,7 +198,7 @@ Proof.
   rewrite gen_of_nat_length.
   rewrite of_nat_div_distr.
   simpl length in *. subst.
-  rewrite nat_mul_div_id by omega.
+  rewrite nat_mul_div_id by lia.
 
   etransitivity.
   {
@@ -319,7 +320,7 @@ Proof.
   symmetry.
   erewrite get_gen_some_guard.
   simpl_guard.
-  reflexivity. omega. eauto.
+  reflexivity. lia. eauto.
 Qed.
 
 Lemma trunc_gen {X} `{TensorElem X} :
@@ -330,7 +331,7 @@ Proof.
   intros. unfold trunc_r.
   apply gen_eq_bound; intros.
   symmetry.
-  rewrite get_gen_some. auto. zify. omega. auto.
+  rewrite get_gen_some. auto. zify. lia. auto.
 Qed.
 
 Lemma gen_trunc {X} `{TensorElem X} :
@@ -357,14 +358,14 @@ Lemma help {X} `{TensorElem X} :
 Proof.
   intros. unfold pad_l_unsafe.
   rewrite gen_of_nat_length. simpl.
-  rewrite Nat.sub_add by omega.
+  rewrite Nat.sub_add by lia.
   apply gen_eq_bound; intros.
   erewrite get_gen_some_guard.
   rewrite Nat2Z.inj_sub.
   symmetry.
   simpl_guard.
-  rewrite Z.sub_add by omega.
-  reflexivity. omega. auto with crunch. 
+  rewrite Z.sub_add by lia.
+  reflexivity. lia. auto with crunch. 
   eauto.
 Qed.
 
@@ -389,11 +390,11 @@ Theorem transpose_gen_gen {X} `{TensorElem X} : forall n m f,
 Proof.
   intros. unfold transpose.
   rewrite gen_length.
-  rewrite Z2Nat.id; try omega.
+  rewrite Z2Nat.id; try lia.
   replace ((length ((GEN [ i < n ]
                                GEN [ j < m ]
                                f i j) _[ 0]))) with (Z.to_nat m).
-  rewrite Z2Nat.id; try omega.
+  rewrite Z2Nat.id; try lia.
 
   etransitivity.
   apply gen_eq_bound; intros.
@@ -402,7 +403,7 @@ Proof.
   rewrite get_gen_some; auto with crunch.
   reflexivity. lazy beta. reflexivity.
 
-  destruct n; try (zify; omega).
+  destruct n; try (zify; lia).
   unfold gen, genr.
   rewrite Z.sub_0_r.
   simpl. posnat.
@@ -410,6 +411,23 @@ Proof.
   rewrite Z.sub_0_r.
   rewrite gen_helper_length.
   auto.
+Qed.
+
+Theorem transpose_get_get {X} `{TensorElem X} :
+  forall (v : list (list X)) i j n m s,
+    consistent v (n,(m,s)) ->
+    (0 <= i)%Z ->
+    (i < Z.of_nat m)%Z ->
+    (0 <= j)%Z ->
+    (j < Z.of_nat n)%Z ->
+    transpose v _[i;j] = v _[j;i].
+Proof.
+  intros. unfold transpose.
+  rw^ @consistent_length.
+  rw^ @consistent_length.
+  rw @get_gen_some.
+  rw @get_gen_some.
+  reflexivity.
 Qed.
 
 Theorem transpose_iverson {X} `{TensorElem X} : forall p e s,
@@ -524,11 +542,11 @@ Qed.
 
 (* UNFOLDING *)
 Theorem unfold_transpose {X} `{TensorElem X} :
-  forall (v : list (list X)) s n m,
-    consistent v (n,(m,s)) ->
-    transpose v = GEN [ x0 < Z.of_nat m ]
+  forall (V : list (list X)) s n m,
+    consistent V (n,(m,s)) ->
+    transpose V = GEN [ x0 < Z.of_nat m ]
                       GEN [ y < Z.of_nat n ]
-                      v _[ y; x0].
+                      V _[ y; x0].
 Proof.
   intros. unfold transpose.
   erewrite consistent_length by (eapply consistent_get; eauto).
@@ -924,15 +942,15 @@ Theorem split_gen {X} `{TensorElem X} :
 Proof.
   intros.
   symmetry.
-  unfold fuse.
+  unfold concat.
   rewrite gen_length.
   rewrite genr_length.
-  rewrite Z2Nat.inj_sub by omega.
+  rewrite Z2Nat.inj_sub by lia.
   rewrite Nat2Z.inj_add.
-  rewrite Z2Nat.id by omega.
-  rewrite Nat2Z.inj_sub by (zify; omega).
-  rewrite Z2Nat.id by omega.
-  rewrite Z2Nat.id by omega.
+  rewrite Z2Nat.id by lia.
+  rewrite Nat2Z.inj_sub by (zify; lia).
+  rewrite Z2Nat.id by lia.
+  rewrite Z2Nat.id by lia.
   rewrite Zplus_minus.
   apply gen_eq_bound; intros.
   destruct (0 <? I)%Z eqn:e; unbool;
@@ -947,7 +965,7 @@ Proof.
     eapply iverson_in; intros; unbool.
     rewrite get_genr_some.
     rw Zplus_minus.
-    reflexivity. omega. omega. auto with crunch.
+    reflexivity. lia. lia. auto with crunch.
     split; consistent_shape; eauto.
     apply guard_split.
   - unfold genr.
@@ -955,23 +973,23 @@ Proof.
     unfold get at 2.
     rewrite guard_null.
     rewrite bin_null_id_r.
-    replace ((i<?I)%Z) with true by (symmetry; unbool; omega).
+    replace ((i<?I)%Z) with true by (symmetry; unbool; lia).
     rewrite true_iverson.
     rw get_gen_some.
     reflexivity.
-    zify. omega.
+    zify. lia.
     simpl.
     unfold get at 2.
     rewrite guard_null.
     rewrite bin_null_id_r.
-    replace ((i<?I)%Z) with true by (symmetry; unbool; omega).
+    replace ((i<?I)%Z) with true by (symmetry; unbool; lia).
     rewrite true_iverson.
     rw get_gen_some.
     reflexivity.
-  - assert (I = 0)%Z by omega.
+  - assert (I = 0)%Z by lia.
     rewrite H5.
-    replace (i <? 0)%Z with false by (symmetry; unbool; omega).
-    replace (0 <=? i)%Z with true by (symmetry; unbool; omega).
+    replace (i <? 0)%Z with false by (symmetry; unbool; lia).
+    replace (0 <=? i)%Z with true by (symmetry; unbool; lia).
     rewrite true_iverson.
     rewrite Z.sub_0_r.
     unfold gen.
@@ -980,10 +998,9 @@ Proof.
     unfold get at 1.
     rewrite guard_null.
     rewrite bin_null_id_l.
-    rewrite get_genr_some; try omega.
+    rewrite get_genr_some; try lia.
     rewrite Z.add_0_l. reflexivity.
-    rewrite Z.sub_0_r. auto with crunch.
-  - omega.
+  - lia.
 Qed.
 
 Lemma gen_helper_offset {X} `{TensorElem X} :
@@ -997,7 +1014,7 @@ Proof.
     f_equal.
     rewrite <- (IHN _ K).
     apply gen_helper_eq_bound; intros.
-    f_equal. omega.
+    f_equal. lia.
 Qed.
 
 Theorem split_genr {X} `{TensorElem X} :
@@ -1010,14 +1027,14 @@ Theorem split_genr {X} `{TensorElem X} :
 Proof.
   intros.
   symmetry.
-  unfold fuse.
+  unfold concat.
   rewrite genr_length.
   rewrite genr_length.
-  rewrite Z2Nat.id by omega.
+  rewrite Z2Nat.id by lia.
   rewrite Nat2Z.inj_add.
-  rewrite Z2Nat.id by omega.
-  rewrite Z2Nat.id by omega.
-  replace (I - K + (N-I))%Z with (N - K)%Z by omega.
+  rewrite Z2Nat.id by lia.
+  rewrite Z2Nat.id by lia.
+  replace (I - K + (N-I))%Z with (N - K)%Z by lia.
   etransitivity.
   apply gen_eq_bound; intros.
   destruct (K<?I)%Z eqn:e; 
@@ -1032,13 +1049,13 @@ Proof.
     apply bin_eq_r.
     eapply iverson_in; intros; unbool.
     rewrite get_genr_some.
-    replace (I + (i-(I-K)))%Z with (K+i)%Z by omega.
-    reflexivity. omega. omega.
+    replace (I + (i-(I-K)))%Z with (K+i)%Z by lia.
+    reflexivity. lia. lia.
     auto with crunch.
     split; consistent_shape; eauto.
     apply guard_split.
   - lazy beta.
-    assert (I=N)%Z by omega. rewrite H5.
+    assert (I=N)%Z by lia. rewrite H5.
     unfold genr at 2.
     rewrite Z.sub_diag.
     simpl. unfold get at 2.
@@ -1048,7 +1065,7 @@ Proof.
     simpl_guard.
     reflexivity.
   - lazy beta.
-    assert (K=I)%Z by omega. rewrite H5.
+    assert (K=I)%Z by lia. rewrite H5.
     unfold genr at 1.
     rewrite Z.sub_diag.
     simpl. unfold get at 1.
@@ -1058,7 +1075,7 @@ Proof.
     simpl_guard.
     rw @get_genr_some.
     reflexivity.
-  - omega.
+  - lia.
   - lazy beta.
     unfold gen,genr.
     rewrite Z.sub_0_r.
@@ -1075,7 +1092,7 @@ Theorem split_gen_plus {X} `{TensorElem X} :
 Proof.
   intros.
   eapply split_gen.
-  omega. omega. eauto.
+  lia. lia. eauto.
 Qed.
 
 Lemma distrib_gen_concat {X} `{TensorElem X} :
@@ -1091,7 +1108,7 @@ Lemma distrib_gen_concat {X} `{TensorElem X} :
           <++> (transpose (GEN [ m <= i < n ] g i)).
 Proof.
   intros.
-  unfold fuse.
+  unfold concat.
   etransitivity.
   apply transpose_eq.
   apply genr_eq_bound; intros.
@@ -1109,7 +1126,7 @@ Proof.
   symmetry.
   rw^ @consistent_length.
   rw^ @consistent_length.
-  rewrite Z2Nat.id by omega.
+  rewrite Z2Nat.id by lia.
   rw @get_genr_some.
   rw @get_gen_some.
   symmetry.
@@ -1128,5 +1145,8 @@ Proof.
   rw @get_genr_some.
   reflexivity.
   split; consistent_shape; eauto with crunch.
-  
-Admitted.
+  rw @gp_gen_iverson.
+  rw @gp_gen_iverson.
+  rewrite bin_gen.
+  reflexivity.
+Qed.

@@ -1,7 +1,8 @@
 From Coq Require Import Arith.Arith.
 From Coq Require Import Arith.EqNat.
 From Coq Require Import Arith.PeanoNat. Import Nat.
-From Coq Require Import omega.Omega.
+From Coq Require Import micromega.Lia.
+From Coq Require Import micromega.Zify.
 From Coq Require Import Lists.List.
 From Coq Require Import Bool.Bool.
 From Coq Require Import Reals.Reals. Import Rdefinitions. Import RIneq.
@@ -12,7 +13,7 @@ From Coq Require Import Setoids.Setoid.
 From Coq Require Import Logic.FunctionalExtensionality.
 From Coq Require Import Classes.Morphisms.
 
-Set Warnings "-omega-is-deprecated,-deprecated".
+Set Warnings "-deprecate-hint-without-locality,-deprecated".
 
 Import ListNotations.
 
@@ -47,7 +48,7 @@ Ltac consistent_shape :=
     | |- consistent (flatten_trunc _ _) _ =>
       eapply @consistent_flatten_trunc
     | |- consistent (_ <++> _) _ =>
-      eapply @consistent_fuse             
+      eapply @consistent_concat             
     | |- consistent (let_binding _ _) _ =>
       apply @consistent_let
     | |- consistent (|[ _ ]| _) _ =>
@@ -78,13 +79,13 @@ Ltac ttt e :=
     match e with
     | context[ (GEN [ _ < ?V ] _) _[?I] ] =>
       first [
-          (assert (0 <= I)%Z as t by (auto + omega); clear t)
+          (assert (0 <= I)%Z as t by (auto + lia); clear t)
         |
         (destruct (0 <=? I)%Z eqn:t;
          [ apply Zle_bool_imp_le in t | apply Z.leb_gt in t])
         ];
       first [
-          (assert (I < V)%Z as t' by (auto + omega); clear t')
+          (assert (I < V)%Z as t' by (auto + lia); clear t')
         |
         (destruct (I <? V)%Z eqn:t';
          [ apply Z.ltb_lt in t' | apply Z.ltb_ge in t'])
@@ -92,20 +93,20 @@ Ltac ttt e :=
         ]
     | context[ ?V _[?I] ] =>
       first [
-          (assert (0 <= I)%Z as t by (auto + omega); clear t)
+          (assert (0 <= I)%Z as t by (auto + lia); clear t)
         |
         (destruct (0 <=? I)%Z eqn:t;
          [ apply Zle_bool_imp_le in t | apply Z.leb_gt in t])
         ];
       first [
-          (assert (I < Z.of_nat (length V))%Z as t' by (auto + omega); clear t')
+          (assert (I < Z.of_nat (length V))%Z as t' by (auto + lia); clear t')
         |
         (destruct (I <? Z.of_nat (length V))%Z eqn:t';
          [ apply Z.ltb_lt in t' | apply Z.ltb_ge in t'])
         ]            
     end.
 
-Hint Extern 0 (0 < length (_ :: _)) => simpl; omega : crunch.
+Hint Extern 0 (0 < length (_ :: _)) => simpl; lia : crunch.
 Hint Rewrite iverson_bin_distr @collapse_iverson : reds.
 Hint Rewrite andb_false_r andb_false_l : reds.      
 
@@ -182,8 +183,8 @@ Ltac reduce_all_get' :=
     | |- ?G =>
       first
         [ ttt G;
-          [ red_get; autorewrite with reds crunch; first [ reflexivity | omega ]
-          | red_get; autorewrite with reds crunch; first [ reflexivity | omega ]]
+          [ red_get; autorewrite with reds crunch; first [ reflexivity | lia ]
+          | red_get; autorewrite with reds crunch; first [ reflexivity | lia ]]
         | red_get; autorewrite with reds crunch; subst; reflexivity ]
     end.
 
@@ -264,49 +265,90 @@ Ltac wrap_id rule V K' :=
   | unit => erewrite <- (rule _ _ V')
   | _ => erewrite <- (rule _ _ V' K)
   end;
-  autorewrite with crunch; propnorm; consistent_shape; (solve
+  autorewrite with crunch; propnorm; consistent_shape; try reflexivity;
+  (solve
    [ try drop_evar; try reflexivity
    | consistent_shape; subst; eauto with crunch typeclass_instances
-   | eauto
-   with crunch typeclass_instances
+   | eauto with crunch typeclass_instances
    | autorewrite with crunch; eauto with crunch typeclass_instances ]).
 
-Ltac use_rewrite rule pat n' i' :=
+Ltac use_rewrite rule pat n' i' v' :=
   try lift_evar;
   let n := open_constr:(n') in
   let i := open_constr:(i') in
-  lazymatch type of n with
+  let v := open_constr:(v') in
+  lazymatch type of v with
   | unit =>
-    lazymatch type of i with
+    lazymatch type of n with
     | unit =>
-      let opat := open_constr:(pat) in
-      lazymatch type of opat with
-      | unit => erewrite rule; hook string:("b erw")
-      | _ => erewrite rule with (body:=opat); hook string:("erw body")
+      lazymatch type of i with
+      | unit =>
+        let opat := open_constr:(pat) in
+        lazymatch type of opat with
+        | unit => erewrite rule; hook string:("b erw")
+        | _ => erewrite rule with (body:=opat); hook string:("erw body")
+        end
+      | _ =>
+        let opat := open_constr:(pat) in
+        lazymatch type of opat with
+        | unit => erewrite rule with (I:=i); hook string:("b erw")
+        | _ => erewrite rule with (body:=opat) (I:=i); hook string:("erw body")
+        end
       end
     | _ =>
-      let opat := open_constr:(pat) in
-      lazymatch type of opat with
-      | unit => erewrite rule with (I:=i); hook string:("b erw")
-      | _ => erewrite rule with (body:=opat) (I:=i); hook string:("erw body")   end
+      lazymatch type of i with
+      | unit =>
+        let opat := open_constr:(pat) in
+        lazymatch type of opat with
+        | unit => erewrite rule with (N:=n); hook string:("b erw")
+        | _ => erewrite rule with (body:=opat) (N:=n); hook string:("erw body")
+        end
+      | _ =>
+        let opat := open_constr:(pat) in
+        lazymatch type of opat with
+        | unit => erewrite rule with (N:=n) (I:=i); hook string:("b erw")
+        | _ => erewrite rule with (body:=opat) (N:=n) (I:=i);
+               hook string:("erw body")
+        end
+      end    
     end
   | _ =>
-     lazymatch type of i with
+    lazymatch type of n with
     | unit =>
-      let opat := open_constr:(pat) in
-      lazymatch type of opat with
-      | unit => erewrite rule with (N:=n); hook string:("b erw")
-      | _ => erewrite rule with (body:=opat) (N:=n); hook string:("erw body")
+      lazymatch type of i with
+      | unit =>
+        let opat := open_constr:(pat) in
+        lazymatch type of opat with
+        | unit => erewrite rule with (V:=v); hook string:("b erw")
+        | _ => erewrite rule with (V:=v) (body:=opat); hook string:("erw body")
+        end
+      | _ =>
+        let opat := open_constr:(pat) in
+        lazymatch type of opat with
+        | unit => erewrite rule with (I:=i); hook string:("b erw")
+        | _ => erewrite rule with (body:=opat) (V:=v) (I:=i);
+               hook string:("erw body")   end
       end
     | _ =>
-      let opat := open_constr:(pat) in
-      lazymatch type of opat with
-      | unit => erewrite rule with (N:=n) (I:=i); hook string:("b erw")
-      | _ => erewrite rule with (body:=opat) (N:=n) (I:=i);
-             hook string:("erw body")
-      end
-    end    
-  end;
+      lazymatch type of i with
+      | unit =>
+        let opat := open_constr:(pat) in
+        lazymatch type of opat with
+        | unit => erewrite rule with (N:=n); hook string:("b erw")
+        | _ => erewrite rule with (V:=v) (body:=opat) (N:=n);
+               hook string:("erw body")
+        end
+      | _ =>
+        let opat := open_constr:(pat) in
+        lazymatch type of opat with
+        | unit => erewrite rule with (V:=v) (N:=n) (I:=i);
+                  hook string:("b erw")
+        | _ => erewrite rule with (body:=opat) (N:=n) (I:=i) (V:=v);
+               hook string:("erw body")
+        end
+      end    
+    end
+  end;    
   autorewrite with crunch; propnorm; consistent_shape;
   solve [ try drop_evar; try reflexivity
         | consistent_shape; subst; eauto with crunch typeclass_instances
@@ -355,16 +397,16 @@ Ltac use_rewrite_rev rule pat n' i' :=
         | eauto with crunch typeclass_instances
         | autorewrite with crunch; eauto with crunch typeclass_instances].
 
-Ltac dispatch action rule pat N I :=
+Ltac dispatch action rule pat N I V :=
   lazymatch action with
-  | RW => use_rewrite rule pat N I
+  | RW => use_rewrite rule pat N I V
   | RWREV => use_rewrite_rev rule pat N I
   | LET => bind pat
   | WRAPID => wrap_id rule pat N
   end.
 
-Ltac dive_topdown action rule pat N I :=
-  dispatch action rule pat N I +
+Ltac dive_topdown action rule pat N I V :=
+  dispatch action rule pat N I V +
   lazymatch goal with
   | |- let_binding ?x ?f = _ =>
     first [
@@ -373,83 +415,97 @@ Ltac dive_topdown action rule pat N I :=
     let Hx := fresh "Hx" in
     (evar (ex : tx);
     assert (x = ex) as Hx by
-          (dive_topdown action rule pat N I;
+          (dive_topdown action rule pat N I V;
            try reflexivity;
            solve [ lazy beta; eta_red; autorewrite with crunch; protect ]);
     subst ex;
     rewrite Hx) |
     eapply let_extensionality;
-    [ subst; consistent_shape | intros; dive_topdown action rule pat N I ]]
+    [ subst; consistent_shape | intros; dive_topdown action rule pat N I V ]]
   | |- flatten _ = _ =>
     apply flatten_eq;
-    dive_topdown action rule pat N I
+    dive_topdown action rule pat N I V
   | |- transpose _ = _ =>
     apply transpose_eq;
-    dive_topdown action rule pat N I
+    dive_topdown action rule pat N I V
   | |- tile _ _ = _ =>
     apply tile_eq;
-    dive_topdown action rule pat N I
+    dive_topdown action rule pat N I V
   | |- flatten_trunc _ _ = _ =>
     apply flatten_trunc_eq;
-    [ dive_topdown action rule pat N I | ]
+    [ dive_topdown action rule pat N I V | ]
   | |- gen _ _ = _ =>
     hook string:("gen");
     let i := fresh "i" in
     apply gen_eq_bound; intros i ? ?;
-    dive_topdown action rule pat N I
+    dive_topdown action rule pat N I V
+  | |- genr _ _ _ = _ =>
+    hook string:("genr");
+    let i := fresh "i" in
+    apply genr_eq_bound; intros;
+    dive_topdown action rule pat N I V
   | |- sum _ _ = _ =>
     hook string:("sum");
     let i := fresh "i" in    
     apply sum_eq_bound; intros i ? ?;
-    dive_topdown action rule pat N I
+    dive_topdown action rule pat N I V
   | |- get _ _ = _ =>
     hook string:("get");
     apply get_eq_index;
-    dive_topdown action rule pat N I
+    dive_topdown action rule pat N I V
   | |- (_ * _)%R = _ =>
     hook string:("mul");
     first
     [
     (hook string:("left of mul");
      apply Rmult_eq_compat_r;
-     dive_topdown action rule pat N I)
+     dive_topdown action rule pat N I V)
     |
     (hook string:("right of mul");
      apply Rmult_eq_compat_l;
-     dive_topdown action rule pat N I) ]
+     dive_topdown action rule pat N I V) ]
   | |- (_ <+> _) = _ =>
     hook string:("bin");
     first
     [
     (hook string:("left of bin");
      apply bin_eq_l;
-     dive_topdown action rule pat N I)
+     dive_topdown action rule pat N I V)
     |
     (hook string:("right of bin");
      apply bin_eq_r;
-     dive_topdown action rule pat N I) ]
+     dive_topdown action rule pat N I V) ]
+  | |- (_ <++> _) = _ =>
+    hook string:("concat");
+    first
+    [
+    (apply concat_eq_l;
+     dive_topdown action rule pat N I V)
+    |
+    (apply concat_eq_r;
+     dive_topdown action rule pat N I V) ]   
   | |- (|[ _ ]| _) = _ =>
     first
       [
     (hook string:("guard in");
      eapply iverson_in; propnorm; unbool_hyp;
      autorewrite with crunch;
-     [ dive_topdown action rule pat N I |
+     [ dive_topdown action rule pat N I V |
        subst; consistent_shape | subst; consistent_shape ]) ]
   end.
 
-Ltac dive action rule pat N I :=
+Ltac dive action rule pat N I V :=
   lazymatch goal with
   | |- let_binding ?x ?f = _ =>
     first [
         eapply let_extensionality;
-    [ subst; consistent_shape | intros; dive action rule pat N I ] |        
+    [ subst; consistent_shape | intros; dive action rule pat N I V ] |        
     let tx := type of x in
     let ex := fresh "ex" in
     let Hx := fresh "Hx" in
     (evar (ex : tx);
     assert (x = ex) as Hx by
-          (dive action rule pat N I;
+          (dive action rule pat N I V;
            try reflexivity;
            solve [ lazy beta; eta_red; autorewrite with crunch; protect ]);
     subst ex;
@@ -457,74 +513,74 @@ Ltac dive action rule pat N I :=
     ]
   | |- flatten _ = _ =>
     apply flatten_eq;
-    dive action rule pat N I
+    dive action rule pat N I V
   | |- transpose _ = _ =>
     apply transpose_eq;
-    dive action rule pat N I
+    dive action rule pat N I V
   | |- tile _ _ = _ =>
     apply tile_eq;
-    dive action rule pat N I
+    dive action rule pat N I V
   | |- flatten_trunc _ _ = _ =>
     apply flatten_trunc_eq;
-    [ dive action rule pat N I | ]
+    [ dive action rule pat N I V | ]
   | |- gen _ _ = _ =>
     hook string:("gen");
     let i := fresh "i" in
     apply gen_eq_bound; intros i ? ?;
-    dive action rule pat N I
+    dive action rule pat N I V
   | |- genr _ _ _ = _ =>
     hook string:("genr");
     apply genr_eq_bound; intros;
-    dive action rule pat N I                               
+    dive action rule pat N I V
   | |- sum _ _ = _ =>
     hook string:("sum");
     let i := fresh "i" in    
     apply sum_eq_bound; intros i ? ?;
-    dive action rule pat N I
+    dive action rule pat N I V
   | |- get _ _ = _ =>
     hook string:("get");
     apply get_eq_index;
-    dive action rule pat N I
+    dive action rule pat N I V
   | |- (_ * _)%R = _ =>
     hook string:("mul");
     first
     [
     (hook string:("left of mul");
      apply Rmult_eq_compat_r;
-     dive action rule pat N I)
+     dive action rule pat N I V)
     |
     (hook string:("right of mul");
      apply Rmult_eq_compat_l;
-     dive action rule pat N I) ]
+     dive action rule pat N I V) ]
   | |- (_ <+> _) = _ =>
     hook string:("bin");
     first
     [
     (hook string:("left of bin");
      apply bin_eq_l;
-     dive action rule pat N I)
+     dive action rule pat N I V)
     |
     (hook string:("right of bin");
      apply bin_eq_r;
-     dive action rule pat N I) ]
+     dive action rule pat N I V) ]
   | |- (_ <++> _) = _ =>
-    hook string:("fuse");
+    hook string:("concat");
     first
     [
-    (apply fuse_eq_l;
-     dive action rule pat N I)
+    (apply concat_eq_l;
+     dive action rule pat N I V)
     |
-    (apply fuse_eq_r;
-     dive action rule pat N I) ]    
+    (apply concat_eq_r;
+     dive action rule pat N I V) ]    
   | |- (|[ _ ]| _) = _ =>
     first
       [
     (hook string:("guard in");
      eapply iverson_in; propnorm; unbool_hyp;
      autorewrite with crunch;
-     [ dive action rule pat N I | subst; consistent_shape | subst; consistent_shape ]) ]
+     [ dive action rule pat N I V | subst; consistent_shape | subst; consistent_shape ]) ]
   end +
-  dispatch action rule pat N I.
+  dispatch action rule pat N I V.
 
 Ltac solve_for_index_rec i' :=
   match goal with
@@ -555,14 +611,15 @@ Ltac reduce_guard p :=
   hook p;(
   (let H := fresh "H" in
   assert (H : p = true) by
-        (unbool; try split;
-         try rewrite Nat2Z.inj_mul; try apply mul_add_lt; try omega; protect);
+       (unbool; try split;
+        try rewrite Z.add_simpl_r;
+         try rewrite Nat2Z.inj_mul; try apply mul_add_lt; try lia; protect);
          rewrite H; clear H; simpl andb)
       +
           (match p with (?p1 && ?p2) =>
                         try reduce_guard p1; try reduce_guard p2;
                         first [ rewrite (bool_imp_elim p1 p2) by
-                                  (intros; unbool; omega) |
+                                  (intros; unbool; lia) |
                 try rewrite andb_true_l; try rewrite andb_true_r ] end)).
 
 
@@ -575,13 +632,14 @@ Ltac simpl_guard_rec :=
     try (evar (ex : tx);
     assert (x = ex) as Hx by
           (simpl_guard_rec;
+           subst ex;
            try reflexivity;
            solve [ lazy beta; eta_red; autorewrite with crunch; protect ]);
     subst ex;
     rewrite Hx);
-    eapply let_extensionality;
+    try (eapply let_extensionality;
     [ consistent_shape |
-      intros; simpl_guard_rec ]    
+      intros; simpl_guard_rec ])
   | [ |- flatten_trunc _ _ = _ ] =>
     eapply flatten_trunc_eq; [simpl_guard_rec | ]
   | [ |- tile _ _ = _ ] =>
@@ -606,8 +664,8 @@ Ltac simpl_guard_rec :=
          repeat rewrite andb_true_r;
          repeat rewrite andb_true_l;
          drop_evar);
-    first [ (eapply iverson_in;
-    [ intros; unbool_hyp; simpl_guard_rec |
+    first [ (eapply iverson_in; 
+    [ intros; unbool_hyp; simpl_guard_rec; try reflexivity |
       intros; unbool_hyp; split; consistent_shape ]) | simpl_guard_rec ]
   | [ |- (?a <++> ?b) = _ ] =>
     let t := type of a in
@@ -617,9 +675,9 @@ Ltac simpl_guard_rec :=
     let Hb := fresh "Hb" in
     evar (ae : t);
     evar (be : t);
-    assert (a = ?ae) as Ha by (simpl_guard_rec; reflexivity);
+    assert (a = ?ae) as Ha by (simpl_guard_rec; protect; reflexivity);
     try rewrite Ha;
-    assert (b = ?be) as Hb by (simpl_guard_rec; reflexivity);
+    assert (b = ?be) as Hb by (simpl_guard_rec; protect; reflexivity);
     try rewrite Hb
   | [ |- (?a <+> ?b) = _ ] =>
     let t := type of a in
@@ -637,164 +695,226 @@ Ltac simpl_guard_rec :=
   end.
 
 Ltac simpl_guard := etransitivity;
-                    [ simpl_guard_rec; eauto with crunch |];
+                    [ simpl_guard_rec; try reflexivity; eauto with crunch |];
                     lazy beta.
 
-Ltac rewrite_action action rule pat N I :=
+Ltac rewrite_action action rule pat N I V :=
   etransitivity;
   [ hook string:("etra");
     first
-      [ dive action rule pat N I;
+      [ dive action rule pat N I V;
         hook string:("return from rw") |
         hook string:("in failed");
-        try dispatch action rule pat N I;
+        try dispatch action rule pat N I V;
         hook string:("tried top")];
     try reflexivity;
     solve [
     lazy beta; eta_red; autorewrite with crunch; protect ] | ]; lazy beta.
 
-Ltac rewrite_action_topdown action rule pat N I :=
+Ltac rewrite_action_topdown action rule pat N I V :=
   etransitivity;
   [ hook string:("etra");
     first
-      [ dive_topdown action rule pat N I;
+      [ dive_topdown action rule pat N I V;
         hook string:("return from rw") |
         hook string:("in failed");
-        try dispatch action rule pat N I;
+        try dispatch action rule pat N I V;
         hook string:("tried top")];
     try reflexivity;
     solve [
     lazy beta; eta_red; autorewrite with crunch; protect ] | ]; lazy beta.
 
 Tactic Notation "lbind" uconstr(pat) :=
-  rewrite_action LET tt pat tt tt.
+  rewrite_action LET tt pat tt tt tt.
 
 Tactic Notation "rw^" open_constr(rule) :=
-  rewrite_action_topdown RW rule tt tt tt.
+  rewrite_action_topdown RW rule tt tt tt tt.
 
 Tactic Notation "rw^" open_constr(rule) "for" uconstr(body) :=
-  rewrite_action_topdown RW rule body tt tt.
+  rewrite_action_topdown RW rule body tt tt tt.
 
 Tactic Notation "rw^" open_constr(rule) "at" uconstr(I) :=
-  rewrite_action_topdown RW rule tt tt I.
+  rewrite_action_topdown RW rule tt tt I tt.
 
 Tactic Notation "rw^" open_constr(rule) "up to" uconstr(N) :=
-  rewrite_action_topdown RW rule tt N tt.
+  rewrite_action_topdown RW rule tt N tt tt.
 
 Tactic Notation "rw^" open_constr(rule)
        "for" uconstr(body) "up to" uconstr(N) :=
-  rewrite_action_topdown RW rule body N tt.
+  rewrite_action_topdown RW rule body N tt tt.
 
 Tactic Notation "rw^" open_constr(rule)
        "for" uconstr(body) "at" uconstr(I) :=
-  rewrite_action_topdown RW rule body tt I.
+  rewrite_action_topdown RW rule body tt I tt.
 
 Tactic Notation "rw^" open_constr(rule)
        "up to" constr(N) "at" constr(I) :=
-  rewrite_action_topdown RW rule tt N I.
+  rewrite_action_topdown RW rule tt N I tt.
 
 Tactic Notation "rw^" open_constr(rule)
        "for" uconstr(body) "up to" uconstr(N) "at" uconstr(I) :=
-  rewrite_action_topdown RW rule body N I.
+  rewrite_action_topdown RW rule body N I tt.
 
 Tactic Notation "rw^<-" open_constr(rule) :=
-  rewrite_action_topdown RWREV rule tt tt tt.
+  rewrite_action_topdown RWREV rule tt tt tt tt.
 
 Tactic Notation "rw^<-" open_constr(rule) "for" uconstr(body) :=
-  rewrite_action_topdown RWREV rule body tt tt.
+  rewrite_action_topdown RWREV rule body tt tt tt.
 
 Tactic Notation "rw^<-" open_constr(rule) "at" uconstr(I) :=
-  rewrite_action_topdown RWREV rule tt tt I.
+  rewrite_action_topdown RWREV rule tt tt I tt.
 
 Tactic Notation "rw^<-" open_constr(rule) "up to" uconstr(N) :=
-  rewrite_action_topdown RWREV rule tt N tt.
+  rewrite_action_topdown RWREV rule tt N tt tt.
 
 Tactic Notation "rw^<-" open_constr(rule)
        "for" uconstr(body) "up to" uconstr(N) :=
-  rewrite_action_topdown RWREV rule body N tt.
+  rewrite_action_topdown RWREV rule body N tt tt.
 
 Tactic Notation "rw^<-" open_constr(rule)
        "for" uconstr(body) "at" uconstr(I) :=
-  rewrite_action_topdown RWREV rule body tt I.
+  rewrite_action_topdown RWREV rule body tt I tt.
 
 Tactic Notation "rw^<-" open_constr(rule)
        "up to" constr(N) "at" uconstr(I) :=
-  rewrite_action_topdown RWREV rule tt N I.
+  rewrite_action_topdown RWREV rule tt N I tt.
 
 Tactic Notation "rw^<-" open_constr(rule)
        "for" uconstr(body) "up to" uconstr(N) "at" uconstr(I) :=
-  rewrite_action_topdown RWREV rule body N I.
+  rewrite_action_topdown RWREV rule body N I tt.
 
 Tactic Notation "rw" open_constr(rule) :=
-  rewrite_action RW rule tt tt tt.
+  rewrite_action RW rule tt tt tt tt.
 
 Tactic Notation "rw" open_constr(rule) "for" uconstr(body) :=
-  rewrite_action RW rule body tt tt.
+  rewrite_action RW rule body tt tt tt.
 
 Tactic Notation "rw" open_constr(rule) "at" uconstr(I) :=
-  rewrite_action RW rule tt tt I.
+  rewrite_action RW rule tt tt I tt.
 
 Tactic Notation "rw" open_constr(rule) "up to" uconstr(N) :=
-  rewrite_action RW rule tt N tt.
+  rewrite_action RW rule tt N tt tt.
 
 Tactic Notation "rw" open_constr(rule)
        "for" uconstr(body) "up to" uconstr(N) :=
-  rewrite_action RW rule body N tt.
+  rewrite_action RW rule body N tt tt.
 
 Tactic Notation "rw" open_constr(rule)
        "for" uconstr(body) "at" uconstr(I) :=
-  rewrite_action RW rule body tt I.
+  rewrite_action RW rule body tt I tt.
 
 Tactic Notation "rw" open_constr(rule)
        "up to" uconstr(N) "at" uconstr(I) :=
-  rewrite_action RW rule tt N I.
+  rewrite_action RW rule tt N I tt.
 
 Tactic Notation "rw" open_constr(rule)
        "for" uconstr(body) "up to" uconstr(N) "at" uconstr(I) :=
-  rewrite_action RW rule body N I.
+  rewrite_action RW rule body N I tt.
 
 Tactic Notation "rw<-" open_constr(rule) :=
-  rewrite_action RWREV rule tt tt tt.
+  rewrite_action RWREV rule tt tt tt tt.
 
 Tactic Notation "rw<-" open_constr(rule) "for" uconstr(body) :=
-  rewrite_action RWREV rule body tt tt.
+  rewrite_action RWREV rule body tt tt tt.
 
 Tactic Notation "rw<-" open_constr(rule) "at" uconstr(I) :=
-  rewrite_action RWREV rule tt tt I.
+  rewrite_action RWREV rule tt tt I tt.
 
 Tactic Notation "rw<-" open_constr(rule) "up to" uconstr(N) :=
-  rewrite_action RWREV rule tt N tt.
+  rewrite_action RWREV rule tt N tt tt.
 
 Tactic Notation "rw<-" open_constr(rule)
        "for" uconstr(body) "upto" uconstr(N) :=
-  rewrite_action RWREV rule body N tt.
+  rewrite_action RWREV rule body N tt tt.
 
 Tactic Notation "rw<-" open_constr(rule)
        "for" uconstr(body) "at" uconstr(I) :=
-  rewrite_action RWREV rule body tt I.
+  rewrite_action RWREV rule body tt I tt.
 
 Tactic Notation "rw<-" open_constr(rule)
        "up to" uconstr(N) "at" uconstr(I) :=
-  rewrite_action RWREV rule tt N I.
+  rewrite_action RWREV rule tt N I tt.
 
 Tactic Notation "rw<-" open_constr(rule)
        "for" uconstr(body) "up to" uconstr(N) "at" uconstr(I) :=
-  rewrite_action RWREV rule body N I.
+  rewrite_action RWREV rule body N I tt.
 
 Tactic Notation "wrapid^" open_constr(rule) "around" uconstr(body) :=
-  rewrite_action_topdown WRAPID rule body constr:(tt) constr:(tt).
+  rewrite_action_topdown WRAPID rule body constr:(tt) constr:(tt) tt.
 
 Tactic Notation "wrapid^" open_constr(rule) "around" uconstr(body) "with"
   constr(K) :=
-  rewrite_action_topdown WRAPID rule body K constr:(tt).
+  rewrite_action_topdown WRAPID rule body K constr:(tt) tt.
 
 Tactic Notation "wrapid" open_constr(rule) "around" uconstr(body) :=
-  rewrite_action WRAPID rule body constr:(tt) constr:(tt).
+  rewrite_action WRAPID rule body constr:(tt) constr:(tt) tt.
 
 Tactic Notation "wrapid" open_constr(rule) "around" uconstr(body) "with"
   constr(K) :=
-  rewrite_action WRAPID rule body K constr:(tt).
+  rewrite_action WRAPID rule body K constr:(tt) tt.
 
-  Tactic Notation "inline" reference(rule) := unfold rule;
-                                              rw^ @consistent_length;
-                                              rw^ Z2Nat.id.
+Tactic Notation "inline" reference(rule) := unfold rule;
+                                            rw^ @consistent_length;
+                                            rw^ Z2Nat.id.
+
+Tactic Notation "rw" open_constr(rule) "around" uconstr(V) :=
+  rewrite_action RW rule tt tt tt V.
+
+Tactic Notation "rw" open_constr(rule) "for" uconstr(body) "around" uconstr(V)
+  :=
+  rewrite_action RW rule body tt tt V.
+
+Tactic Notation "rw" open_constr(rule) "at" uconstr(I) "around" uconstr(V)
+  :=
+  rewrite_action RW rule tt tt I V.
+
+Tactic Notation "rw" open_constr(rule) "up to" uconstr(N) "around" uconstr(V)
+  :=
+  rewrite_action RW rule tt N tt V.
+
+Tactic Notation "rw" open_constr(rule)
+       "for" uconstr(body) "up to" uconstr(N) "around" uconstr(V) :=
+  rewrite_action RW rule body N tt V.
+
+Tactic Notation "rw" open_constr(rule)
+       "for" uconstr(body) "at" uconstr(I) "around" uconstr(V) :=
+  rewrite_action RW rule body tt I V.
+
+Tactic Notation "rw" open_constr(rule)
+       "up to" uconstr(N) "at" uconstr(I) "around" uconstr(V) :=
+  rewrite_action RW rule tt N I V.
+
+Tactic Notation "rw" open_constr(rule)
+       "for" uconstr(body) "up to" uconstr(N) "at" uconstr(I) "around" uconstr(V)
+  :=
+  rewrite_action RW rule body N I V.
+
+Tactic Notation "rw<-" open_constr(rule) "around" uconstr(V) :=
+  rewrite_action RWREV rule tt tt tt V.
+
+Tactic Notation "rw<-" open_constr(rule) "for" uconstr(body) "around" uconstr(V)
+  :=
+  rewrite_action RWREV rule body tt tt V.
+
+Tactic Notation "rw<-" open_constr(rule) "at" uconstr(I) "around" uconstr(V) :=
+  rewrite_action RWREV rule tt tt I V.
+
+Tactic Notation "rw<-" open_constr(rule) "up to" uconstr(N) "around" uconstr(V)
+  :=
+  rewrite_action RWREV rule tt N tt V.
+
+Tactic Notation "rw<-" open_constr(rule)
+       "for" uconstr(body) "upto" uconstr(N) "around" uconstr(V) :=
+  rewrite_action RWREV rule body N tt V.
+
+Tactic Notation "rw<-" open_constr(rule)
+       "for" uconstr(body) "at" uconstr(I) "around" uconstr(V) :=
+  rewrite_action RWREV rule body tt I V.
+
+Tactic Notation "rw<-" open_constr(rule)
+       "up to" uconstr(N) "at" uconstr(I) "around" uconstr(V) :=
+  rewrite_action RWREV rule tt N I V.
+
+Tactic Notation "rw<-" open_constr(rule)
+       "for" uconstr(body) "up to" uconstr(N) "at" uconstr(I) "around" uconstr(V) :=
+  rewrite_action RWREV rule body N I V.

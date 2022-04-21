@@ -8,6 +8,9 @@ From Coq Require Import ZArith.Int.
 From Coq Require Import ZArith.Znat.
 From Coq Require Import Strings.String.
 From Coq Require Import Logic.FunctionalExtensionality.
+From Coq Require Import Lists.List.
+
+Import ListNotations.
 
 Require Import Ltac2.Ltac2.
 Require Import Ltac2.Option.
@@ -20,7 +23,7 @@ Open Scope string_scope.
 
 Set Default Proof Mode "Classic".
 
-Definition SENTINEL := "!!!\n".
+Definition SENTINEL := "!!!".
 
 Ltac Ltime name default_dim reps :=
   let _ := match goal with _ => intros; try autounfold with examples end in
@@ -48,29 +51,36 @@ Ltac Ltime name default_dim reps :=
   let i := match goal with H : Z |- _ => constr:(ltac:(to_str H)) end in
   
   let main :=
-      constr:(funcname++"_time.c\n"++
-              HEADERS++
-              "#include @"++funcname++".h@\n\n"++
-              "int main() {\n"++
-              "srandom(time(NULL));\n"++
-              allocs++
-              callocs++
-              scalar++" *output = ("++scalar++"*) calloc(1,"++size++");\n"++
-              "float accum = 0;\n"++
-              "for (int "++i++" = 0; "++i++" < "++reps++"; "++i++"++) {\n"++
-              "clock_t start = clock();\n"++
-              funcname++"("++call_vals++",output);\n"++
-              "clock_t end = clock();\n"++                       
-              "double t = ((double) (end - start)/CLOCKS_PER_SEC);\n"++
-              "accum += t;\n"++
-              "}\n"++
-              "free(output);\n"++              
-              "float avg = accum / "++reps++";\n"++
-              "printf(@"++funcname++"\t"++default_dim++"\t"++"%lfs~@,avg);\n"++
-              frees++
-              "return 0;\n"++
-              "}") in
-  let ret' := constr:(SENTINEL++main) in
+      constr:(
+              (app ((funcname++"_time.c")::
+              HEADERS) 
+
+              (app (("#include @"++funcname++".h@")::
+              ""::
+              "int main() {"::
+              "srandom(time(NULL));"::
+              allocs)
+              
+              (app callocs
+
+              (app
+              ((scalar++" *output = ("++scalar++"*) calloc(1,"++size++");")::
+              "float accum = 0;"::
+              ("for (int "++i++" = 0; "++i++" < "++reps++"; "++i++"++) {")::
+              "clock_t start = clock();"::
+              (funcname++"("++call_vals++",output);")::
+              "clock_t end = clock();"::          
+              "double t = ((double) (end - start)/CLOCKS_PER_SEC);"::
+              "accum += t;"::
+              "}"::
+              "free(output);"::
+              ("float avg = accum / "++reps++";")::
+              ("printf(@"++funcname++"\t"++default_dim++"\t"++"%lfs~@,avg);")::
+              frees)
+              
+              ["return 0;";
+              "}"]))))) in
+  let ret' := constr:("!!!"::main) in
   let ret := eval simpl in ret' in
       ret.
 
@@ -108,30 +118,36 @@ Ltac Leq lname rname default_dim :=
   let x := constr:(ltac:(to_str x')) in
   let _ := match goal with _ => clear x' end in
   let comp :=
-      constr:("for (int "++x++" = 0; "++x++" < "++nums++"; "++x++"++) {\n"++
-              "assert(loutput["++x++"] == routput["++x++"]);\n"++
-              "}\n") in
+      constr:(["for (int "++x++" = 0; "++x++" < "++nums++"; "++x++"++) {";
+              "assert(loutput["++x++"] == routput["++x++"]);";
+              "}"]) in
               
-  let main := constr:(lname++"_"++rname++"_eq.c\n"++
-                       HEADERS++
-                       "#include @"++lname++".h@\n"++
-                       "#include @"++rname++".h@\n\n"++                       
-                       "int main() {\n"++
-                       "srandom(time(NULL));\n"++
-                       allocs++
-                       callocs++
-                       tystr++" loutput = ("++scalar++"*) calloc(1,"++size++");\n"++
-                       tystr++" routput = ("++scalar++"*) calloc(1,"++size++");\n"++
-                       lname++"("++call_vals++",loutput);\n"++
-                       rname++"("++call_vals++",routput);\n"++
-                       comp++
-                       frees++
-                       "free(loutput);\n"++
-                       "free(routput);\n"++                       
-                       "return 0;\n"++
-                       "}") in
+  let main := constr:(
+                      (app ((lname++"_"++rname++"_eq.c")::
+                       HEADERS)
 
-  let ret' := constr:(SENTINEL++main) in
+                       (app (("#include @"++lname++".h@")::
+                       ("#include @"++rname++".h@")::
+                       ""::
+                       "int main() {"::
+                       "srandom(time(NULL));"::
+                       allocs)
+
+                       (app callocs
+
+                       (app ((tystr++" loutput = ("++scalar++"*) calloc(1,"++size++");")::
+                       (tystr++" routput = ("++scalar++"*) calloc(1,"++size++");")::
+                       (lname++"("++call_vals++",loutput);")::
+                       (rname++"("++call_vals++",routput);")::
+                       comp)
+
+                       (app frees
+
+                       ["free(loutput);";
+                       "free(routput);";
+                       "return 0;";"}"])))))) in
+
+  let ret' := constr:("!!!"::main) in
   let ret := eval simpl in ret' in
       ret.
 
@@ -168,26 +184,33 @@ Ltac Lid lname default_dim :=
   let x := constr:(ltac:(to_str x')) in
   let _ := match goal with _ => clear x' end in
   let comp :=
-      constr:("for (int "++x++" = 0; "++x++" < "++nums++"; "++x++"++) {\n"++
-              "assert(loutput["++x++"] == v["++x++"]);\n"++
-              "}\n") in
+      constr:(["for (int "++x++" = 0; "++x++" < "++nums++"; "++x++"++) {";
+              "assert(loutput["++x++"] == v["++x++"]);";
+              "}"]) in
               
-  let main := constr:(lname++"_"++"id_eq.c\n"++
-                       HEADERS++
-                       "#include @"++lname++".h@\n\n"++
-                       "int main() {\n"++
-                       "srandom(time(NULL));\n"++
-                       allocs++
-                       callocs++
-                       tystr++" loutput = ("++scalar++"*) calloc(1,"++size++");\n"++
-                       lname++"("++call_vals++",loutput);\n"++
-                       comp++
-                       frees++
-                       "free(loutput);\n"++
-                       "return 0;\n"++
-                       "}") in
+  let main := constr:(
+                       (app ((lname++"_"++"id_eq.c")::
+                       HEADERS)
 
-  let ret' := constr:(SENTINEL++main) in
+                       (app (("#include @"++lname++".h@")::
+                       ""::
+                       "int main() {"::
+                       "srandom(time(NULL));"::
+                       allocs)
+                       
+                       (app callocs
+                       
+                       (app ((tystr++" loutput = ("++scalar++"*) calloc(1,"++size++");")::
+                       (lname++"("++call_vals++",loutput);")::
+                       comp)
+                       
+                       (app frees
+                       
+                       ["free(loutput);";
+                       "return 0;";
+                       "}"])))))) in
+
+  let ret' := constr:("!!!"::main) in
   let ret := eval simpl in ret' in
       ret.
 
@@ -195,18 +218,18 @@ Goal forall N M (v : list (list R)),
     0 < N ->
     0 < M ->
     consistent v (N,(M,tt)) ->
-    blurimmediate N M v = blurtwostage N M v.
+    blurimmediate v M N = blurtwostage N M v.
 Proof.
-  let s := Leq constr:("blurim") constr:("blurtwo") constr:("50") in idtac s.
+  let s := Leq constr:("blurim") constr:("blurtwo") constr:("50") in idtac_list s.
 Abort.
 
 Goal forall N M (v : list (list R)),
     2 < N ->
     2 < M ->
     consistent v (N,(M,tt)) ->
-    blurimmediate_partition N M v = blurimmediate N M v.
+    blurimmediate_partition N M v = blurimmediate v M N.
 Proof.
-  let s := Leq constr:("blurpart") constr:("blurim") constr:("50") in idtac s.
+  let s := Leq constr:("blurpart") constr:("blurim") constr:("50") in idtac_list s.
 Abort.
 
 Goal forall N M (v : list (list R)),
@@ -215,7 +238,7 @@ Goal forall N M (v : list (list R)),
     consistent v (N,(M,tt)) ->
     blurimmediate_partition N M v = blurimmediate_isolate N M v.
 Proof.
-  let s := Leq constr:("blurpart") constr:("blurisolate") constr:("50") in idtac s.
+  let s := Leq constr:("blurpart") constr:("blurisolate") constr:("50") in idtac_list s.
 Abort.
 
 
@@ -225,7 +248,7 @@ Goal forall N M (v : list (list R)),
     consistent v (N,(M,tt)) ->
     blurtwostage_partition N M v = blurtwostage N M v.
 Proof.
-  let s := Leq constr:("blurtwopart") constr:("blurtwo") constr:("50") in idtac s.
+  let s := Leq constr:("blurtwopart") constr:("blurtwo") constr:("50") in idtac_list s.
 Abort.
 
 Goal forall N M (v : list (list R)),
@@ -234,7 +257,7 @@ Goal forall N M (v : list (list R)),
     consistent v (N,(M,tt)) ->
     fusion_no_boundary N M v = tile_no_boundary 64 64 N M v.
 Proof.
-  let s := Leq constr:("fusion_nb") constr:("tile_nb") constr:("1000") in idtac s.
+  let s := Leq constr:("fusion_nb") constr:("tile_nb") constr:("1000") in idtac_list s.
 Abort.
 
 Goal forall N M (v : list (list R)),
@@ -243,7 +266,7 @@ Goal forall N M (v : list (list R)),
     consistent v (N,(M,tt)) ->
     fusion_no_boundary N M v = tile_no_boundary 64 64 N M v.
 Proof.
-  let s := Ltime constr:("fusion_nb") constr:("2000") constr:("50") in idtac s.
+  let s := Ltime constr:("fusion_nb") constr:("2000") constr:("50") in idtac_list s.
 Abort.
 
 Goal forall N M (v : list (list R)),
@@ -252,28 +275,27 @@ Goal forall N M (v : list (list R)),
     consistent v (N,(M,tt)) ->
     tile_no_boundary 64 64 N M v = fusion_no_boundary N M v.
 Proof.
-  let s := Ltime constr:("tile_nb") constr:("2000") constr:("50") in idtac s.
+  let s := Ltime constr:("tile_nb") constr:("2000") constr:("50") in idtac_list s.
 Abort.
 
 Goal forall N M (v : list (list R)),
     0 < N ->
     0 < M ->
-    consistent v (N,(M,tt)) ->
-    blurimmediate N M v = blur_tiles_guarded 64 64 N M v.
+    consistent v (N,(M,tt)) ->    
+    blurimmediate v M N = blur_tiles_guarded v N M 64 64.
 Proof.
-  let s := Leq constr:("blurim") constr:("blurtiles") constr:("2000") in idtac s.
+  let s := Leq constr:("blurim") constr:("blurtiles") constr:("2000") in idtac_list s.
 Abort.
 
-Goal forall W C (x w : list R),
-    (0 < C)%Z ->
+Goal forall W R0 (x w : list R),    
+    consistent w (Z.to_nat R0, tt) ->
+    consistent x (Z.to_nat R0, tt) ->
     (0 < W)%Z ->
-    (W <= C)%Z ->
-    consistent x (Z.to_nat W,tt) ->
-    consistent w (Z.to_nat W,tt) ->
-    gather1 W C x w = scatter W x w.
+    (Z.of_nat (length x) < W)%Z ->
+    gather W x w = scatter W x w.
 Proof.  
-  let s := Leq constr:("gather") constr:("scatter") constr:("100") in idtac s.
-Abort.      
+  let s := Leq constr:("gather") constr:("scatter") constr:("10") in idtac_list s.
+Abort.
 
 Goal forall (c : (list R)) (n m : Z),
     (0 < n)%Z ->
@@ -281,7 +303,7 @@ Goal forall (c : (list R)) (n m : Z),
     consistent c (Z.to_nat n,tt) ->
     conv4 c n m = conv1 c n m.
 Proof.
-  let s := Leq constr:("conv4") constr:("conv1") constr:("100") in idtac s.
+  let s := Leq constr:("conv4") constr:("conv1") constr:("100") in idtac_list s.
 Abort.
 
 Goal forall A B K W RR (w : list (list R)) (x : list R),
@@ -292,7 +314,7 @@ Goal forall A B K W RR (w : list (list R)) (x : list R),
     consistent x (Z.to_nat K,tt) ->
     im2colminilifted K W RR w x = im2colmini K W RR w x.
 Proof.
-  let s := Leq constr:("im2collifted") constr:("im2col") constr:("50") in idtac s.
+  let s := Leq constr:("im2collifted") constr:("im2col") constr:("50") in idtac_list s.
 Abort.      
 
 Goal forall n m (v : list (list R)),
@@ -308,7 +330,7 @@ Goal forall n m (v : list (list R)),
           )
  = @nil _.
 Proof.
-  let s := Lid constr:("concattest0") constr:("10") in idtac s.
+  let s := Lid constr:("concattest0") constr:("10") in idtac_list s.
 Abort.
 
 
@@ -331,7 +353,7 @@ Goal forall n m (v : list (list R)),
         )
  = @nil _.
 Proof.
-  let s := Lid constr:("concattest1") constr:("10") in idtac s.
+  let s := Lid constr:("concattest1") constr:("10") in idtac_list s.
 Abort.
 
 Goal forall n m (v : list (list R)),
@@ -354,7 +376,7 @@ Goal forall n m (v : list (list R)),
         )
  = @nil _.
 Proof.
-  let s := Lid constr:("concattest2") constr:("10") in idtac s.
+  let s := Lid constr:("concattest2") constr:("10") in idtac_list s.
 Abort.
 
 Goal forall n m (v : list (list R)),
@@ -368,7 +390,7 @@ Goal forall n m (v : list (list R)),
             v _[i;j]))
  = @nil _.
 Proof.
-  let s := Lid constr:("concattest3") constr:("10") in idtac s.
+  let s := Lid constr:("concattest3") constr:("10") in idtac_list s.
 Abort.
 
 Goal forall n m (v : (list R)),
@@ -381,7 +403,7 @@ Goal forall n m (v : (list R)),
 
  = @nil _.
 Proof.
-  let s := Lid constr:("concattest4") constr:("10") in idtac s.
+  let s := Lid constr:("concattest4") constr:("10") in idtac_list s.
 Abort.
 
 Goal forall n m (v : list (list R)),
@@ -411,9 +433,8 @@ flatten_trunc n
     )))
  = @nil _.
 Proof.
-    let s := Lid constr:("concattest5") constr:("10") in idtac s.
+    let s := Lid constr:("concattest5") constr:("10") in idtac_list s.
 Abort.
-
 
 (* - *)
 
@@ -421,9 +442,9 @@ Goal forall N M (v : list (list R)),
     0 < N ->
     0 < M ->
     consistent v (N,(M,tt)) ->
-    blurimmediate N M v = blurtwostage N M v.
+    blurimmediate v M N = blurtwostage N M v.
 Proof.
-  let s := Ltime constr:("blurim") constr:("1000") constr:("3") in idtac s.
+  let s := Ltime constr:("blurim") constr:("1000") constr:("3") in idtac_list s.
 Abort.
 
 Goal forall N M (v : list (list R)),
@@ -432,7 +453,7 @@ Goal forall N M (v : list (list R)),
     consistent v (N,(M,tt)) ->
     blurimmediate_partition N M v = blurimmediate_partition N M v.
 Proof.
-  let s := Ltime constr:("blurpart") constr:("1000") constr:("3") in idtac s.
+  let s := Ltime constr:("blurpart") constr:("1000") constr:("3") in idtac_list s.
 Abort.
 
 Goal forall N M (v : list (list R)),
@@ -441,16 +462,16 @@ Goal forall N M (v : list (list R)),
     consistent v (N,(M,tt)) ->
     blurtwostage_partition N M v = blurimmediate_partition N M v.
 Proof.
-  let s := Ltime constr:("blurtwopart") constr:("1000") constr:("3") in idtac s.
+  let s := Ltime constr:("blurtwopart") constr:("1000") constr:("3") in idtac_list s.
 Abort.
 
 Goal forall N M (v : list (list R)),
     0 < N ->
     0 < M ->
     consistent v (N,(M,tt)) ->
-    blurtwostage N M v = blurimmediate N M v.
+    blurtwostage N M v = blurimmediate v M N.
 Proof.
-  let s := Ltime constr:("blurtwo") constr:("1000") constr:("3") in idtac s.  
+  let s := Ltime constr:("blurtwo") constr:("1000") constr:("3") in idtac_list s.  
 Abort.
 
 
@@ -458,31 +479,29 @@ Goal forall N M (v : list (list R)),
     0 < N ->
     0 < M ->
     consistent v (N,(M,tt)) ->
-    blur_tiles_guarded 64 64 N M v = blurimmediate N M v.
+    blur_tiles_guarded v N M 64 64 = blurimmediate v M N.
 Proof.
-  let s := Ltime constr:("blurtiles") constr:("2000") constr:("10") in idtac s.  
+  let s := Ltime constr:("blurtiles") constr:("2000") constr:("10") in idtac_list s.  
 Abort.
 
-Goal forall W C (x w : list R),
-    (0 < C)%Z ->
+Goal forall W R0 (x w : list R),    
+    consistent w (Z.to_nat R0, tt) ->
+    consistent x (Z.to_nat R0, tt) ->
     (0 < W)%Z ->
-    (W <= C)%Z ->
-    consistent x (Z.to_nat W,tt) ->
-    consistent w (Z.to_nat W,tt) ->
-    gather1 W C x w = scatter W x w.
-Proof.  
-  let s := Ltime constr:("gather") constr:("100") constr:("10") in idtac s.
+    (Z.of_nat (length x) < W)%Z ->
+    gather W x w = scatter W x w.
+Proof.
+  let s := Ltime constr:("gather") constr:("10") constr:("10") in idtac_list s.
 Abort.      
 
-Goal forall W C (x w : list R),
-    (0 < C)%Z ->
+Goal forall W R0 (x w : list R),    
+    consistent w (Z.to_nat R0, tt) ->
+    consistent x (Z.to_nat R0, tt) ->
     (0 < W)%Z ->
-    (W <= C)%Z ->
-    consistent x (Z.to_nat W,tt) ->
-    consistent w (Z.to_nat W,tt) ->
-    scatter W x w = gather1 W C x w.
+    (Z.of_nat (length x) < W)%Z ->
+    scatter W x w = gather W x w.
 Proof.  
-  let s := Ltime constr:("scatter") constr:("100") constr:("10") in idtac s.
+  let s := Ltime constr:("scatter") constr:("10") constr:("10") in idtac_list s.
 Abort.      
 
 Goal forall (c : (list R)) (n m : Z),
@@ -491,7 +510,7 @@ Goal forall (c : (list R)) (n m : Z),
     consistent c (Z.to_nat n,tt) ->
     conv4 c n m = conv1 c n m.
 Proof.
-  let s := Ltime constr:("conv4") constr:("100") constr:("10") in idtac s.
+  let s := Ltime constr:("conv4") constr:("100") constr:("10") in idtac_list s.
 Abort.
 
 Goal forall (c : (list R)) (n m : Z),
@@ -500,7 +519,7 @@ Goal forall (c : (list R)) (n m : Z),
     consistent c (Z.to_nat n,tt) ->
     conv1 c n m = conv4 c n m.
 Proof.
-  let s := Ltime constr:("conv1") constr:("100") constr:("10") in idtac s.
+  let s := Ltime constr:("conv1") constr:("100") constr:("10") in idtac_list s.
 Abort.
 
 Goal forall A B K W RR (w : list (list R)) (x : list R),
@@ -511,7 +530,7 @@ Goal forall A B K W RR (w : list (list R)) (x : list R),
     consistent x (Z.to_nat K,tt) ->
     im2colminilifted K W RR w x = im2colmini K W RR w x.
 Proof.
-  let s := Ltime constr:("im2collifted") constr:("50") constr:("10") in idtac s.
+  let s := Ltime constr:("im2collifted") constr:("50") constr:("10") in idtac_list s.
 Abort.      
 
 Goal forall A B K W RR (w : list (list R)) (x : list R),
@@ -522,6 +541,6 @@ Goal forall A B K W RR (w : list (list R)) (x : list R),
     consistent x (Z.to_nat K,tt) ->
     im2colmini K W RR w x = im2colminilifted K W RR w x.
 Proof.
-  let s := Ltime constr:("im2col") constr:("50") constr:("10") in idtac s.
+  let s := Ltime constr:("im2col") constr:("50") constr:("10") in idtac_list s.
 Abort.      
 

@@ -1,14 +1,14 @@
 From Coq Require Import Arith.Arith.
 From Coq Require Import Arith.PeanoNat. Import Nat.
-From Coq Require Import omega.Omega.
+From Coq Require Import ZArith.BinInt.
+From Coq Require Import micromega.Lia.
+From Coq Require Import micromega.Zify.
 From Coq Require Import Lists.List.
 From Coq Require Import Vectors.Vector.
 From Coq Require Import Logic.FunctionalExtensionality.
 Import ListNotations.
 
 From ATL Require Import ATL Common CommonTactics Tactics Div.
-
-Set Warnings "-omega-is-deprecated,-deprecated".
 
 Theorem pair_elimination {X Y} `{TensorElem X} `{TensorElem Y} :
   forall N I (e1 : Z -> X) (e2 : Z -> Y),
@@ -31,10 +31,10 @@ Proof.
       posnat. simpl gen_helper.
       repeat rewrite get_znlt_null.
       * reflexivity.
-      * simpl. rewrite gen_helper_length. zify. omega.
-      * simpl. rewrite gen_helper_length. zify. omega.
-      * simpl. rewrite gen_helper_length. zify. omega.
-    + repeat rewrite gen_neg_empty; auto; zify; omega.
-  - destruct N; zify; try omega.
+      * simpl. rewrite gen_helper_length. lia.
+      * simpl. rewrite gen_helper_length. lia.
+      * simpl. rewrite gen_helper_length. lia.
+    + repeat rewrite gen_neg_empty; auto; lia.
+  - destruct N; try lia.
    reflexivity.
 Qed.

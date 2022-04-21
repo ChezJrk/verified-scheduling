@@ -1,28 +1,18 @@
 From Coq Require Import Arith.Arith.
 From Coq Require Import Bool.Bool.
 From Coq Require Import Arith.PeanoNat. Import Nat.
-From Coq Require Import omega.Omega.
+From Coq Require Import micromega.Lia.
 From Coq Require Import Lists.List.
 From Coq Require Import Reals.Reals. Import Rdefinitions. Import RIneq.
 From Coq Require Import ZArith.Int. Import Znat.
 From Coq Require Import Setoids.Setoid.
 From Coq Require Import Logic.FunctionalExtensionality.
+Require Coq.derive.Derive.
 Import ListNotations.
 
 From ATL Require Import ATL Common Tactics GenPushout CommonTactics.
  
-Set Warnings "-omega-is-deprecated,-deprecated".
-
-Definition gather_ B K W C R x w :=
-  GEN [ n < B ]
-      GEN [ k < K ]
-      GEN [ p < W ]
-      SUM [ r < C ]
-      SUM [ c < R ]
-      |[ p + r <? W ]|
-      (x _[n;c;p+r] * w _[k;c;r])%R.
-
-Definition scatter_ B K W C x w :=
+Definition scatter_full B K W C x w :=
   SUM [ i < W ]
       GEN [ n < B ]
       GEN [ k < K ]
@@ -30,65 +20,55 @@ Definition scatter_ B K W C x w :=
       GEN [ p < W ]
       |[ 0 <=? i-p ]|
       ( x _[n;c;i] * w _[k;c;i-p])%R.
+Hint Unfold scatter_full : examples.
 
-Theorem scatter_gather : forall W C B K (x w : list (list (list R))) R a b,
-    { prog |
-      consistent w (a,(b,(Z.to_nat R, tt))) ->
-    (0 < C)%Z ->
-    (0 < W)%Z ->
-    (W <=C)%Z ->
-    (0 < K)%Z ->
-    (0 < R)%Z ->
-    (0 < B)%Z ->
-    scatter_ B K W C x w = prog}.
-Proof.
-  intros. unfold scatter_.
-  reschedule.
+Section Full.
+  Variables (W C B K : Z) (x w : list (list (list R))) (R : Z) (a b :nat).
+  Derive gather_full SuchThat
+         (consistent w (a,(b,(Z.to_nat R, tt))) ->
+          (0 < C)%Z ->
+          (0 < W)%Z ->
+          (W <=C)%Z ->
+          (0 < K)%Z ->
+          (0 < R)%Z ->
+          (0 < B)%Z ->
+          scatter_full B K W C x w = gather_full) As gather_correct.
+  Proof.
+    reschedule.
+    
+    rw get_guard at (_ - _)%Z.
+    
+    rw guard_mul_r.
+    rw<- @sum_bound_indic_no_f for (fun a => _ * _ _[a])%R.
+    
+    rw @sum_iverson_lift.
+    
+    rw<- @sum_gen_swap.
+    rw^<- @sum_gen_swap.
+    rw^<- @sum_gen_swap.
+    rw^<- @sum_gen_swap.
+    rw^ @sum_swap.
+    rw @sum_swap.
 
-  rw get_guard at (_ - _)%Z.
-  
-  rw guard_mul_r.
-  rw<- @sum_bound_indic_no_f for (fun a => _ * _ _[a])%R.
+    solve_for_index.
 
-  rw @sum_iverson_lift.
+    rw collapse_iverson.
 
-  rw<- @sum_gen_swap.
-  rw^<- @sum_gen_swap.
-  rw^<- @sum_gen_swap.
-  rw^<- @sum_gen_swap.
-  rw^ @sum_swap.
-  rw @sum_swap.
+    rw andb_comm.
+    
+    rw @sum_bound_indic.
 
-  solve_for_index.
+    simpl_guard.
 
-  rw collapse_iverson.
+    done.
+  Qed.
+End Full.
 
-  rw andb_comm.
-
-  rw @sum_bound_indic.
-
-  simpl_guard.
-
-  done.
-Qed.
-
-Definition gather1 W C x w :=
-  GEN [ p < W ] SUM [ r < C ] |[ p + r <? W ]|
-  (x _[ p + r ] * w _[ r ])%R.
-
-Definition gather2 W C x w :=
-  GEN [ p < W ]
-      SUM [ r < C ] SUM [ i < W ] |[ i =? p + r ]| (x _[ i ] * w _[ r ])%R.
-
-Definition gather3 W C x w :=
-  SUM [ i < W ]
-      GEN [ p < W ] SUM [ r < C ] |[ r =? i - p ]| (x _[ i ] * w _[ r ])%R.
+Hint Unfold gather_full scatter_full : examples.
 
 Definition scatter W x w :=
   SUM [ i < W ] GEN [ p < W ] |[ 0 <=? i-p ]| (x _[ i ] * w _[ i - p ])%R.
-
-Hint Unfold gather1 gather2 gather3 scatter : examples.
-
+(*
 Theorem _scatter_gather : forall W C x w,
     (0 < C)%Z ->
     (0 < W)%Z ->
@@ -122,91 +102,55 @@ Proof.
 
   done.
 Qed.
-  
-Theorem loop_reorder_equiv12 : forall W C x w,
-    (0 < W)%Z ->
-    (Z.of_nat (length x) < W)%Z ->
-    gather1 W C x w = gather2 W C x w.
-Proof.
-  intros.
-  autounfold with examples.
+*)  
 
-  rw get_guard_R.
+Hint Unfold scatter : examples.
 
-  rw guard_mul_l.
+Section Mini.
+  Variables (W C : Z) (x w : list R).
+  Derive gather SuchThat
+         ((0 < W)%Z ->
+          (0 < C)%Z ->
+          (Z.of_nat (length x) < W)%Z ->
+          (Z.of_nat (length w) < C)%Z ->
+          scatter W x w = gather) As gather_min_correct.
+  Proof.
+    reschedule.
 
-  rw<- @sum_bound_indic_no_f for (fun k => x _[ k ] * w _[ _ ])%R.
+    rw get_guard_R.
 
-  rw sum_iverson_lift.
+    rw guard_mul_l.
 
-  rw collapse_iverson.
+    rw<- @sum_bound_indic_no_f for (fun i => x _[i] * _)%R.
 
-  rw andb_comm.
+    rw sum_swap.
 
-  simpl_guard.
+    solve_for_index.
 
-  simpl_guard.
-  
-  reflexivity.
-Qed.
+    rw sum_gen_swap.
 
-Theorem loop_reorder_equiv23 : forall W C x w,
-    (0 < W)%Z ->
-    length x < Z.to_nat W ->
-    gather2 W C x w = gather3 W C x w.
-Proof.
-  intros.
-  autounfold with examples.
-  rw sum_swap.
-  rw sum_gen_swap.
-  solve_for_index.
-  reflexivity.
-Qed.
+    rw sum_bound_indic_no_f.
 
-Theorem loop_reorder_equiv34 : forall W C x w,
-    (0 < W)%Z ->
-    (0 < C)%Z ->
-    (Z.of_nat (length x) < W)%Z ->
-    (Z.of_nat (length w) < W)%Z ->
-    gather3 W W x w = scatter W x w.
-Proof.
-  intros.
-  autounfold with examples.
-  rw sum_bound_indic_no_f.
-  apply sum_eq_bound; intros.
-  apply gen_eq_bound; intros.
-  rewrite Rmult_comm. simpl_guard.
-  reflexivity.
-Qed.
+    done.
+  Qed.
+End Mini.
 
-Example equiv : forall W C x w,
-    {loop |
-     (0 < W)%Z ->
-     (0 < C)%Z ->
-     (Z.of_nat (length x) < W)%Z ->
-     (Z.of_nat (length w) < C)%Z ->
-     GEN [ p < W ]
-         SUM [ r < C ]
-         ((x _[ p + r] * w _[ r])%R) = loop}.
-Proof.
-  reschedule.
+Hint Unfold gather : examples.  
 
-  rw get_guard_R.
+Goal forall W x w,
+    gather W x w =
+    SUM [ i < W ]
+        GEN [ i0 < W ]
+        (|[ 0 <=? i - i0 ]|
+         (|[ (i <? W) && (0 <=? i) ]| (x _[ i] * w _[ i - i0])%R)).
+Proof. reflexivity. Qed.
 
-  rw guard_mul_l.
-
-  rw<- @sum_bound_indic_no_f for (fun i => x _[i] * _)%R.
-
-  rw sum_swap.
-
-  solve_for_index.
-
-  rw sum_gen_swap.
-
-  rw sum_bound_indic_no_f.
-
-  done.
-Defined.
-
-Eval simpl in (fun W C x w => proj1_sig (equiv W C x w)).
-
+Goal forall W C B K x w R0,
+    gather_full W C B K x w R0 =
+    GEN [ i < B ]
+        GEN [ i0 < K ]
+        GEN [ i1 < W ]
+        SUM [ i2 < C ]
+        SUM [ i3 < R0 ]
+        (|[ i3 + i1 <? W ]| (x _[ i; i2; i3 + i1] * w _[ i0; i2; i3])%R).
+Proof. reflexivity. Qed.

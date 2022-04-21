@@ -1,15 +1,14 @@
 From Coq Require Import Arith.Arith.
 From Coq Require Import Bool.Bool.
 From Coq Require Import Arith.PeanoNat. Import Nat.
-From Coq Require Import omega.Omega.
+From Coq Require Import micromega.Lia.
 From Coq Require Import Lists.List.
 From Coq Require Import Reals.Reals. Import Rdefinitions. Import RIneq.
 From Coq Require Import ZArith.Int. Import Znat.
 From Coq Require Import Setoids.Setoid.
 From Coq Require Import Logic.FunctionalExtensionality.
+Require Coq.derive.Derive.
 Import ListNotations.
-
-Set Warnings "-omega-is-deprecated,-deprecated".
 
 From ATL Require Import ATL Common Tactics GenPushout CommonTactics.
 
@@ -19,18 +18,10 @@ Definition conv1 (c : list R) (n m : Z) : list R :=
       (|[ 0 <=? i - j ]| ((GEN [ - m + 1 <= k < n ]
                                (|[ k =? 2 + (- m + 1) ]| 1)) _[ i - j ] *
                           c _[ j ])%R). 
-
-Definition conv2 (c : list R) (n m : Z) : list R :=
-  GEN [ i < n ] SUM [ j < m ] |[ i - j =? 2 ]| c _[ j ].
-
-Definition conv3 (c : list R) n m : list R :=
-  GEN [ i < n ]
-  SUM [ j < m ] |[ (j =? i - 2) && (0 <=? j) && (j <? m) ]| c _[ j ].
-
+(*
 Definition conv4 (c : list R) (n m : Z) : list R :=
   GEN [ i < n ] |[ (0 <=? i - 2) && (i - 2 <? m) ]| c _[ i - 2 ].
 
-Hint Unfold conv1 conv2 conv3 conv4 : examples.
 
 Theorem conv12_equiv : forall c n m,
     (0 <= m)%Z -> (0 <= n)%Z -> (0 < n + m - 1)%Z ->
@@ -71,28 +62,38 @@ Proof.
   apply gen_eq_bound; intros.
   auto with crunch.
 Qed.
+ *)
+Hint Unfold conv1 : examples.
+Section conv.
+  Variables (c : list R) (n m : Z).
+  Derive conv4 SuchThat
+  ((0 < m)%Z ->
+  (0 <= n)%Z ->
+  conv1 c n m = conv4) As conv_resched.
+  Proof.
+    reschedule.
+    
+    rw get_genr_some.
 
-Example equiv : forall c n m,
-    {conv | (0 < m)%Z -> (0 <= n)%Z ->
-            conv1 c n m = conv }.
-Proof.
-  reschedule.
+    rw guard_mul_l.
 
-  rw get_genr_some.
-
-  rw guard_mul_l.
-
-  solve_for_index.
+    solve_for_index.
   
-  rw collapse_iverson.
+    rw collapse_iverson.
 
-  rw andb_comm.
+    rw andb_comm.
 
-  rw sum_bound_indic.
+    rw sum_bound_indic.
   
-  simpl_guard.
+    simpl_guard.
 
-  done.
-Defined.
+    done.
+  Defined.
+End conv.
 
-Eval simpl in (fun c n m => proj1_sig (equiv c n m)).
+Hint Unfold  conv4 : examples.
+
+Goal forall c n m,
+    conv4 c n m = GEN [ i < n ]
+                      (|[ (i - 2 <? m) && (0 <=? i - 2) ]| c _[ i - 2]).
+Proof. reflexivity. Qed.

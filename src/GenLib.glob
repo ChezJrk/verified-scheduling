@@ -1,1088 +1,1090 @@
-DIGEST e912fc72b21340bbcdcdb953488a0826
+DIGEST a2caa73b670abed58dcc1e80cfc9ac8f
 FATL.GenLib
 R24:34 Coq.Arith.Arith <> <> lib
 R61:71 Coq.Arith.EqNat <> <> lib
 R98:111 Coq.Arith.PeanoNat <> <> lib
+R121:123 Coq.Arith.PeanoNat Nat <> mod
 R150:158 Coq.Bool.Bool <> <> lib
 R185:195 Coq.Reals.Reals <> <> lib
+R205:216 Coq.Reals.Rdefinitions <> <> mod
+R226:230 Coq.Reals.RIneq <> <> mod
 R257:267 Coq.ZArith.Zdiv <> <> lib
 R294:303 Coq.ZArith.Int <> <> lib
 R330:340 Coq.ZArith.Znat <> <> lib
 R367:380 Coq.Strings.String <> <> lib
 R407:436 Coq.Logic.FunctionalExtensionality <> <> lib
-R463:473 Coq.omega.Omega <> <> lib
-R492:502 Ltac2.Ltac2 <> <> lib
-R520:531 Ltac2.Option <> <> lib
-R609:611 ATL.ATL <> <> lib
-R613:619 ATL.Tactics <> <> lib
-R621:626 ATL.Common <> <> lib
-R628:640 ATL.CommonTactics <> <> lib
-R642:644 ATL.Div <> <> lib
-R646:657 ATL.IdentParsing <> <> lib
-R664:676 ATL.GatherScatter <> <> lib
-R678:688 ATL.NatToString <> <> lib
-R690:700 ATL.IntToString <> <> lib
-R702:712 ATL.Convolution <> <> lib
-R714:719 ATL.Im2col <> <> lib
-R721:724 ATL.Blur <> <> lib
-R726:732 ATL.CodeGen <> <> lib
-R739:747 ATL.Normalize <> <> lib
-R749:755 ATL.Reshape <> <> lib
-R757:765 ATL.CheckSafe <> <> lib
-def 841:848 <> SENTINEL
-R1172:1177 Coq.Strings.String <> String constr
-R1172:1177 Coq.Strings.String <> String constr
-R1212:1222 Coq.Strings.String <> EmptyString constr
-R1212:1222 Coq.Strings.String <> EmptyString constr
-R1380:1382 ATL.ATL <> bin meth
-R1473:1475 Coq.Init.Logic <> ::type_scope:x_'='_x not
-R1473:1475 Coq.Init.Logic <> ::type_scope:x_'='_x not
-R1702:1706 ATL.CodeGen <> indty ind
-binder 1696:1698 <> acc:1
-R1712:1714 ATL.GenLib <> acc:1 var
-R1745:1748 Coq.Init.Datatypes <> true constr
-R1901:1902 Coq.Strings.String <> ::string_scope:x_'++'_x not
-R1909:1935 Coq.Strings.String <> ::string_scope:x_'++'_x not
-R1961:1987 Coq.Strings.String <> ::string_scope:x_'++'_x not
-R1995:1996 Coq.Strings.String <> ::string_scope:x_'++'_x not
-R2005:2006 Coq.Strings.String <> ::string_scope:x_'++'_x not
-R2010:2011 Coq.Strings.String <> ::string_scope:x_'++'_x not
-R2016:2017 Coq.Strings.String <> ::string_scope:x_'++'_x not
-R2021:2022 Coq.Strings.String <> ::string_scope:x_'++'_x not
-R2029:2030 Coq.Strings.String <> ::string_scope:x_'++'_x not
-R2023:2028 ATL.CodeGen <> scalar def
-R2083:2084 Coq.Strings.String <> ::string_scope:x_'++'_x not
-R2091:2115 Coq.Strings.String <> ::string_scope:x_'++'_x not
-R2139:2163 Coq.Strings.String <> ::string_scope:x_'++'_x not
-R2176:2177 Coq.Strings.String <> ::string_scope:x_'++'_x not
-R2186:2187 Coq.Strings.String <> ::string_scope:x_'++'_x not
-R2197:2221 Coq.Strings.String <> ::string_scope:x_'++'_x not
-R2229:2230 Coq.Strings.String <> ::string_scope:x_'++'_x not
-R2239:2240 Coq.Strings.String <> ::string_scope:x_'++'_x not
-R2244:2245 Coq.Strings.String <> ::string_scope:x_'++'_x not
-R2250:2251 Coq.Strings.String <> ::string_scope:x_'++'_x not
-R2255:2256 Coq.Strings.String <> ::string_scope:x_'++'_x not
-R2263:2264 Coq.Strings.String <> ::string_scope:x_'++'_x not
-R2257:2262 ATL.CodeGen <> scalar def
-R2275:2276 Coq.Strings.String <> ::string_scope:x_'++'_x not
-R2282:2306 Coq.Strings.String <> ::string_scope:x_'++'_x not
-R2313:2337 Coq.Strings.String <> ::string_scope:x_'++'_x not
-R2343:2367 Coq.Strings.String <> ::string_scope:x_'++'_x not
-R2373:2397 Coq.Strings.String <> ::string_scope:x_'++'_x not
-R2439:2440 Coq.Strings.String <> ::string_scope:x_'++'_x not
-R2431:2438 ATL.GenLib <> SENTINEL def
-R2447:2448 Coq.Strings.String <> ::string_scope:x_'++'_x not
-R2457:2458 Coq.Strings.String <> ::string_scope:x_'++'_x not
-R2449:2456 ATL.GenLib <> SENTINEL def
-def 2515:3013 <> Unnamed_thm
-binder 2527:2527 <> n:2
-binder 2529:2529 <> m:3
-R2536:2539 Coq.Init.Datatypes <> list ind
-R2542:2545 Coq.Init.Datatypes <> list ind
-R2547:2547 Coq.Reals.Rdefinitions RbaseSymbolsImpl R defax
-binder 2532:2532 <> l:4
-R2579:2586 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R3004:3007 Coq.Init.Logic <> ::type_scope:x_'='_x not
-R2587:2595 ATL.Common <> transpose def
-R2607:2607 ATL.ATL <> :::x_'<++>'_x not
-R2677:2714 ATL.ATL <> :::x_'<++>'_x not
-R2982:2993 ATL.ATL <> :::x_'<++>'_x not
-R2608:2613 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-R2615:2617 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-R2619:2633 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-binder 2614:2614 <> j:5
-R2634:2639 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-R2641:2643 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-R2654:2668 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-R2644:2651 Coq.ZArith.BinInt Z of_nat def
-R2653:2653 ATL.GenLib <> n:2 var
-binder 2640:2640 <> i:6
-R2670:2672 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
-R2674:2674 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
-R2676:2676 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
-R2669:2669 ATL.GenLib <> l:4 var
-R2673:2673 ATL.GenLib <> i:6 var
-R2675:2675 ATL.GenLib <> j:5 var
-R2715:2720 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
-R2722:2725 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
-R2727:2729 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
-R2740:2754 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
-R2730:2737 Coq.ZArith.BinInt Z of_nat def
-R2739:2739 ATL.GenLib <> m:3 var
-binder 2726:2726 <> j:7
-R2884:2914 ATL.ATL <> :::x_'<++>'_x not
-R2981:2981 ATL.ATL <> :::x_'<++>'_x not
-R2755:2755 ATL.ATL <> :::x_'<++>'_x not
-R2795:2826 ATL.ATL <> :::x_'<++>'_x not
-R2883:2883 ATL.ATL <> :::x_'<++>'_x not
-R2756:2761 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-R2763:2765 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-R2767:2786 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-binder 2762:2762 <> i:8
-R2788:2790 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
-R2792:2792 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
-R2794:2794 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
-R2787:2787 ATL.GenLib <> l:4 var
-R2791:2791 ATL.GenLib <> i:8 var
-R2793:2793 ATL.GenLib <> j:7 var
-R2827:2832 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
-R2834:2837 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
-R2839:2841 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
-R2856:2874 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
-R2852:2854 Coq.ZArith.BinInt <> ::Z_scope:x_'-'_x not
-R2842:2849 Coq.ZArith.BinInt Z of_nat def
-R2851:2851 ATL.GenLib <> n:2 var
-binder 2838:2838 <> i:9
-R2876:2878 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
-R2880:2880 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
-R2882:2882 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
-R2875:2875 ATL.GenLib <> l:4 var
-R2879:2879 ATL.GenLib <> i:9 var
-R2881:2881 ATL.GenLib <> j:7 var
-R2915:2920 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
-R2935:2938 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
-R2940:2942 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
-R2953:2972 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
-R2931:2933 Coq.ZArith.BinInt <> ::Z_scope:x_'-'_x not
-R2921:2928 Coq.ZArith.BinInt Z of_nat def
-R2930:2930 ATL.GenLib <> n:2 var
-R2943:2950 Coq.ZArith.BinInt Z of_nat def
-R2952:2952 ATL.GenLib <> n:2 var
-binder 2939:2939 <> i:10
-R2974:2976 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
-R2978:2978 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
-R2980:2980 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
-R2973:2973 ATL.GenLib <> l:4 var
-R2977:2977 ATL.GenLib <> i:10 var
-R2979:2979 ATL.GenLib <> j:7 var
-R3009:3011 Coq.Init.Datatypes <> nil constr
-R2556:2565 ATL.ATL <> consistent meth
-R2569:2569 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R2571:2571 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R2578:2578 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R2570:2570 ATL.GenLib <> n:2 var
-R2572:2572 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R2574:2574 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R2577:2577 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R2573:2573 ATL.GenLib <> m:3 var
-R2575:2576 Coq.Init.Datatypes <> tt constr
-R2567:2567 ATL.GenLib <> l:4 var
-def 3086:3394 <> Unnamed_thm
-binder 3098:3098 <> n:11
-binder 3100:3100 <> m:12
-R3107:3110 Coq.Init.Datatypes <> list ind
-R3113:3116 Coq.Init.Datatypes <> list ind
-R3118:3118 Coq.Reals.Rdefinitions RbaseSymbolsImpl R defax
-binder 3103:3103 <> l:13
-R3150:3157 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R3385:3388 Coq.Init.Logic <> ::type_scope:x_'='_x not
-R3158:3166 ATL.Common <> transpose def
-R3178:3178 ATL.ATL <> :::x_'<++>'_x not
-R3248:3285 ATL.ATL <> :::x_'<++>'_x not
-R3372:3372 ATL.ATL <> :::x_'<++>'_x not
-R3179:3184 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-R3186:3188 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-R3190:3204 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-binder 3185:3185 <> j:14
-R3205:3210 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-R3212:3214 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-R3225:3239 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-R3215:3222 Coq.ZArith.BinInt Z of_nat def
-R3224:3224 ATL.GenLib <> n:11 var
-binder 3211:3211 <> i:15
-R3241:3243 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
-R3245:3245 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
-R3247:3247 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
-R3240:3240 ATL.GenLib <> l:13 var
-R3244:3244 ATL.GenLib <> i:15 var
-R3246:3246 ATL.GenLib <> j:14 var
-R3286:3291 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
-R3293:3296 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
-R3298:3300 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
-R3311:3328 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
-R3301:3308 Coq.ZArith.BinInt Z of_nat def
-R3310:3310 ATL.GenLib <> m:12 var
-binder 3297:3297 <> j:16
-R3329:3334 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-R3336:3338 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-R3349:3363 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-R3339:3346 Coq.ZArith.BinInt Z of_nat def
-R3348:3348 ATL.GenLib <> n:11 var
-binder 3335:3335 <> i:17
-R3365:3367 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
-R3369:3369 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
-R3371:3371 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
-R3364:3364 ATL.GenLib <> l:13 var
-R3368:3368 ATL.GenLib <> i:17 var
-R3370:3370 ATL.GenLib <> j:16 var
-R3390:3392 Coq.Init.Datatypes <> nil constr
-R3127:3136 ATL.ATL <> consistent meth
-R3140:3140 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R3142:3142 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R3149:3149 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R3141:3141 ATL.GenLib <> n:11 var
-R3143:3143 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R3145:3145 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R463:475 Coq.micromega.Lia <> <> lib
+R502:515 Coq.micromega.Zify <> <> lib
+R542:551 Coq.Lists.List <> <> lib
+R562:574 Coq.Lists.List ListNotations <> mod
+R593:603 Ltac2.Ltac2 <> <> lib
+R621:632 Ltac2.Option <> <> lib
+R660:662 ATL.ATL <> <> lib
+R664:670 ATL.Tactics <> <> lib
+R672:677 ATL.Common <> <> lib
+R679:691 ATL.CommonTactics <> <> lib
+R693:695 ATL.Div <> <> lib
+R697:708 ATL.IdentParsing <> <> lib
+R715:727 ATL.GatherScatter <> <> lib
+R729:739 ATL.NatToString <> <> lib
+R741:751 ATL.IntToString <> <> lib
+R753:763 ATL.Convolution <> <> lib
+R765:770 ATL.Im2col <> <> lib
+R772:775 ATL.Blur <> <> lib
+R777:783 ATL.CodeGen <> <> lib
+R790:798 ATL.Normalize <> <> lib
+R800:806 ATL.Reshape <> <> lib
+R808:816 ATL.CheckSafe <> <> lib
+def 892:899 <> SENTINEL
+R1307:1312 Coq.Strings.String <> String constr
+R1307:1312 Coq.Strings.String <> String constr
+R1347:1357 Coq.Strings.String <> EmptyString constr
+R1347:1357 Coq.Strings.String <> EmptyString constr
+R1559:1561 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R1559:1561 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R1788:1792 ATL.CodeGen <> indty ind
+binder 1782:1784 <> acc:1
+R1798:1800 ATL.GenLib <> acc:1 var
+R1831:1834 Coq.Init.Datatypes <> true constr
+R1979:1979 Coq.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R1994:2019 Coq.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R2041:2066 Coq.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R2069:2094 Coq.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R2149:2149 Coq.Lists.List ListNotations ::list_scope:'['_x_';'_x_';'_'..'_';'_x_']' not
+R1988:1989 Coq.Strings.String <> ::string_scope:x_'++'_x not
+R2102:2103 Coq.Strings.String <> ::string_scope:x_'++'_x not
+R2112:2113 Coq.Strings.String <> ::string_scope:x_'++'_x not
+R2117:2118 Coq.Strings.String <> ::string_scope:x_'++'_x not
+R2123:2124 Coq.Strings.String <> ::string_scope:x_'++'_x not
+R2128:2129 Coq.Strings.String <> ::string_scope:x_'++'_x not
+R2136:2137 Coq.Strings.String <> ::string_scope:x_'++'_x not
+R2130:2135 ATL.CodeGen <> scalar def
+R2181:2181 Coq.Init.Datatypes <> ::list_scope:x_'::'_x not
+R2196:2221 Coq.Init.Datatypes <> ::list_scope:x_'::'_x not
+R2190:2191 Coq.Strings.String <> ::string_scope:x_'++'_x not
+R2243:2267 Coq.Init.Datatypes <> ::list_scope:x_'::'_x not
+R2268:2268 Coq.Init.Datatypes <> ::list_scope:x_'::'_x not
+R2298:2323 Coq.Init.Datatypes <> ::list_scope:x_'::'_x not
+R2281:2282 Coq.Strings.String <> ::string_scope:x_'++'_x not
+R2291:2292 Coq.Strings.String <> ::string_scope:x_'++'_x not
+R2326:2350 Coq.Init.Datatypes <> ::list_scope:x_'::'_x not
+R2351:2351 Coq.Init.Datatypes <> ::list_scope:x_'::'_x not
+R2410:2435 Coq.Init.Datatypes <> ::list_scope:x_'::'_x not
+R2359:2360 Coq.Strings.String <> ::string_scope:x_'++'_x not
+R2369:2370 Coq.Strings.String <> ::string_scope:x_'++'_x not
+R2374:2375 Coq.Strings.String <> ::string_scope:x_'++'_x not
+R2380:2381 Coq.Strings.String <> ::string_scope:x_'++'_x not
+R2385:2386 Coq.Strings.String <> ::string_scope:x_'++'_x not
+R2393:2394 Coq.Strings.String <> ::string_scope:x_'++'_x not
+R2387:2392 ATL.CodeGen <> scalar def
+R2405:2406 Coq.Strings.String <> ::string_scope:x_'++'_x not
+R2443:2467 Coq.Init.Datatypes <> ::list_scope:x_'++'_x not
+R2473:2497 Coq.Init.Datatypes <> ::list_scope:x_'++'_x not
+R2503:2527 Coq.Init.Datatypes <> ::list_scope:x_'++'_x not
+R2528:2528 Coq.Lists.List ListNotations ::list_scope:'['_x_']' not
+R2532:2532 Coq.Lists.List ListNotations ::list_scope:'['_x_']' not
+R2567:2569 Coq.Init.Datatypes <> app def
+R2593:2594 Coq.Init.Datatypes <> ::list_scope:x_'::'_x not
+R2577:2578 Coq.Init.Datatypes <> ::list_scope:x_'::'_x not
+def 2652:2791 <> Unnamed_thm
+R2670:2673 Coq.Init.Datatypes <> list ind
+R2675:2675 Coq.Reals.Rdefinitions RbaseSymbolsImpl R defax
+binder 2665:2665 <> c:2
+R2686:2686 Coq.Numbers.BinNums <> Z ind
+binder 2680:2680 <> n:3
+binder 2682:2682 <> m:4
+R2703:2710 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R2696:2698 Coq.ZArith.BinInt <> ::Z_scope:x_'<'_x not
+R2699:2699 ATL.GenLib <> n:3 var
+R2723:2730 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R2716:2718 Coq.ZArith.BinInt <> ::Z_scope:x_'<'_x not
+R2714:2714 Coq.ZArith.BinInt <> ::Z_scope:x_'+'_x not
+R2712:2712 Coq.ZArith.BinInt <> ::Z_scope:'-'_x not
+R2713:2713 ATL.GenLib <> m:4 var
+R2719:2719 ATL.GenLib <> n:3 var
+R2759:2766 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R2731:2740 ATL.ATL <> consistent meth
+R2744:2744 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R2755:2755 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R2758:2758 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R2745:2752 Coq.ZArith.BinInt Z to_nat def
+R2754:2754 ATL.GenLib <> n:3 var
+R2756:2757 Coq.Init.Datatypes <> tt constr
+R2742:2742 ATL.GenLib <> c:2 var
+R2778:2780 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R2767:2771 ATL.Convolution <> conv4 def
+R2777:2777 ATL.GenLib <> m:4 var
+R2775:2775 ATL.GenLib <> n:3 var
+R2773:2773 ATL.GenLib <> c:2 var
+R2781:2785 ATL.Convolution <> conv1 def
+R2787:2787 ATL.GenLib <> c:2 var
+R2789:2789 ATL.GenLib <> n:3 var
+R2791:2791 ATL.GenLib <> m:4 var
+def 2863:3002 <> Unnamed_thm
+R2881:2884 Coq.Init.Datatypes <> list ind
+R2886:2886 Coq.Reals.Rdefinitions RbaseSymbolsImpl R defax
+binder 2876:2876 <> c:5
+R2897:2897 Coq.Numbers.BinNums <> Z ind
+binder 2891:2891 <> n:6
+binder 2893:2893 <> m:7
+R2914:2921 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R2907:2909 Coq.ZArith.BinInt <> ::Z_scope:x_'<'_x not
+R2910:2910 ATL.GenLib <> n:6 var
+R2934:2941 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R2927:2929 Coq.ZArith.BinInt <> ::Z_scope:x_'<'_x not
+R2925:2925 Coq.ZArith.BinInt <> ::Z_scope:x_'+'_x not
+R2923:2923 Coq.ZArith.BinInt <> ::Z_scope:'-'_x not
+R2924:2924 ATL.GenLib <> m:7 var
+R2930:2930 ATL.GenLib <> n:6 var
+R2970:2977 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R2942:2951 ATL.ATL <> consistent meth
+R2955:2955 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R2966:2966 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R2969:2969 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R2956:2963 Coq.ZArith.BinInt Z to_nat def
+R2965:2965 ATL.GenLib <> n:6 var
+R2967:2968 Coq.Init.Datatypes <> tt constr
+R2953:2953 ATL.GenLib <> c:5 var
+R2989:2991 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R2978:2982 ATL.Convolution <> conv1 def
+R2984:2984 ATL.GenLib <> c:5 var
+R2986:2986 ATL.GenLib <> n:6 var
+R2988:2988 ATL.GenLib <> m:7 var
+R2992:2996 ATL.Convolution <> conv4 def
+R3002:3002 ATL.GenLib <> m:7 var
+R3000:3000 ATL.GenLib <> n:6 var
+R2998:2998 ATL.GenLib <> c:5 var
+def 3085:3583 <> Unnamed_thm
+binder 3097:3097 <> n:8
+binder 3099:3099 <> m:9
+R3106:3109 Coq.Init.Datatypes <> list ind
+R3112:3115 Coq.Init.Datatypes <> list ind
+R3117:3117 Coq.Reals.Rdefinitions RbaseSymbolsImpl R defax
+binder 3102:3102 <> l:10
+R3149:3156 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R3126:3135 ATL.ATL <> consistent meth
+R3139:3139 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R3141:3141 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
 R3148:3148 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R3144:3144 ATL.GenLib <> m:12 var
-R3146:3147 Coq.Init.Datatypes <> tt constr
-R3138:3138 ATL.GenLib <> l:13 var
-def 3467:3921 <> Unnamed_thm
-binder 3479:3479 <> n:18
-binder 3481:3481 <> m:19
-R3488:3491 Coq.Init.Datatypes <> list ind
-R3494:3497 Coq.Init.Datatypes <> list ind
-R3499:3499 Coq.Reals.Rdefinitions RbaseSymbolsImpl R defax
-binder 3484:3484 <> v:20
-R3513:3520 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R3526:3533 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R3557:3564 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R3912:3915 Coq.Init.Logic <> ::type_scope:x_'='_x not
-R3565:3573 ATL.Common <> transpose def
-R3585:3585 ATL.ATL <> :::x_'<++>'_x not
-R3737:3800 ATL.ATL <> :::x_'<++>'_x not
-R3890:3901 ATL.ATL <> :::x_'<++>'_x not
-R3586:3591 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-R3593:3595 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-R3597:3610 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-binder 3592:3592 <> j:21
-R3611:3611 ATL.ATL <> :::x_'<++>'_x not
-R3651:3682 ATL.ATL <> :::x_'<++>'_x not
-R3736:3736 ATL.ATL <> :::x_'<++>'_x not
-R3612:3617 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-R3619:3621 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-R3623:3642 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-binder 3618:3618 <> i:22
-R3644:3646 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
-R3648:3648 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
-R3650:3650 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
-R3643:3643 ATL.GenLib <> v:20 var
-R3647:3647 ATL.GenLib <> i:22 var
-R3649:3649 ATL.GenLib <> j:21 var
-R3683:3688 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
-R3690:3693 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
-R3695:3697 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
-R3708:3727 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
-R3698:3705 Coq.ZArith.BinInt Z of_nat def
-R3707:3707 ATL.GenLib <> n:18 var
-binder 3694:3694 <> i:23
-R3729:3731 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
-R3733:3733 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
-R3735:3735 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
-R3728:3728 ATL.GenLib <> v:20 var
-R3732:3732 ATL.GenLib <> i:23 var
-R3734:3734 ATL.GenLib <> j:21 var
-R3801:3806 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
-R3808:3811 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
-R3813:3815 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
-R3826:3843 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
-R3816:3823 Coq.ZArith.BinInt Z of_nat def
-R3825:3825 ATL.GenLib <> m:19 var
-binder 3812:3812 <> j:24
-R3844:3849 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-R3851:3853 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-R3864:3881 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-R3854:3861 Coq.ZArith.BinInt Z of_nat def
-R3863:3863 ATL.GenLib <> n:18 var
-binder 3850:3850 <> i:25
-R3883:3885 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
-R3887:3887 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
-R3889:3889 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
-R3882:3882 ATL.GenLib <> v:20 var
-R3886:3886 ATL.GenLib <> i:25 var
-R3888:3888 ATL.GenLib <> j:24 var
-R3917:3919 Coq.Init.Datatypes <> nil constr
-R3534:3543 ATL.ATL <> consistent meth
-R3547:3547 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R3549:3549 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R3556:3556 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R3548:3548 ATL.GenLib <> n:18 var
-R3550:3550 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R3552:3552 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R3555:3555 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R3551:3551 ATL.GenLib <> m:19 var
-R3553:3554 Coq.Init.Datatypes <> tt constr
-R3545:3545 ATL.GenLib <> v:20 var
-R3522:3524 Coq.Init.Peano <> ::nat_scope:x_'<'_x not
-R3525:3525 ATL.GenLib <> m:19 var
-R3509:3511 Coq.Init.Peano <> ::nat_scope:x_'<'_x not
-R3512:3512 ATL.GenLib <> n:18 var
-def 3994:4247 <> Unnamed_thm
-binder 4006:4006 <> n:26
-binder 4008:4008 <> m:27
-R4015:4018 Coq.Init.Datatypes <> list ind
-R4021:4024 Coq.Init.Datatypes <> list ind
-R4026:4026 Coq.Reals.Rdefinitions RbaseSymbolsImpl R defax
-binder 4011:4011 <> l:28
-R4058:4065 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R4238:4241 Coq.Init.Logic <> ::type_scope:x_'='_x not
-R4066:4074 ATL.Common <> transpose def
-R4086:4091 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-R4093:4095 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-R4106:4120 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-R4096:4103 Coq.ZArith.BinInt Z of_nat def
-R4105:4105 ATL.GenLib <> m:27 var
-binder 4092:4092 <> j:29
-R4121:4121 ATL.ATL <> :::x_'<++>'_x not
-R4156:4187 ATL.ATL <> :::x_'<++>'_x not
-R4236:4236 ATL.ATL <> :::x_'<++>'_x not
-R4122:4127 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-R4129:4131 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-R4133:4147 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-binder 4128:4128 <> i:30
-R4149:4151 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
-R4153:4153 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
-R4155:4155 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
-R4148:4148 ATL.GenLib <> l:28 var
-R4152:4152 ATL.GenLib <> i:30 var
-R4154:4154 ATL.GenLib <> j:29 var
-R4188:4193 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
-R4195:4198 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
-R4200:4202 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
-R4213:4227 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
-R4203:4210 Coq.ZArith.BinInt Z of_nat def
-R4212:4212 ATL.GenLib <> n:26 var
-binder 4199:4199 <> i:31
-R4229:4231 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
-R4233:4233 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
-R4235:4235 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
-R4228:4228 ATL.GenLib <> l:28 var
-R4232:4232 ATL.GenLib <> i:31 var
-R4234:4234 ATL.GenLib <> j:29 var
-R4243:4245 Coq.Init.Datatypes <> nil constr
-R4035:4044 ATL.ATL <> consistent meth
-R4048:4048 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R4050:4050 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R4057:4057 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R4049:4049 ATL.GenLib <> n:26 var
-R4051:4051 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R4053:4053 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R4056:4056 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R4052:4052 ATL.GenLib <> m:27 var
-R4054:4055 Coq.Init.Datatypes <> tt constr
-R4046:4046 ATL.GenLib <> l:28 var
-def 4320:4705 <> Unnamed_thm
-binder 4332:4332 <> n:32
-binder 4334:4334 <> m:33
-R4342:4345 Coq.Init.Datatypes <> list ind
-R4347:4347 Coq.Reals.Rdefinitions RbaseSymbolsImpl R defax
-binder 4337:4337 <> l:34
-R4377:4384 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R4695:4699 Coq.Init.Logic <> ::type_scope:x_'='_x not
-R4385:4391 ATL.Common <> flatten def
-R4403:4411 ATL.Common <> transpose def
-R4437:4437 ATL.ATL <> :::x_'<++>'_x not
-R4531:4564 ATL.ATL <> :::x_'<++>'_x not
-R4671:4671 ATL.ATL <> :::x_'<++>'_x not
-R4438:4443 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-R4445:4447 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-R4449:4465 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-R4530:4530 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-binder 4444:4444 <> i:35
-R4466:4471 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-R4473:4475 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-R4486:4506 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-R4476:4483 Coq.ZArith.BinInt Z of_nat def
-R4485:4485 ATL.GenLib <> n:32 var
-binder 4472:4472 <> j:36
-R4508:4510 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
-R4529:4529 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
-R4507:4507 ATL.GenLib <> l:34 var
-R4525:4527 Coq.ZArith.BinInt <> ::Z_scope:x_'+'_x not
-R4512:4514 Coq.ZArith.BinInt <> ::Z_scope:x_'*'_x not
-R4511:4511 ATL.GenLib <> j:36 var
-R4515:4522 Coq.ZArith.BinInt Z of_nat def
-R4524:4524 ATL.GenLib <> m:33 var
-R4528:4528 ATL.GenLib <> i:35 var
-R4565:4570 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
-R4572:4575 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
-R4577:4579 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
-R4590:4606 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
-R4670:4670 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
-R4580:4587 Coq.ZArith.BinInt Z of_nat def
-R4589:4589 ATL.GenLib <> m:33 var
-binder 4576:4576 <> i:37
-R4607:4612 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-R4614:4616 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-R4627:4646 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-R4617:4624 Coq.ZArith.BinInt Z of_nat def
-R4626:4626 ATL.GenLib <> n:32 var
-binder 4613:4613 <> j:38
-R4648:4650 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
-R4669:4669 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
-R4647:4647 ATL.GenLib <> l:34 var
-R4665:4667 Coq.ZArith.BinInt <> ::Z_scope:x_'+'_x not
-R4652:4654 Coq.ZArith.BinInt <> ::Z_scope:x_'*'_x not
-R4651:4651 ATL.GenLib <> j:38 var
-R4655:4662 Coq.ZArith.BinInt Z of_nat def
-R4664:4664 ATL.GenLib <> m:33 var
-R4668:4668 ATL.GenLib <> i:37 var
-R4701:4703 Coq.Init.Datatypes <> nil constr
-R4356:4365 ATL.ATL <> consistent meth
-R4369:4369 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R4373:4373 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R4376:4376 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R4371:4371 Coq.Init.Peano <> ::nat_scope:x_'*'_x not
-R4370:4370 ATL.GenLib <> n:32 var
-R4372:4372 ATL.GenLib <> m:33 var
-R4374:4375 Coq.Init.Datatypes <> tt constr
-R4367:4367 ATL.GenLib <> l:34 var
-def 4778:5636 <> Unnamed_thm
-binder 4790:4790 <> n:39
-binder 4792:4792 <> m:40
-R4799:4802 Coq.Init.Datatypes <> list ind
-R4805:4808 Coq.Init.Datatypes <> list ind
-R4810:4810 Coq.Reals.Rdefinitions RbaseSymbolsImpl R defax
-binder 4795:4795 <> v:41
-R4824:4831 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R4837:4844 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R4868:4871 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R5627:5630 Coq.Init.Logic <> ::type_scope:x_'='_x not
-R4872:4884 ATL.Common <> flatten_trunc def
-R4893:4898 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-R4900:4902 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-R4919:4926 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-R4913:4916 ATL.Div <> :::x_'//'_x not
-R4903:4910 Coq.ZArith.BinInt Z of_nat def
-R4912:4912 ATL.GenLib <> n:39 var
-binder 4899:4899 <> i:42
-R4927:4935 ATL.Common <> transpose def
-R4945:4957 ATL.Common <> flatten_trunc def
-R4972:4977 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-R4980:4982 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-R4999:5017 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-R4993:4996 ATL.Div <> :::x_'//'_x not
-R4983:4990 Coq.ZArith.BinInt Z of_nat def
-R4992:4992 ATL.GenLib <> m:40 var
-binder 4978:4979 <> xo:43
-R5018:5026 ATL.Common <> transpose def
-R5064:5064 ATL.ATL <> :::x_'<++>'_x not
-R5296:5341 ATL.ATL <> :::x_'<++>'_x not
-R5579:5579 ATL.ATL <> :::x_'<++>'_x not
-R5065:5070 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-R5073:5075 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-R5077:5103 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-R5295:5295 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-binder 5071:5072 <> i2:44
-R5104:5109 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-R5112:5114 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-R5117:5144 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-R5294:5294 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-binder 5110:5111 <> i1:45
-R5145:5147 ATL.ATL <> :::'|['_x_']|'_x not
-R5174:5203 ATL.ATL <> :::'|['_x_']|'_x not
-R5293:5293 ATL.ATL <> :::'|['_x_']|'_x not
-R5160:5163 Coq.ZArith.BinInt <> ::Z_scope:x_'<?'_x not
-R5155:5157 Coq.ZArith.BinInt <> ::Z_scope:x_'+'_x not
-R5150:5152 Coq.ZArith.BinInt <> ::Z_scope:x_'*'_x not
-R5148:5149 ATL.GenLib <> xo:43 var
-R5158:5159 ATL.GenLib <> i1:45 var
-R5164:5171 Coq.ZArith.BinInt Z of_nat def
-R5173:5173 ATL.GenLib <> m:40 var
-R5204:5206 ATL.ATL <> :::'|['_x_']|'_x not
-R5232:5262 ATL.ATL <> :::'|['_x_']|'_x not
-R5292:5292 ATL.ATL <> :::'|['_x_']|'_x not
-R5218:5221 Coq.ZArith.BinInt <> ::Z_scope:x_'<?'_x not
-R5213:5215 Coq.ZArith.BinInt <> ::Z_scope:x_'+'_x not
-R5208:5210 Coq.ZArith.BinInt <> ::Z_scope:x_'*'_x not
-R5207:5207 ATL.GenLib <> i:42 var
-R5216:5217 ATL.GenLib <> i2:44 var
-R5222:5229 Coq.ZArith.BinInt Z of_nat def
-R5231:5231 ATL.GenLib <> n:39 var
-R5264:5266 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
-R5278:5278 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
-R5291:5291 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
-R5263:5263 ATL.GenLib <> v:41 var
-R5273:5275 Coq.ZArith.BinInt <> ::Z_scope:x_'+'_x not
-R5268:5270 Coq.ZArith.BinInt <> ::Z_scope:x_'*'_x not
-R5267:5267 ATL.GenLib <> i:42 var
-R5276:5277 ATL.GenLib <> i2:44 var
-R5286:5288 Coq.ZArith.BinInt <> ::Z_scope:x_'+'_x not
-R5281:5283 Coq.ZArith.BinInt <> ::Z_scope:x_'*'_x not
-R5279:5280 ATL.GenLib <> xo:43 var
-R5289:5290 ATL.GenLib <> i1:45 var
-R5342:5347 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
-R5349:5352 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
-R5355:5357 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
-R5360:5386 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
-R5578:5578 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
-binder 5353:5354 <> i2:46
-R5387:5392 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-R5395:5397 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-R5400:5427 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-R5577:5577 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
-binder 5393:5394 <> i1:47
-R5428:5430 ATL.ATL <> :::'|['_x_']|'_x not
-R5457:5486 ATL.ATL <> :::'|['_x_']|'_x not
-R5576:5576 ATL.ATL <> :::'|['_x_']|'_x not
-R5443:5446 Coq.ZArith.BinInt <> ::Z_scope:x_'<?'_x not
-R5438:5440 Coq.ZArith.BinInt <> ::Z_scope:x_'+'_x not
-R5433:5435 Coq.ZArith.BinInt <> ::Z_scope:x_'*'_x not
-R5431:5432 ATL.GenLib <> xo:43 var
-R5441:5442 ATL.GenLib <> i1:47 var
-R5447:5454 Coq.ZArith.BinInt Z of_nat def
-R5456:5456 ATL.GenLib <> m:40 var
-R5487:5489 ATL.ATL <> :::'|['_x_']|'_x not
-R5515:5545 ATL.ATL <> :::'|['_x_']|'_x not
-R5575:5575 ATL.ATL <> :::'|['_x_']|'_x not
-R5501:5504 Coq.ZArith.BinInt <> ::Z_scope:x_'<?'_x not
-R5496:5498 Coq.ZArith.BinInt <> ::Z_scope:x_'+'_x not
-R5491:5493 Coq.ZArith.BinInt <> ::Z_scope:x_'*'_x not
-R5490:5490 ATL.GenLib <> i:42 var
-R5499:5500 ATL.GenLib <> i2:46 var
-R5505:5512 Coq.ZArith.BinInt Z of_nat def
-R5514:5514 ATL.GenLib <> n:39 var
-R5547:5549 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
-R5561:5561 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
-R5574:5574 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
-R5546:5546 ATL.GenLib <> v:41 var
-R5556:5558 Coq.ZArith.BinInt <> ::Z_scope:x_'+'_x not
-R5551:5553 Coq.ZArith.BinInt <> ::Z_scope:x_'*'_x not
-R5550:5550 ATL.GenLib <> i:42 var
-R5559:5560 ATL.GenLib <> i2:46 var
-R5569:5571 Coq.ZArith.BinInt <> ::Z_scope:x_'+'_x not
-R5564:5566 Coq.ZArith.BinInt <> ::Z_scope:x_'*'_x not
-R5562:5563 ATL.GenLib <> xo:43 var
-R5572:5573 ATL.GenLib <> i1:47 var
-R4959:4959 ATL.GenLib <> m:40 var
-R4886:4886 ATL.GenLib <> n:39 var
-R5632:5634 Coq.Init.Datatypes <> nil constr
-R4845:4854 ATL.ATL <> consistent meth
-R4858:4858 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R4860:4860 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R4867:4867 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R4859:4859 ATL.GenLib <> n:39 var
-R4861:4861 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R4863:4863 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R4866:4866 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R4862:4862 ATL.GenLib <> m:40 var
-R4864:4865 Coq.Init.Datatypes <> tt constr
-R4856:4856 ATL.GenLib <> v:41 var
-R4833:4835 Coq.Init.Peano <> ::nat_scope:x_'<'_x not
-R4836:4836 ATL.GenLib <> m:40 var
-R4820:4822 Coq.Init.Peano <> ::nat_scope:x_'<'_x not
-R4823:4823 ATL.GenLib <> n:39 var
-def 5711:5850 <> Unnamed_thm
-R5729:5732 Coq.Init.Datatypes <> list ind
-R5734:5734 Coq.Reals.Rdefinitions RbaseSymbolsImpl R defax
-binder 5724:5724 <> c:48
-R5745:5745 Coq.Numbers.BinNums <> Z ind
-binder 5739:5739 <> n:49
-binder 5741:5741 <> m:50
-R5762:5769 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R5782:5789 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R5818:5825 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R5837:5839 Coq.Init.Logic <> ::type_scope:x_'='_x not
-R5826:5830 ATL.Convolution <> conv4 def
-R5836:5836 ATL.GenLib <> m:50 var
-R5834:5834 ATL.GenLib <> n:49 var
-R5832:5832 ATL.GenLib <> c:48 var
-R5840:5844 ATL.Convolution <> conv1 def
-R5850:5850 ATL.GenLib <> m:50 var
-R5848:5848 ATL.GenLib <> n:49 var
-R5846:5846 ATL.GenLib <> c:48 var
-R5790:5799 ATL.ATL <> consistent meth
-R5803:5803 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R5814:5814 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R5817:5817 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R5804:5811 Coq.ZArith.BinInt Z to_nat def
-R5813:5813 ATL.GenLib <> n:49 var
-R5815:5816 Coq.Init.Datatypes <> tt constr
-R5801:5801 ATL.GenLib <> c:48 var
-R5775:5777 Coq.ZArith.BinInt <> ::Z_scope:x_'<'_x not
-R5773:5773 Coq.ZArith.BinInt <> ::Z_scope:x_'+'_x not
-R5771:5771 Coq.ZArith.BinInt <> ::Z_scope:'-'_x not
-R5772:5772 ATL.GenLib <> m:50 var
-R5778:5778 ATL.GenLib <> n:49 var
-R5755:5757 Coq.ZArith.BinInt <> ::Z_scope:x_'<'_x not
-R5758:5758 ATL.GenLib <> n:49 var
-def 5917:6056 <> Unnamed_thm
-R5935:5938 Coq.Init.Datatypes <> list ind
-R5940:5940 Coq.Reals.Rdefinitions RbaseSymbolsImpl R defax
-binder 5930:5930 <> c:51
-R5951:5951 Coq.Numbers.BinNums <> Z ind
-binder 5945:5945 <> n:52
-binder 5947:5947 <> m:53
-R5968:5975 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R5988:5995 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R6024:6031 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R6043:6045 Coq.Init.Logic <> ::type_scope:x_'='_x not
-R6032:6036 ATL.Convolution <> conv1 def
-R6042:6042 ATL.GenLib <> m:53 var
-R6040:6040 ATL.GenLib <> n:52 var
-R6038:6038 ATL.GenLib <> c:51 var
-R6046:6050 ATL.Convolution <> conv4 def
-R6056:6056 ATL.GenLib <> m:53 var
-R6054:6054 ATL.GenLib <> n:52 var
-R6052:6052 ATL.GenLib <> c:51 var
-R5996:6005 ATL.ATL <> consistent meth
-R6009:6009 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R6020:6020 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R6023:6023 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R6010:6017 Coq.ZArith.BinInt Z to_nat def
-R6019:6019 ATL.GenLib <> n:52 var
-R6021:6022 Coq.Init.Datatypes <> tt constr
-R6007:6007 ATL.GenLib <> c:51 var
-R5981:5983 Coq.ZArith.BinInt <> ::Z_scope:x_'<'_x not
-R5979:5979 Coq.ZArith.BinInt <> ::Z_scope:x_'+'_x not
-R5977:5977 Coq.ZArith.BinInt <> ::Z_scope:'-'_x not
-R5978:5978 ATL.GenLib <> m:53 var
-R5984:5984 ATL.GenLib <> n:52 var
-R5961:5963 Coq.ZArith.BinInt <> ::Z_scope:x_'<'_x not
-R5964:5964 ATL.GenLib <> n:52 var
-def 6124:6261 <> Unnamed_thm
-binder 6136:6136 <> N:54
-binder 6138:6138 <> M:55
-R6145:6148 Coq.Init.Datatypes <> list ind
-R6151:6154 Coq.Init.Datatypes <> list ind
-R6156:6156 Coq.Reals.Rdefinitions RbaseSymbolsImpl R defax
-binder 6141:6141 <> v:56
-R6170:6177 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R6183:6190 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R6214:6221 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R6241:6243 Coq.Init.Logic <> ::type_scope:x_'='_x not
-R6222:6234 ATL.Blur <> blurimmediate def
-R6240:6240 ATL.GenLib <> v:56 var
-R6238:6238 ATL.GenLib <> M:55 var
-R6236:6236 ATL.GenLib <> N:54 var
-R6244:6255 ATL.Blur <> blurtwostage def
-R6261:6261 ATL.GenLib <> v:56 var
-R6259:6259 ATL.GenLib <> M:55 var
-R6257:6257 ATL.GenLib <> N:54 var
-R6191:6200 ATL.ATL <> consistent meth
-R6204:6204 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R6206:6206 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R6213:6213 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R6205:6205 ATL.GenLib <> N:54 var
-R6207:6207 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R6209:6209 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R6212:6212 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R6208:6208 ATL.GenLib <> M:55 var
-R6210:6211 Coq.Init.Datatypes <> tt constr
-R6202:6202 ATL.GenLib <> v:56 var
-R6179:6181 Coq.Init.Peano <> ::nat_scope:x_'<'_x not
-R6182:6182 ATL.GenLib <> M:55 var
-R6166:6168 Coq.Init.Peano <> ::nat_scope:x_'<'_x not
-R6169:6169 ATL.GenLib <> N:54 var
-def 6330:6467 <> Unnamed_thm
-binder 6342:6342 <> N:57
-binder 6344:6344 <> M:58
-R6351:6354 Coq.Init.Datatypes <> list ind
-R6357:6360 Coq.Init.Datatypes <> list ind
-R6362:6362 Coq.Reals.Rdefinitions RbaseSymbolsImpl R defax
-binder 6347:6347 <> v:59
-R6376:6383 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R6389:6396 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R6420:6427 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R6446:6448 Coq.Init.Logic <> ::type_scope:x_'='_x not
-R6428:6439 ATL.Blur <> blurtwostage def
-R6445:6445 ATL.GenLib <> v:59 var
-R6443:6443 ATL.GenLib <> M:58 var
-R6441:6441 ATL.GenLib <> N:57 var
-R6449:6461 ATL.Blur <> blurimmediate def
-R6467:6467 ATL.GenLib <> v:59 var
-R6465:6465 ATL.GenLib <> M:58 var
-R6463:6463 ATL.GenLib <> N:57 var
-R6397:6406 ATL.ATL <> consistent meth
-R6410:6410 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R6412:6412 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R6419:6419 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R6411:6411 ATL.GenLib <> N:57 var
-R6413:6413 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R6415:6415 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R6418:6418 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R6414:6414 ATL.GenLib <> M:58 var
-R6416:6417 Coq.Init.Datatypes <> tt constr
-R6408:6408 ATL.GenLib <> v:59 var
-R6385:6387 Coq.Init.Peano <> ::nat_scope:x_'<'_x not
-R6388:6388 ATL.GenLib <> M:58 var
-R6372:6374 Coq.Init.Peano <> ::nat_scope:x_'<'_x not
-R6375:6375 ATL.GenLib <> N:57 var
-def 6536:6677 <> Unnamed_thm
-binder 6548:6548 <> n:60
-binder 6550:6550 <> m:61
-R6557:6560 Coq.Init.Datatypes <> list ind
-R6563:6566 Coq.Init.Datatypes <> list ind
-R6568:6568 Coq.Reals.Rdefinitions RbaseSymbolsImpl R defax
-binder 6553:6553 <> l:62
-R6582:6589 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R6595:6602 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R6626:6633 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R6664:6671 Coq.Init.Logic <> ::type_scope:x_'='_x not
-R6634:6651 ATL.Blur <> blur_tiles_guarded def
-R6663:6663 ATL.GenLib <> l:62 var
-R6661:6661 ATL.GenLib <> m:61 var
-R6659:6659 ATL.GenLib <> n:60 var
-R6673:6675 Coq.Init.Datatypes <> nil constr
-R6603:6612 ATL.ATL <> consistent meth
-R6616:6616 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R6618:6618 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R6625:6625 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R6617:6617 ATL.GenLib <> n:60 var
-R6619:6619 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R6621:6621 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R6624:6624 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R6620:6620 ATL.GenLib <> m:61 var
-R6622:6623 Coq.Init.Datatypes <> tt constr
-R6614:6614 ATL.GenLib <> l:62 var
-R6591:6593 Coq.Init.Peano <> ::nat_scope:x_'<'_x not
-R6594:6594 ATL.GenLib <> m:61 var
-R6578:6580 Coq.Init.Peano <> ::nat_scope:x_'<'_x not
-R6581:6581 ATL.GenLib <> n:60 var
-def 6749:6884 <> Unnamed_thm
-binder 6761:6761 <> n:63
-binder 6763:6763 <> m:64
-R6770:6773 Coq.Init.Datatypes <> list ind
-R6776:6779 Coq.Init.Datatypes <> list ind
-R6781:6781 Coq.Reals.Rdefinitions RbaseSymbolsImpl R defax
-binder 6766:6766 <> l:65
-R6795:6802 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R6808:6815 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R6839:6846 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R6871:6878 Coq.Init.Logic <> ::type_scope:x_'='_x not
-R6847:6864 ATL.Blur <> fusion_no_boundary def
-R6870:6870 ATL.GenLib <> l:65 var
-R6868:6868 ATL.GenLib <> m:64 var
-R6866:6866 ATL.GenLib <> n:63 var
-R6880:6882 Coq.Init.Datatypes <> nil constr
-R6816:6825 ATL.ATL <> consistent meth
-R6829:6829 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R6831:6831 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R6838:6838 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R6830:6830 ATL.GenLib <> n:63 var
-R6832:6832 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R6834:6834 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R6837:6837 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R6833:6833 ATL.GenLib <> m:64 var
-R6835:6836 Coq.Init.Datatypes <> tt constr
-R6827:6827 ATL.GenLib <> l:65 var
-R6804:6806 Coq.Init.Peano <> ::nat_scope:x_'<'_x not
-R6807:6807 ATL.GenLib <> m:64 var
-R6791:6793 Coq.Init.Peano <> ::nat_scope:x_'<'_x not
-R6794:6794 ATL.GenLib <> n:63 var
-def 6955:7094 <> Unnamed_thm
-binder 6967:6967 <> n:66
-binder 6969:6969 <> m:67
-R6976:6979 Coq.Init.Datatypes <> list ind
-R6982:6985 Coq.Init.Datatypes <> list ind
-R6987:6987 Coq.Reals.Rdefinitions RbaseSymbolsImpl R defax
-binder 6972:6972 <> l:68
-R7001:7008 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R7014:7021 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R7045:7052 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R7081:7088 Coq.Init.Logic <> ::type_scope:x_'='_x not
-R7053:7068 ATL.Blur <> tile_no_boundary def
-R7080:7080 ATL.GenLib <> l:68 var
-R7078:7078 ATL.GenLib <> m:67 var
-R7076:7076 ATL.GenLib <> n:66 var
-R7090:7092 Coq.Init.Datatypes <> nil constr
-R7022:7031 ATL.ATL <> consistent meth
-R7035:7035 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R3140:3140 ATL.GenLib <> n:8 var
+R3142:3142 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R3144:3144 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R3147:3147 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R3143:3143 ATL.GenLib <> m:9 var
+R3145:3146 Coq.Init.Datatypes <> tt constr
+R3137:3137 ATL.GenLib <> l:10 var
+R3574:3577 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R3157:3165 ATL.Common <> transpose def
+R3177:3177 ATL.ATL <> :::x_'<++>'_x not
+R3247:3284 ATL.ATL <> :::x_'<++>'_x not
+R3552:3563 ATL.ATL <> :::x_'<++>'_x not
+R3178:3183 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+R3185:3187 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+R3189:3203 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+binder 3184:3184 <> j:11
+R3204:3209 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+R3211:3213 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+R3224:3238 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+R3214:3221 Coq.ZArith.BinInt Z of_nat def
+R3223:3223 ATL.GenLib <> n:8 var
+binder 3210:3210 <> i:12
+R3240:3242 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
+R3244:3244 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
+R3246:3246 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
+R3239:3239 ATL.GenLib <> l:10 var
+R3243:3243 ATL.GenLib <> i:12 var
+R3245:3245 ATL.GenLib <> j:11 var
+R3285:3290 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
+R3292:3295 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
+R3297:3299 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
+R3310:3324 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
+R3300:3307 Coq.ZArith.BinInt Z of_nat def
+R3309:3309 ATL.GenLib <> m:9 var
+binder 3296:3296 <> j:13
+R3454:3484 ATL.ATL <> :::x_'<++>'_x not
+R3551:3551 ATL.ATL <> :::x_'<++>'_x not
+R3325:3325 ATL.ATL <> :::x_'<++>'_x not
+R3365:3396 ATL.ATL <> :::x_'<++>'_x not
+R3453:3453 ATL.ATL <> :::x_'<++>'_x not
+R3326:3331 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+R3333:3335 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+R3337:3356 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+binder 3332:3332 <> i:14
+R3358:3360 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
+R3362:3362 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
+R3364:3364 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
+R3357:3357 ATL.GenLib <> l:10 var
+R3361:3361 ATL.GenLib <> i:14 var
+R3363:3363 ATL.GenLib <> j:13 var
+R3397:3402 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
+R3404:3407 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
+R3409:3411 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
+R3426:3444 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
+R3422:3424 Coq.ZArith.BinInt <> ::Z_scope:x_'-'_x not
+R3412:3419 Coq.ZArith.BinInt Z of_nat def
+R3421:3421 ATL.GenLib <> n:8 var
+binder 3408:3408 <> i:15
+R3446:3448 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
+R3450:3450 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
+R3452:3452 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
+R3445:3445 ATL.GenLib <> l:10 var
+R3449:3449 ATL.GenLib <> i:15 var
+R3451:3451 ATL.GenLib <> j:13 var
+R3485:3490 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
+R3505:3508 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
+R3510:3512 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
+R3523:3542 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
+R3501:3503 Coq.ZArith.BinInt <> ::Z_scope:x_'-'_x not
+R3491:3498 Coq.ZArith.BinInt Z of_nat def
+R3500:3500 ATL.GenLib <> n:8 var
+R3513:3520 Coq.ZArith.BinInt Z of_nat def
+R3522:3522 ATL.GenLib <> n:8 var
+binder 3509:3509 <> i:16
+R3544:3546 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
+R3548:3548 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
+R3550:3550 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
+R3543:3543 ATL.GenLib <> l:10 var
+R3547:3547 ATL.GenLib <> i:16 var
+R3549:3549 ATL.GenLib <> j:13 var
+R3579:3581 Coq.Init.Datatypes <> nil constr
+def 3661:3969 <> Unnamed_thm
+binder 3673:3673 <> n:17
+binder 3675:3675 <> m:18
+R3682:3685 Coq.Init.Datatypes <> list ind
+R3688:3691 Coq.Init.Datatypes <> list ind
+R3693:3693 Coq.Reals.Rdefinitions RbaseSymbolsImpl R defax
+binder 3678:3678 <> l:19
+R3725:3732 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R3702:3711 ATL.ATL <> consistent meth
+R3715:3715 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R3717:3717 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R3724:3724 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R3716:3716 ATL.GenLib <> n:17 var
+R3718:3718 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R3720:3720 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R3723:3723 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R3719:3719 ATL.GenLib <> m:18 var
+R3721:3722 Coq.Init.Datatypes <> tt constr
+R3713:3713 ATL.GenLib <> l:19 var
+R3960:3963 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R3733:3741 ATL.Common <> transpose def
+R3753:3753 ATL.ATL <> :::x_'<++>'_x not
+R3823:3860 ATL.ATL <> :::x_'<++>'_x not
+R3947:3947 ATL.ATL <> :::x_'<++>'_x not
+R3754:3759 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+R3761:3763 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+R3765:3779 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+binder 3760:3760 <> j:20
+R3780:3785 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+R3787:3789 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+R3800:3814 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+R3790:3797 Coq.ZArith.BinInt Z of_nat def
+R3799:3799 ATL.GenLib <> n:17 var
+binder 3786:3786 <> i:21
+R3816:3818 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
+R3820:3820 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
+R3822:3822 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
+R3815:3815 ATL.GenLib <> l:19 var
+R3819:3819 ATL.GenLib <> i:21 var
+R3821:3821 ATL.GenLib <> j:20 var
+R3861:3866 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
+R3868:3871 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
+R3873:3875 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
+R3886:3903 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
+R3876:3883 Coq.ZArith.BinInt Z of_nat def
+R3885:3885 ATL.GenLib <> m:18 var
+binder 3872:3872 <> j:22
+R3904:3909 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+R3911:3913 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+R3924:3938 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+R3914:3921 Coq.ZArith.BinInt Z of_nat def
+R3923:3923 ATL.GenLib <> n:17 var
+binder 3910:3910 <> i:23
+R3940:3942 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
+R3944:3944 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
+R3946:3946 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
+R3939:3939 ATL.GenLib <> l:19 var
+R3943:3943 ATL.GenLib <> i:23 var
+R3945:3945 ATL.GenLib <> j:22 var
+R3965:3967 Coq.Init.Datatypes <> nil constr
+def 4047:4501 <> Unnamed_thm
+binder 4059:4059 <> n:24
+binder 4061:4061 <> m:25
+R4068:4071 Coq.Init.Datatypes <> list ind
+R4074:4077 Coq.Init.Datatypes <> list ind
+R4079:4079 Coq.Reals.Rdefinitions RbaseSymbolsImpl R defax
+binder 4064:4064 <> v:26
+R4093:4100 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R4089:4091 Coq.Init.Peano <> ::nat_scope:x_'<'_x not
+R4092:4092 ATL.GenLib <> n:24 var
+R4106:4113 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R4102:4104 Coq.Init.Peano <> ::nat_scope:x_'<'_x not
+R4105:4105 ATL.GenLib <> m:25 var
+R4137:4144 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R4114:4123 ATL.ATL <> consistent meth
+R4127:4127 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R4129:4129 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R4136:4136 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R4128:4128 ATL.GenLib <> n:24 var
+R4130:4130 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R4132:4132 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R4135:4135 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R4131:4131 ATL.GenLib <> m:25 var
+R4133:4134 Coq.Init.Datatypes <> tt constr
+R4125:4125 ATL.GenLib <> v:26 var
+R4492:4495 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R4145:4153 ATL.Common <> transpose def
+R4165:4165 ATL.ATL <> :::x_'<++>'_x not
+R4317:4380 ATL.ATL <> :::x_'<++>'_x not
+R4470:4481 ATL.ATL <> :::x_'<++>'_x not
+R4166:4171 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+R4173:4175 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+R4177:4190 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+binder 4172:4172 <> j:27
+R4191:4191 ATL.ATL <> :::x_'<++>'_x not
+R4231:4262 ATL.ATL <> :::x_'<++>'_x not
+R4316:4316 ATL.ATL <> :::x_'<++>'_x not
+R4192:4197 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+R4199:4201 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+R4203:4222 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+binder 4198:4198 <> i:28
+R4224:4226 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
+R4228:4228 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
+R4230:4230 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
+R4223:4223 ATL.GenLib <> v:26 var
+R4227:4227 ATL.GenLib <> i:28 var
+R4229:4229 ATL.GenLib <> j:27 var
+R4263:4268 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
+R4270:4273 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
+R4275:4277 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
+R4288:4307 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
+R4278:4285 Coq.ZArith.BinInt Z of_nat def
+R4287:4287 ATL.GenLib <> n:24 var
+binder 4274:4274 <> i:29
+R4309:4311 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
+R4313:4313 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
+R4315:4315 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
+R4308:4308 ATL.GenLib <> v:26 var
+R4312:4312 ATL.GenLib <> i:29 var
+R4314:4314 ATL.GenLib <> j:27 var
+R4381:4386 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
+R4388:4391 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
+R4393:4395 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
+R4406:4423 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
+R4396:4403 Coq.ZArith.BinInt Z of_nat def
+R4405:4405 ATL.GenLib <> m:25 var
+binder 4392:4392 <> j:30
+R4424:4429 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+R4431:4433 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+R4444:4461 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+R4434:4441 Coq.ZArith.BinInt Z of_nat def
+R4443:4443 ATL.GenLib <> n:24 var
+binder 4430:4430 <> i:31
+R4463:4465 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
+R4467:4467 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
+R4469:4469 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
+R4462:4462 ATL.GenLib <> v:26 var
+R4466:4466 ATL.GenLib <> i:31 var
+R4468:4468 ATL.GenLib <> j:30 var
+R4497:4499 Coq.Init.Datatypes <> nil constr
+def 4579:4832 <> Unnamed_thm
+binder 4591:4591 <> n:32
+binder 4593:4593 <> m:33
+R4600:4603 Coq.Init.Datatypes <> list ind
+R4606:4609 Coq.Init.Datatypes <> list ind
+R4611:4611 Coq.Reals.Rdefinitions RbaseSymbolsImpl R defax
+binder 4596:4596 <> l:34
+R4643:4650 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R4620:4629 ATL.ATL <> consistent meth
+R4633:4633 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R4635:4635 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R4642:4642 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R4634:4634 ATL.GenLib <> n:32 var
+R4636:4636 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R4638:4638 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R4641:4641 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R4637:4637 ATL.GenLib <> m:33 var
+R4639:4640 Coq.Init.Datatypes <> tt constr
+R4631:4631 ATL.GenLib <> l:34 var
+R4823:4826 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R4651:4659 ATL.Common <> transpose def
+R4671:4676 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+R4678:4680 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+R4691:4705 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+R4681:4688 Coq.ZArith.BinInt Z of_nat def
+R4690:4690 ATL.GenLib <> m:33 var
+binder 4677:4677 <> j:35
+R4706:4706 ATL.ATL <> :::x_'<++>'_x not
+R4741:4772 ATL.ATL <> :::x_'<++>'_x not
+R4821:4821 ATL.ATL <> :::x_'<++>'_x not
+R4707:4712 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+R4714:4716 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+R4718:4732 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+binder 4713:4713 <> i:36
+R4734:4736 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
+R4738:4738 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
+R4740:4740 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
+R4733:4733 ATL.GenLib <> l:34 var
+R4737:4737 ATL.GenLib <> i:36 var
+R4739:4739 ATL.GenLib <> j:35 var
+R4773:4778 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
+R4780:4783 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
+R4785:4787 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
+R4798:4812 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
+R4788:4795 Coq.ZArith.BinInt Z of_nat def
+R4797:4797 ATL.GenLib <> n:32 var
+binder 4784:4784 <> i:37
+R4814:4816 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
+R4818:4818 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
+R4820:4820 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
+R4813:4813 ATL.GenLib <> l:34 var
+R4817:4817 ATL.GenLib <> i:37 var
+R4819:4819 ATL.GenLib <> j:35 var
+R4828:4830 Coq.Init.Datatypes <> nil constr
+def 4910:5295 <> Unnamed_thm
+binder 4922:4922 <> n:38
+binder 4924:4924 <> m:39
+R4932:4935 Coq.Init.Datatypes <> list ind
+R4937:4937 Coq.Reals.Rdefinitions RbaseSymbolsImpl R defax
+binder 4927:4927 <> l:40
+R4967:4974 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R4946:4955 ATL.ATL <> consistent meth
+R4959:4959 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R4963:4963 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R4966:4966 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R4961:4961 Coq.Init.Nat <> ::nat_scope:x_'*'_x not
+R4960:4960 ATL.GenLib <> n:38 var
+R4962:4962 ATL.GenLib <> m:39 var
+R4964:4965 Coq.Init.Datatypes <> tt constr
+R4957:4957 ATL.GenLib <> l:40 var
+R5285:5289 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R4975:4981 ATL.Common <> flatten def
+R4993:5001 ATL.Common <> transpose def
+R5027:5027 ATL.ATL <> :::x_'<++>'_x not
+R5121:5154 ATL.ATL <> :::x_'<++>'_x not
+R5261:5261 ATL.ATL <> :::x_'<++>'_x not
+R5028:5033 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+R5035:5037 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+R5039:5055 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+R5120:5120 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+binder 5034:5034 <> i:41
+R5056:5061 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+R5063:5065 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+R5076:5096 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+R5066:5073 Coq.ZArith.BinInt Z of_nat def
+R5075:5075 ATL.GenLib <> n:38 var
+binder 5062:5062 <> j:42
+R5098:5100 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
+R5119:5119 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
+R5097:5097 ATL.GenLib <> l:40 var
+R5115:5117 Coq.ZArith.BinInt <> ::Z_scope:x_'+'_x not
+R5102:5104 Coq.ZArith.BinInt <> ::Z_scope:x_'*'_x not
+R5101:5101 ATL.GenLib <> j:42 var
+R5105:5112 Coq.ZArith.BinInt Z of_nat def
+R5114:5114 ATL.GenLib <> m:39 var
+R5118:5118 ATL.GenLib <> i:41 var
+R5155:5160 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
+R5162:5165 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
+R5167:5169 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
+R5180:5196 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
+R5260:5260 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
+R5170:5177 Coq.ZArith.BinInt Z of_nat def
+R5179:5179 ATL.GenLib <> m:39 var
+binder 5166:5166 <> i:43
+R5197:5202 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+R5204:5206 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+R5217:5236 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+R5207:5214 Coq.ZArith.BinInt Z of_nat def
+R5216:5216 ATL.GenLib <> n:38 var
+binder 5203:5203 <> j:44
+R5238:5240 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
+R5259:5259 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
+R5237:5237 ATL.GenLib <> l:40 var
+R5255:5257 Coq.ZArith.BinInt <> ::Z_scope:x_'+'_x not
+R5242:5244 Coq.ZArith.BinInt <> ::Z_scope:x_'*'_x not
+R5241:5241 ATL.GenLib <> j:44 var
+R5245:5252 Coq.ZArith.BinInt Z of_nat def
+R5254:5254 ATL.GenLib <> m:39 var
+R5258:5258 ATL.GenLib <> i:43 var
+R5291:5293 Coq.Init.Datatypes <> nil constr
+def 5373:6231 <> Unnamed_thm
+binder 5385:5385 <> n:45
+binder 5387:5387 <> m:46
+R5394:5397 Coq.Init.Datatypes <> list ind
+R5400:5403 Coq.Init.Datatypes <> list ind
+R5405:5405 Coq.Reals.Rdefinitions RbaseSymbolsImpl R defax
+binder 5390:5390 <> v:47
+R5419:5426 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R5415:5417 Coq.Init.Peano <> ::nat_scope:x_'<'_x not
+R5418:5418 ATL.GenLib <> n:45 var
+R5432:5439 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R5428:5430 Coq.Init.Peano <> ::nat_scope:x_'<'_x not
+R5431:5431 ATL.GenLib <> m:46 var
+R5463:5466 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R5440:5449 ATL.ATL <> consistent meth
+R5453:5453 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R5455:5455 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R5462:5462 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R5454:5454 ATL.GenLib <> n:45 var
+R5456:5456 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R5458:5458 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R5461:5461 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R5457:5457 ATL.GenLib <> m:46 var
+R5459:5460 Coq.Init.Datatypes <> tt constr
+R5451:5451 ATL.GenLib <> v:47 var
+R6222:6225 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R5467:5479 ATL.Common <> flatten_trunc def
+R5488:5493 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+R5495:5497 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+R5514:5521 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+R5508:5511 ATL.Div <> :::x_'//'_x not
+R5498:5505 Coq.ZArith.BinInt Z of_nat def
+R5507:5507 ATL.GenLib <> n:45 var
+binder 5494:5494 <> i:48
+R5522:5530 ATL.Common <> transpose def
+R5540:5552 ATL.Common <> flatten_trunc def
+R5567:5572 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+R5575:5577 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+R5594:5612 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+R5588:5591 ATL.Div <> :::x_'//'_x not
+R5578:5585 Coq.ZArith.BinInt Z of_nat def
+R5587:5587 ATL.GenLib <> m:46 var
+binder 5573:5574 <> xo:49
+R5613:5621 ATL.Common <> transpose def
+R5659:5659 ATL.ATL <> :::x_'<++>'_x not
+R5891:5936 ATL.ATL <> :::x_'<++>'_x not
+R6174:6174 ATL.ATL <> :::x_'<++>'_x not
+R5660:5665 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+R5668:5670 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+R5672:5698 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+R5890:5890 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+binder 5666:5667 <> i2:50
+R5699:5704 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+R5707:5709 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+R5712:5739 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+R5889:5889 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+binder 5705:5706 <> i1:51
+R5740:5742 ATL.ATL <> :::'|['_x_']|'_x not
+R5769:5798 ATL.ATL <> :::'|['_x_']|'_x not
+R5888:5888 ATL.ATL <> :::'|['_x_']|'_x not
+R5755:5758 Coq.ZArith.BinInt <> ::Z_scope:x_'<?'_x not
+R5750:5752 Coq.ZArith.BinInt <> ::Z_scope:x_'+'_x not
+R5745:5747 Coq.ZArith.BinInt <> ::Z_scope:x_'*'_x not
+R5743:5744 ATL.GenLib <> xo:49 var
+R5753:5754 ATL.GenLib <> i1:51 var
+R5759:5766 Coq.ZArith.BinInt Z of_nat def
+R5768:5768 ATL.GenLib <> m:46 var
+R5799:5801 ATL.ATL <> :::'|['_x_']|'_x not
+R5827:5857 ATL.ATL <> :::'|['_x_']|'_x not
+R5887:5887 ATL.ATL <> :::'|['_x_']|'_x not
+R5813:5816 Coq.ZArith.BinInt <> ::Z_scope:x_'<?'_x not
+R5808:5810 Coq.ZArith.BinInt <> ::Z_scope:x_'+'_x not
+R5803:5805 Coq.ZArith.BinInt <> ::Z_scope:x_'*'_x not
+R5802:5802 ATL.GenLib <> i:48 var
+R5811:5812 ATL.GenLib <> i2:50 var
+R5817:5824 Coq.ZArith.BinInt Z of_nat def
+R5826:5826 ATL.GenLib <> n:45 var
+R5859:5861 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
+R5873:5873 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
+R5886:5886 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
+R5858:5858 ATL.GenLib <> v:47 var
+R5868:5870 Coq.ZArith.BinInt <> ::Z_scope:x_'+'_x not
+R5863:5865 Coq.ZArith.BinInt <> ::Z_scope:x_'*'_x not
+R5862:5862 ATL.GenLib <> i:48 var
+R5871:5872 ATL.GenLib <> i2:50 var
+R5881:5883 Coq.ZArith.BinInt <> ::Z_scope:x_'+'_x not
+R5876:5878 Coq.ZArith.BinInt <> ::Z_scope:x_'*'_x not
+R5874:5875 ATL.GenLib <> xo:49 var
+R5884:5885 ATL.GenLib <> i1:51 var
+R5937:5942 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
+R5944:5947 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
+R5950:5952 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
+R5955:5981 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
+R6173:6173 ATL.ATL <> :::'GEN'_'['_x_'<='_x_'<'_x_']'_x not
+binder 5948:5949 <> i2:52
+R5982:5987 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+R5990:5992 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+R5995:6022 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+R6172:6172 ATL.ATL <> :::'GEN'_'['_x_'<'_x_']'_x not
+binder 5988:5989 <> i1:53
+R6023:6025 ATL.ATL <> :::'|['_x_']|'_x not
+R6052:6081 ATL.ATL <> :::'|['_x_']|'_x not
+R6171:6171 ATL.ATL <> :::'|['_x_']|'_x not
+R6038:6041 Coq.ZArith.BinInt <> ::Z_scope:x_'<?'_x not
+R6033:6035 Coq.ZArith.BinInt <> ::Z_scope:x_'+'_x not
+R6028:6030 Coq.ZArith.BinInt <> ::Z_scope:x_'*'_x not
+R6026:6027 ATL.GenLib <> xo:49 var
+R6036:6037 ATL.GenLib <> i1:53 var
+R6042:6049 Coq.ZArith.BinInt Z of_nat def
+R6051:6051 ATL.GenLib <> m:46 var
+R6082:6084 ATL.ATL <> :::'|['_x_']|'_x not
+R6110:6140 ATL.ATL <> :::'|['_x_']|'_x not
+R6170:6170 ATL.ATL <> :::'|['_x_']|'_x not
+R6096:6099 Coq.ZArith.BinInt <> ::Z_scope:x_'<?'_x not
+R6091:6093 Coq.ZArith.BinInt <> ::Z_scope:x_'+'_x not
+R6086:6088 Coq.ZArith.BinInt <> ::Z_scope:x_'*'_x not
+R6085:6085 ATL.GenLib <> i:48 var
+R6094:6095 ATL.GenLib <> i2:52 var
+R6100:6107 Coq.ZArith.BinInt Z of_nat def
+R6109:6109 ATL.GenLib <> n:45 var
+R6142:6144 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
+R6156:6156 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
+R6169:6169 ATL.ATL <> :::x_'_['_x_';'_'..'_';'_x_']' not
+R6141:6141 ATL.GenLib <> v:47 var
+R6151:6153 Coq.ZArith.BinInt <> ::Z_scope:x_'+'_x not
+R6146:6148 Coq.ZArith.BinInt <> ::Z_scope:x_'*'_x not
+R6145:6145 ATL.GenLib <> i:48 var
+R6154:6155 ATL.GenLib <> i2:52 var
+R6164:6166 Coq.ZArith.BinInt <> ::Z_scope:x_'+'_x not
+R6159:6161 Coq.ZArith.BinInt <> ::Z_scope:x_'*'_x not
+R6157:6158 ATL.GenLib <> xo:49 var
+R6167:6168 ATL.GenLib <> i1:53 var
+R5554:5554 ATL.GenLib <> m:46 var
+R5481:5481 ATL.GenLib <> n:45 var
+R6227:6229 Coq.Init.Datatypes <> nil constr
+def 6310:6447 <> Unnamed_thm
+binder 6322:6322 <> N:54
+binder 6324:6324 <> M:55
+R6331:6334 Coq.Init.Datatypes <> list ind
+R6337:6340 Coq.Init.Datatypes <> list ind
+R6342:6342 Coq.Reals.Rdefinitions RbaseSymbolsImpl R defax
+binder 6327:6327 <> v:56
+R6356:6363 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R6352:6354 Coq.Init.Peano <> ::nat_scope:x_'<'_x not
+R6355:6355 ATL.GenLib <> N:54 var
+R6369:6376 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R6365:6367 Coq.Init.Peano <> ::nat_scope:x_'<'_x not
+R6368:6368 ATL.GenLib <> M:55 var
+R6400:6407 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R6377:6386 ATL.ATL <> consistent meth
+R6390:6390 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R6392:6392 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R6399:6399 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R6391:6391 ATL.GenLib <> N:54 var
+R6393:6393 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R6395:6395 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R6398:6398 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R6394:6394 ATL.GenLib <> M:55 var
+R6396:6397 Coq.Init.Datatypes <> tt constr
+R6388:6388 ATL.GenLib <> v:56 var
+R6427:6429 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R6408:6420 ATL.Blur <> blurimmediate def
+R6426:6426 ATL.GenLib <> N:54 var
+R6424:6424 ATL.GenLib <> M:55 var
+R6422:6422 ATL.GenLib <> v:56 var
+R6430:6441 ATL.Blur <> blurtwostage def
+R6447:6447 ATL.GenLib <> v:56 var
+R6445:6445 ATL.GenLib <> M:55 var
+R6443:6443 ATL.GenLib <> N:54 var
+def 6521:6658 <> Unnamed_thm
+binder 6533:6533 <> N:57
+binder 6535:6535 <> M:58
+R6542:6545 Coq.Init.Datatypes <> list ind
+R6548:6551 Coq.Init.Datatypes <> list ind
+R6553:6553 Coq.Reals.Rdefinitions RbaseSymbolsImpl R defax
+binder 6538:6538 <> v:59
+R6567:6574 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R6563:6565 Coq.Init.Peano <> ::nat_scope:x_'<'_x not
+R6566:6566 ATL.GenLib <> N:57 var
+R6580:6587 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R6576:6578 Coq.Init.Peano <> ::nat_scope:x_'<'_x not
+R6579:6579 ATL.GenLib <> M:58 var
+R6611:6618 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R6588:6597 ATL.ATL <> consistent meth
+R6601:6601 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R6603:6603 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R6610:6610 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R6602:6602 ATL.GenLib <> N:57 var
+R6604:6604 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R6606:6606 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R6609:6609 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R6605:6605 ATL.GenLib <> M:58 var
+R6607:6608 Coq.Init.Datatypes <> tt constr
+R6599:6599 ATL.GenLib <> v:59 var
+R6637:6639 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R6619:6630 ATL.Blur <> blurtwostage def
+R6636:6636 ATL.GenLib <> v:59 var
+R6634:6634 ATL.GenLib <> M:58 var
+R6632:6632 ATL.GenLib <> N:57 var
+R6640:6652 ATL.Blur <> blurimmediate def
+R6658:6658 ATL.GenLib <> N:57 var
+R6656:6656 ATL.GenLib <> M:58 var
+R6654:6654 ATL.GenLib <> v:59 var
+def 6732:6872 <> Unnamed_thm
+binder 6744:6744 <> n:60
+binder 6746:6746 <> m:61
+R6753:6756 Coq.Init.Datatypes <> list ind
+R6759:6762 Coq.Init.Datatypes <> list ind
+R6764:6764 Coq.Reals.Rdefinitions RbaseSymbolsImpl R defax
+binder 6749:6749 <> l:62
+R6778:6785 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R6774:6776 Coq.Init.Peano <> ::nat_scope:x_'<'_x not
+R6777:6777 ATL.GenLib <> n:60 var
+R6791:6798 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R6787:6789 Coq.Init.Peano <> ::nat_scope:x_'<'_x not
+R6790:6790 ATL.GenLib <> m:61 var
+R6822:6829 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R6799:6808 ATL.ATL <> consistent meth
+R6812:6812 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R6814:6814 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R6821:6821 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R6813:6813 ATL.GenLib <> n:60 var
+R6815:6815 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R6817:6817 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R6820:6820 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R6816:6816 ATL.GenLib <> m:61 var
+R6818:6819 Coq.Init.Datatypes <> tt constr
+R6810:6810 ATL.GenLib <> l:62 var
+R6860:6866 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R6830:6847 ATL.Blur <> blur_tiles_guarded def
+R6853:6853 ATL.GenLib <> m:61 var
+R6851:6851 ATL.GenLib <> n:60 var
+R6849:6849 ATL.GenLib <> l:62 var
+R6868:6870 Coq.Init.Datatypes <> nil constr
+def 6948:7083 <> Unnamed_thm
+binder 6960:6960 <> n:63
+binder 6962:6962 <> m:64
+R6969:6972 Coq.Init.Datatypes <> list ind
+R6975:6978 Coq.Init.Datatypes <> list ind
+R6980:6980 Coq.Reals.Rdefinitions RbaseSymbolsImpl R defax
+binder 6965:6965 <> l:65
+R6994:7001 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R6990:6992 Coq.Init.Peano <> ::nat_scope:x_'<'_x not
+R6993:6993 ATL.GenLib <> n:63 var
+R7007:7014 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R7003:7005 Coq.Init.Peano <> ::nat_scope:x_'<'_x not
+R7006:7006 ATL.GenLib <> m:64 var
+R7038:7045 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R7015:7024 ATL.ATL <> consistent meth
+R7028:7028 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R7030:7030 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
 R7037:7037 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R7044:7044 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R7036:7036 ATL.GenLib <> n:66 var
-R7038:7038 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R7040:7040 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R7043:7043 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R7039:7039 ATL.GenLib <> m:67 var
-R7041:7042 Coq.Init.Datatypes <> tt constr
-R7033:7033 ATL.GenLib <> l:68 var
-R7010:7012 Coq.Init.Peano <> ::nat_scope:x_'<'_x not
-R7013:7013 ATL.GenLib <> m:67 var
-R6997:6999 Coq.Init.Peano <> ::nat_scope:x_'<'_x not
-R7000:7000 ATL.GenLib <> n:66 var
-def 7163:7353 <> Unnamed_thm
-binder 7175:7175 <> W:69
-binder 7177:7177 <> C:70
+R7029:7029 ATL.GenLib <> n:63 var
+R7031:7031 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R7033:7033 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R7036:7036 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R7032:7032 ATL.GenLib <> m:64 var
+R7034:7035 Coq.Init.Datatypes <> tt constr
+R7026:7026 ATL.GenLib <> l:65 var
+R7070:7077 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R7046:7063 ATL.Blur <> fusion_no_boundary def
+R7069:7069 ATL.GenLib <> l:65 var
+R7067:7067 ATL.GenLib <> m:64 var
+R7065:7065 ATL.GenLib <> n:63 var
+R7079:7081 Coq.Init.Datatypes <> nil constr
+def 7159:7298 <> Unnamed_thm
+binder 7171:7171 <> n:66
+binder 7173:7173 <> m:67
+R7180:7183 Coq.Init.Datatypes <> list ind
 R7186:7189 Coq.Init.Datatypes <> list ind
 R7191:7191 Coq.Reals.Rdefinitions RbaseSymbolsImpl R defax
-binder 7180:7180 <> x:71
-binder 7182:7182 <> w:72
-R7208:7215 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R7225:7232 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R7243:7250 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R7279:7286 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R7315:7322 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R7338:7340 Coq.Init.Logic <> ::type_scope:x_'='_x not
-R7323:7329 ATL.GatherScatter <> gather1 def
-R7337:7337 ATL.GenLib <> w:72 var
-R7335:7335 ATL.GenLib <> x:71 var
-R7333:7333 ATL.GenLib <> C:70 var
-R7331:7331 ATL.GenLib <> W:69 var
-R7341:7347 ATL.GatherScatter <> scatter def
-R7353:7353 ATL.GenLib <> w:72 var
-R7351:7351 ATL.GenLib <> x:71 var
-R7349:7349 ATL.GenLib <> W:69 var
-R7287:7296 ATL.ATL <> consistent meth
-R7300:7300 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R7311:7311 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R7314:7314 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R7301:7308 Coq.ZArith.BinInt Z to_nat def
-R7310:7310 ATL.GenLib <> W:69 var
-R7312:7313 Coq.Init.Datatypes <> tt constr
-R7298:7298 ATL.GenLib <> w:72 var
-R7251:7260 ATL.ATL <> consistent meth
-R7264:7264 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R7275:7275 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R7278:7278 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R7265:7272 Coq.ZArith.BinInt Z to_nat def
-R7274:7274 ATL.GenLib <> W:69 var
-R7276:7277 Coq.Init.Datatypes <> tt constr
-R7262:7262 ATL.GenLib <> x:71 var
-R7235:7238 Coq.ZArith.BinInt <> ::Z_scope:x_'<='_x not
-R7234:7234 ATL.GenLib <> W:69 var
-R7239:7239 ATL.GenLib <> C:70 var
-R7218:7220 Coq.ZArith.BinInt <> ::Z_scope:x_'<'_x not
-R7221:7221 ATL.GenLib <> W:69 var
-R7201:7203 Coq.ZArith.BinInt <> ::Z_scope:x_'<'_x not
-R7204:7204 ATL.GenLib <> C:70 var
-def 7427:7617 <> Unnamed_thm
-binder 7439:7439 <> W:73
-binder 7441:7441 <> C:74
-R7450:7453 Coq.Init.Datatypes <> list ind
-R7455:7455 Coq.Reals.Rdefinitions RbaseSymbolsImpl R defax
-binder 7444:7444 <> x:75
-binder 7446:7446 <> w:76
-R7472:7479 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R7489:7496 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R7507:7514 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R7543:7550 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R7579:7586 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R7600:7602 Coq.Init.Logic <> ::type_scope:x_'='_x not
-R7587:7593 ATL.GatherScatter <> scatter def
-R7599:7599 ATL.GenLib <> w:76 var
-R7597:7597 ATL.GenLib <> x:75 var
-R7595:7595 ATL.GenLib <> W:73 var
-R7603:7609 ATL.GatherScatter <> gather1 def
-R7617:7617 ATL.GenLib <> w:76 var
-R7615:7615 ATL.GenLib <> x:75 var
-R7613:7613 ATL.GenLib <> C:74 var
-R7611:7611 ATL.GenLib <> W:73 var
-R7551:7560 ATL.ATL <> consistent meth
-R7564:7564 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R7575:7575 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R7578:7578 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R7565:7572 Coq.ZArith.BinInt Z to_nat def
-R7574:7574 ATL.GenLib <> W:73 var
-R7576:7577 Coq.Init.Datatypes <> tt constr
-R7562:7562 ATL.GenLib <> w:76 var
-R7515:7524 ATL.ATL <> consistent meth
-R7528:7528 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R7539:7539 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R7542:7542 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R7529:7536 Coq.ZArith.BinInt Z to_nat def
-R7538:7538 ATL.GenLib <> W:73 var
-R7540:7541 Coq.Init.Datatypes <> tt constr
-R7526:7526 ATL.GenLib <> x:75 var
-R7499:7502 Coq.ZArith.BinInt <> ::Z_scope:x_'<='_x not
-R7498:7498 ATL.GenLib <> W:73 var
-R7503:7503 ATL.GenLib <> C:74 var
-R7482:7484 Coq.ZArith.BinInt <> ::Z_scope:x_'<'_x not
-R7485:7485 ATL.GenLib <> W:73 var
-R7465:7467 Coq.ZArith.BinInt <> ::Z_scope:x_'<'_x not
-R7468:7468 ATL.GenLib <> C:74 var
-def 7692:7925 <> Unnamed_thm
-binder 7704:7704 <> A:77
-binder 7706:7706 <> B:78
-binder 7708:7708 <> K:79
-binder 7710:7710 <> W:80
-binder 7712:7713 <> RR:81
-R7720:7723 Coq.Init.Datatypes <> list ind
-R7726:7729 Coq.Init.Datatypes <> list ind
-R7731:7731 Coq.Reals.Rdefinitions RbaseSymbolsImpl R defax
-binder 7716:7716 <> w:82
-R7740:7743 Coq.Init.Datatypes <> list ind
-R7745:7745 Coq.Reals.Rdefinitions RbaseSymbolsImpl R defax
-binder 7736:7736 <> x:83
-R7762:7769 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R7779:7786 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R7797:7808 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R7832:7838 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R7867:7874 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R7902:7904 Coq.Init.Logic <> ::type_scope:x_'='_x not
-R7875:7890 ATL.Im2col <> im2colminilifted def
-R7901:7901 ATL.GenLib <> x:83 var
-R7899:7899 ATL.GenLib <> w:82 var
-R7896:7897 ATL.GenLib <> RR:81 var
-R7894:7894 ATL.GenLib <> W:80 var
-R7892:7892 ATL.GenLib <> K:79 var
-R7905:7914 ATL.Im2col <> im2colmini def
-R7925:7925 ATL.GenLib <> x:83 var
-R7923:7923 ATL.GenLib <> w:82 var
-R7920:7921 ATL.GenLib <> RR:81 var
-R7918:7918 ATL.GenLib <> W:80 var
-R7916:7916 ATL.GenLib <> K:79 var
-R7839:7848 ATL.ATL <> consistent meth
-R7852:7852 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R7863:7863 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R7866:7866 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R7853:7860 Coq.ZArith.BinInt Z to_nat def
-R7862:7862 ATL.GenLib <> K:79 var
-R7864:7865 Coq.Init.Datatypes <> tt constr
-R7850:7850 ATL.GenLib <> x:83 var
-R7809:7818 ATL.ATL <> consistent meth
-R7822:7822 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R7824:7824 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R7831:7831 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R7823:7823 ATL.GenLib <> A:77 var
-R7825:7825 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R7827:7827 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R7830:7830 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R7826:7826 ATL.GenLib <> B:78 var
-R7828:7829 Coq.Init.Datatypes <> tt constr
-R7820:7820 ATL.GenLib <> w:82 var
-R7789:7791 Coq.ZArith.BinInt <> ::Z_scope:x_'<'_x not
-R7792:7793 ATL.GenLib <> RR:81 var
-R7772:7774 Coq.ZArith.BinInt <> ::Z_scope:x_'<'_x not
-R7775:7775 ATL.GenLib <> W:80 var
-R7755:7757 Coq.ZArith.BinInt <> ::Z_scope:x_'<'_x not
-R7758:7758 ATL.GenLib <> K:79 var
-def 8005:8238 <> Unnamed_thm
-binder 8017:8017 <> A:84
-binder 8019:8019 <> B:85
-binder 8021:8021 <> K:86
-binder 8023:8023 <> W:87
-binder 8025:8026 <> RR:88
-R8033:8036 Coq.Init.Datatypes <> list ind
-R8039:8042 Coq.Init.Datatypes <> list ind
-R8044:8044 Coq.Reals.Rdefinitions RbaseSymbolsImpl R defax
-binder 8029:8029 <> w:89
-R8053:8056 Coq.Init.Datatypes <> list ind
-R8058:8058 Coq.Reals.Rdefinitions RbaseSymbolsImpl R defax
-binder 8049:8049 <> x:90
-R8075:8082 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R8092:8099 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R8110:8121 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R8145:8151 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R8180:8187 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R8215:8217 Coq.Init.Logic <> ::type_scope:x_'='_x not
-R8188:8203 ATL.Im2col <> im2colminilifted def
-R8214:8214 ATL.GenLib <> x:90 var
-R8212:8212 ATL.GenLib <> w:89 var
-R8209:8210 ATL.GenLib <> RR:88 var
-R8207:8207 ATL.GenLib <> W:87 var
-R8205:8205 ATL.GenLib <> K:86 var
-R8218:8227 ATL.Im2col <> im2colmini def
-R8238:8238 ATL.GenLib <> x:90 var
-R8236:8236 ATL.GenLib <> w:89 var
-R8233:8234 ATL.GenLib <> RR:88 var
-R8231:8231 ATL.GenLib <> W:87 var
-R8229:8229 ATL.GenLib <> K:86 var
-R8152:8161 ATL.ATL <> consistent meth
-R8165:8165 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R8176:8176 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R8179:8179 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R8166:8173 Coq.ZArith.BinInt Z to_nat def
-R8175:8175 ATL.GenLib <> K:86 var
-R8177:8178 Coq.Init.Datatypes <> tt constr
-R8163:8163 ATL.GenLib <> x:90 var
-R8122:8131 ATL.ATL <> consistent meth
-R8135:8135 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R8137:8137 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R8144:8144 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R8136:8136 ATL.GenLib <> A:84 var
-R8138:8138 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R8140:8140 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R8143:8143 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R8139:8139 ATL.GenLib <> B:85 var
-R8141:8142 Coq.Init.Datatypes <> tt constr
-R8133:8133 ATL.GenLib <> w:89 var
-R8102:8104 Coq.ZArith.BinInt <> ::Z_scope:x_'<'_x not
-R8105:8106 ATL.GenLib <> RR:88 var
-R8085:8087 Coq.ZArith.BinInt <> ::Z_scope:x_'<'_x not
-R8088:8088 ATL.GenLib <> W:87 var
-R8068:8070 Coq.ZArith.BinInt <> ::Z_scope:x_'<'_x not
-R8071:8071 ATL.GenLib <> K:86 var
-def 8306:8441 <> Unnamed_thm
-binder 8318:8318 <> n:91
-binder 8320:8320 <> m:92
-R8327:8330 Coq.Init.Datatypes <> list ind
-R8333:8336 Coq.Init.Datatypes <> list ind
-R8338:8338 Coq.Reals.Rdefinitions RbaseSymbolsImpl R defax
-binder 8323:8323 <> v:93
-R8352:8359 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R8365:8372 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R8396:8403 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R8433:8435 Coq.Init.Logic <> ::type_scope:x_'='_x not
-R8404:8426 ATL.Blur <> blurimmediate_partition def
-R8432:8432 ATL.GenLib <> v:93 var
-R8430:8430 ATL.GenLib <> m:92 var
-R8428:8428 ATL.GenLib <> n:91 var
-R8437:8439 Coq.Init.Datatypes <> nil constr
-R8373:8382 ATL.ATL <> consistent meth
-R8386:8386 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R8388:8388 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R8395:8395 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R8387:8387 ATL.GenLib <> n:91 var
-R8389:8389 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R8391:8391 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R8394:8394 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R8390:8390 ATL.GenLib <> m:92 var
-R8392:8393 Coq.Init.Datatypes <> tt constr
-R8384:8384 ATL.GenLib <> v:93 var
-R8361:8363 Coq.Init.Peano <> ::nat_scope:x_'<'_x not
-R8364:8364 ATL.GenLib <> m:92 var
-R8348:8350 Coq.Init.Peano <> ::nat_scope:x_'<'_x not
-R8351:8351 ATL.GenLib <> n:91 var
-def 8513:8646 <> Unnamed_thm
-binder 8525:8525 <> n:94
-binder 8527:8527 <> m:95
-R8534:8537 Coq.Init.Datatypes <> list ind
-R8540:8543 Coq.Init.Datatypes <> list ind
-R8545:8545 Coq.Reals.Rdefinitions RbaseSymbolsImpl R defax
-binder 8530:8530 <> v:96
-R8559:8566 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R8572:8579 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R8603:8610 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R8638:8640 Coq.Init.Logic <> ::type_scope:x_'='_x not
-R8611:8631 ATL.Blur <> blurimmediate_isolate def
-R8637:8637 ATL.GenLib <> v:96 var
-R8635:8635 ATL.GenLib <> m:95 var
-R8633:8633 ATL.GenLib <> n:94 var
-R8642:8644 Coq.Init.Datatypes <> nil constr
-R8580:8589 ATL.ATL <> consistent meth
-R8593:8593 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R8595:8595 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R8602:8602 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R8594:8594 ATL.GenLib <> n:94 var
-R8596:8596 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R8598:8598 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R8601:8601 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R8597:8597 ATL.GenLib <> m:95 var
-R8599:8600 Coq.Init.Datatypes <> tt constr
-R8591:8591 ATL.GenLib <> v:96 var
-R8568:8570 Coq.Init.Peano <> ::nat_scope:x_'<'_x not
-R8571:8571 ATL.GenLib <> m:95 var
-R8555:8557 Coq.Init.Peano <> ::nat_scope:x_'<'_x not
-R8558:8558 ATL.GenLib <> n:94 var
-def 8721:8855 <> Unnamed_thm
-binder 8733:8733 <> N:97
-binder 8735:8735 <> M:98
-R8742:8745 Coq.Init.Datatypes <> list ind
-R8748:8751 Coq.Init.Datatypes <> list ind
-R8753:8753 Coq.Reals.Rdefinitions RbaseSymbolsImpl R defax
-binder 8738:8738 <> v:99
-R8767:8774 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R8780:8787 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R8811:8818 Coq.Init.Logic <> ::type_scope:x_'->'_x not
-R8847:8849 Coq.Init.Logic <> ::type_scope:x_'='_x not
-R8819:8840 ATL.Blur <> blurtwostage_partition def
-R8846:8846 ATL.GenLib <> v:99 var
-R8844:8844 ATL.GenLib <> M:98 var
-R8842:8842 ATL.GenLib <> N:97 var
-R8851:8853 Coq.Init.Datatypes <> nil constr
-R8788:8797 ATL.ATL <> consistent meth
-R8801:8801 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R8803:8803 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R8810:8810 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R8802:8802 ATL.GenLib <> N:97 var
-R8804:8804 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R8806:8806 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R8809:8809 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
-R8805:8805 ATL.GenLib <> M:98 var
-R8807:8808 Coq.Init.Datatypes <> tt constr
-R8799:8799 ATL.GenLib <> v:99 var
-R8776:8778 Coq.Init.Peano <> ::nat_scope:x_'<'_x not
-R8779:8779 ATL.GenLib <> M:98 var
-R8763:8765 Coq.Init.Peano <> ::nat_scope:x_'<'_x not
-R8766:8766 ATL.GenLib <> N:97 var
+binder 7176:7176 <> l:68
+R7205:7212 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R7201:7203 Coq.Init.Peano <> ::nat_scope:x_'<'_x not
+R7204:7204 ATL.GenLib <> n:66 var
+R7218:7225 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R7214:7216 Coq.Init.Peano <> ::nat_scope:x_'<'_x not
+R7217:7217 ATL.GenLib <> m:67 var
+R7249:7256 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R7226:7235 ATL.ATL <> consistent meth
+R7239:7239 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R7241:7241 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R7248:7248 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R7240:7240 ATL.GenLib <> n:66 var
+R7242:7242 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R7244:7244 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R7247:7247 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R7243:7243 ATL.GenLib <> m:67 var
+R7245:7246 Coq.Init.Datatypes <> tt constr
+R7237:7237 ATL.GenLib <> l:68 var
+R7285:7292 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R7257:7272 ATL.Blur <> tile_no_boundary def
+R7284:7284 ATL.GenLib <> l:68 var
+R7282:7282 ATL.GenLib <> m:67 var
+R7280:7280 ATL.GenLib <> n:66 var
+R7294:7296 Coq.Init.Datatypes <> nil constr
+def 7372:7561 <> Unnamed_thm
+binder 7384:7384 <> W:69
+binder 7386:7387 <> R0:70
+R7396:7399 Coq.Init.Datatypes <> list ind
+R7401:7401 Coq.Reals.Rdefinitions RbaseSymbolsImpl R defax
+binder 7390:7390 <> x:71
+binder 7392:7392 <> w:72
+R7443:7450 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R7413:7422 ATL.ATL <> consistent meth
+R7426:7426 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R7438:7439 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R7442:7442 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R7427:7434 Coq.ZArith.BinInt Z to_nat def
+R7436:7437 ATL.GenLib <> R0:70 var
+R7440:7441 Coq.Init.Datatypes <> tt constr
+R7424:7424 ATL.GenLib <> w:72 var
+R7481:7488 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R7451:7460 ATL.ATL <> consistent meth
+R7464:7464 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R7476:7477 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R7480:7480 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R7465:7472 Coq.ZArith.BinInt Z to_nat def
+R7474:7475 ATL.GenLib <> R0:70 var
+R7478:7479 Coq.Init.Datatypes <> tt constr
+R7462:7462 ATL.GenLib <> x:71 var
+R7498:7505 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R7491:7493 Coq.ZArith.BinInt <> ::Z_scope:x_'<'_x not
+R7494:7494 ATL.GenLib <> W:69 var
+R7533:7540 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R7526:7528 Coq.ZArith.BinInt <> ::Z_scope:x_'<'_x not
+R7507:7514 Coq.ZArith.BinInt Z of_nat def
+R7517:7522 Coq.Lists.List <> length syndef
+R7524:7524 ATL.GenLib <> x:71 var
+R7529:7529 ATL.GenLib <> W:69 var
+R7553:7555 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R7541:7546 ATL.GatherScatter <> gather def
+R7552:7552 ATL.GenLib <> w:72 var
+R7550:7550 ATL.GenLib <> x:71 var
+R7548:7548 ATL.GenLib <> W:69 var
+R7557:7559 Coq.Init.Datatypes <> nil constr
+def 7640:7830 <> Unnamed_thm
+binder 7652:7652 <> W:73
+binder 7654:7655 <> R0:74
+R7664:7667 Coq.Init.Datatypes <> list ind
+R7669:7669 Coq.Reals.Rdefinitions RbaseSymbolsImpl R defax
+binder 7658:7658 <> x:75
+binder 7660:7660 <> w:76
+R7711:7718 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R7681:7690 ATL.ATL <> consistent meth
+R7694:7694 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R7706:7707 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R7710:7710 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R7695:7702 Coq.ZArith.BinInt Z to_nat def
+R7704:7705 ATL.GenLib <> R0:74 var
+R7708:7709 Coq.Init.Datatypes <> tt constr
+R7692:7692 ATL.GenLib <> w:76 var
+R7749:7756 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R7719:7728 ATL.ATL <> consistent meth
+R7732:7732 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R7744:7745 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R7748:7748 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R7733:7740 Coq.ZArith.BinInt Z to_nat def
+R7742:7743 ATL.GenLib <> R0:74 var
+R7746:7747 Coq.Init.Datatypes <> tt constr
+R7730:7730 ATL.GenLib <> x:75 var
+R7766:7773 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R7759:7761 Coq.ZArith.BinInt <> ::Z_scope:x_'<'_x not
+R7762:7762 ATL.GenLib <> W:73 var
+R7801:7808 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R7794:7796 Coq.ZArith.BinInt <> ::Z_scope:x_'<'_x not
+R7775:7782 Coq.ZArith.BinInt Z of_nat def
+R7785:7790 Coq.Lists.List <> length syndef
+R7792:7792 ATL.GenLib <> x:75 var
+R7797:7797 ATL.GenLib <> W:73 var
+R7822:7824 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R7809:7815 ATL.GatherScatter <> scatter def
+R7817:7817 ATL.GenLib <> W:73 var
+R7819:7819 ATL.GenLib <> x:75 var
+R7821:7821 ATL.GenLib <> w:76 var
+R7826:7828 Coq.Init.Datatypes <> nil constr
+def 7904:8137 <> Unnamed_thm
+binder 7916:7916 <> A:77
+binder 7918:7918 <> B:78
+binder 7920:7920 <> K:79
+binder 7922:7922 <> W:80
+binder 7924:7925 <> RR:81
+R7932:7935 Coq.Init.Datatypes <> list ind
+R7938:7941 Coq.Init.Datatypes <> list ind
+R7943:7943 Coq.Reals.Rdefinitions RbaseSymbolsImpl R defax
+binder 7928:7928 <> w:82
+R7952:7955 Coq.Init.Datatypes <> list ind
+R7957:7957 Coq.Reals.Rdefinitions RbaseSymbolsImpl R defax
+binder 7948:7948 <> x:83
+R7974:7981 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R7967:7969 Coq.ZArith.BinInt <> ::Z_scope:x_'<'_x not
+R7970:7970 ATL.GenLib <> K:79 var
+R7991:7998 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R7984:7986 Coq.ZArith.BinInt <> ::Z_scope:x_'<'_x not
+R7987:7987 ATL.GenLib <> W:80 var
+R8009:8020 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R8001:8003 Coq.ZArith.BinInt <> ::Z_scope:x_'<'_x not
+R8004:8005 ATL.GenLib <> RR:81 var
+R8044:8050 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R8021:8030 ATL.ATL <> consistent meth
+R8034:8034 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R8036:8036 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R8043:8043 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R8035:8035 ATL.GenLib <> A:77 var
+R8037:8037 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R8039:8039 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R8042:8042 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R8038:8038 ATL.GenLib <> B:78 var
+R8040:8041 Coq.Init.Datatypes <> tt constr
+R8032:8032 ATL.GenLib <> w:82 var
+R8079:8086 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R8051:8060 ATL.ATL <> consistent meth
+R8064:8064 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R8075:8075 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R8078:8078 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R8065:8072 Coq.ZArith.BinInt Z to_nat def
+R8074:8074 ATL.GenLib <> K:79 var
+R8076:8077 Coq.Init.Datatypes <> tt constr
+R8062:8062 ATL.GenLib <> x:83 var
+R8114:8116 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R8087:8102 ATL.Im2col <> im2colminilifted def
+R8113:8113 ATL.GenLib <> x:83 var
+R8111:8111 ATL.GenLib <> w:82 var
+R8108:8109 ATL.GenLib <> RR:81 var
+R8106:8106 ATL.GenLib <> W:80 var
+R8104:8104 ATL.GenLib <> K:79 var
+R8117:8126 ATL.Im2col <> im2colmini def
+R8128:8128 ATL.GenLib <> K:79 var
+R8130:8130 ATL.GenLib <> W:80 var
+R8132:8133 ATL.GenLib <> RR:81 var
+R8135:8135 ATL.GenLib <> w:82 var
+R8137:8137 ATL.GenLib <> x:83 var
+def 8222:8455 <> Unnamed_thm
+binder 8234:8234 <> A:84
+binder 8236:8236 <> B:85
+binder 8238:8238 <> K:86
+binder 8240:8240 <> W:87
+binder 8242:8243 <> RR:88
+R8250:8253 Coq.Init.Datatypes <> list ind
+R8256:8259 Coq.Init.Datatypes <> list ind
+R8261:8261 Coq.Reals.Rdefinitions RbaseSymbolsImpl R defax
+binder 8246:8246 <> w:89
+R8270:8273 Coq.Init.Datatypes <> list ind
+R8275:8275 Coq.Reals.Rdefinitions RbaseSymbolsImpl R defax
+binder 8266:8266 <> x:90
+R8292:8299 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R8285:8287 Coq.ZArith.BinInt <> ::Z_scope:x_'<'_x not
+R8288:8288 ATL.GenLib <> K:86 var
+R8309:8316 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R8302:8304 Coq.ZArith.BinInt <> ::Z_scope:x_'<'_x not
+R8305:8305 ATL.GenLib <> W:87 var
+R8327:8338 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R8319:8321 Coq.ZArith.BinInt <> ::Z_scope:x_'<'_x not
+R8322:8323 ATL.GenLib <> RR:88 var
+R8362:8368 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R8339:8348 ATL.ATL <> consistent meth
+R8352:8352 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R8354:8354 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R8361:8361 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R8353:8353 ATL.GenLib <> A:84 var
+R8355:8355 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R8357:8357 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R8360:8360 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R8356:8356 ATL.GenLib <> B:85 var
+R8358:8359 Coq.Init.Datatypes <> tt constr
+R8350:8350 ATL.GenLib <> w:89 var
+R8397:8404 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R8369:8378 ATL.ATL <> consistent meth
+R8382:8382 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R8393:8393 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R8396:8396 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R8383:8390 Coq.ZArith.BinInt Z to_nat def
+R8392:8392 ATL.GenLib <> K:86 var
+R8394:8395 Coq.Init.Datatypes <> tt constr
+R8380:8380 ATL.GenLib <> x:90 var
+R8432:8434 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R8405:8420 ATL.Im2col <> im2colminilifted def
+R8431:8431 ATL.GenLib <> x:90 var
+R8429:8429 ATL.GenLib <> w:89 var
+R8426:8427 ATL.GenLib <> RR:88 var
+R8424:8424 ATL.GenLib <> W:87 var
+R8422:8422 ATL.GenLib <> K:86 var
+R8435:8444 ATL.Im2col <> im2colmini def
+R8446:8446 ATL.GenLib <> K:86 var
+R8448:8448 ATL.GenLib <> W:87 var
+R8450:8451 ATL.GenLib <> RR:88 var
+R8453:8453 ATL.GenLib <> w:89 var
+R8455:8455 ATL.GenLib <> x:90 var
+def 8528:8663 <> Unnamed_thm
+binder 8540:8540 <> n:91
+binder 8542:8542 <> m:92
+R8549:8552 Coq.Init.Datatypes <> list ind
+R8555:8558 Coq.Init.Datatypes <> list ind
+R8560:8560 Coq.Reals.Rdefinitions RbaseSymbolsImpl R defax
+binder 8545:8545 <> v:93
+R8574:8581 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R8570:8572 Coq.Init.Peano <> ::nat_scope:x_'<'_x not
+R8573:8573 ATL.GenLib <> n:91 var
+R8587:8594 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R8583:8585 Coq.Init.Peano <> ::nat_scope:x_'<'_x not
+R8586:8586 ATL.GenLib <> m:92 var
+R8618:8625 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R8595:8604 ATL.ATL <> consistent meth
+R8608:8608 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R8610:8610 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R8617:8617 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R8609:8609 ATL.GenLib <> n:91 var
+R8611:8611 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R8613:8613 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R8616:8616 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R8612:8612 ATL.GenLib <> m:92 var
+R8614:8615 Coq.Init.Datatypes <> tt constr
+R8606:8606 ATL.GenLib <> v:93 var
+R8655:8657 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R8626:8648 ATL.Blur <> blurimmediate_partition def
+R8654:8654 ATL.GenLib <> v:93 var
+R8652:8652 ATL.GenLib <> m:92 var
+R8650:8650 ATL.GenLib <> n:91 var
+R8659:8661 Coq.Init.Datatypes <> nil constr
+def 8738:8871 <> Unnamed_thm
+binder 8750:8750 <> n:94
+binder 8752:8752 <> m:95
+R8759:8762 Coq.Init.Datatypes <> list ind
+R8765:8768 Coq.Init.Datatypes <> list ind
+R8770:8770 Coq.Reals.Rdefinitions RbaseSymbolsImpl R defax
+binder 8755:8755 <> v:96
+R8784:8791 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R8780:8782 Coq.Init.Peano <> ::nat_scope:x_'<'_x not
+R8783:8783 ATL.GenLib <> n:94 var
+R8797:8804 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R8793:8795 Coq.Init.Peano <> ::nat_scope:x_'<'_x not
+R8796:8796 ATL.GenLib <> m:95 var
+R8828:8835 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R8805:8814 ATL.ATL <> consistent meth
+R8818:8818 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R8820:8820 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R8827:8827 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R8819:8819 ATL.GenLib <> n:94 var
+R8821:8821 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R8823:8823 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R8826:8826 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R8822:8822 ATL.GenLib <> m:95 var
+R8824:8825 Coq.Init.Datatypes <> tt constr
+R8816:8816 ATL.GenLib <> v:96 var
+R8863:8865 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R8836:8856 ATL.Blur <> blurimmediate_isolate def
+R8862:8862 ATL.GenLib <> v:96 var
+R8860:8860 ATL.GenLib <> m:95 var
+R8858:8858 ATL.GenLib <> n:94 var
+R8867:8869 Coq.Init.Datatypes <> nil constr
+def 8949:9083 <> Unnamed_thm
+binder 8961:8961 <> N:97
+binder 8963:8963 <> M:98
+R8970:8973 Coq.Init.Datatypes <> list ind
+R8976:8979 Coq.Init.Datatypes <> list ind
+R8981:8981 Coq.Reals.Rdefinitions RbaseSymbolsImpl R defax
+binder 8966:8966 <> v:99
+R8995:9002 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R8991:8993 Coq.Init.Peano <> ::nat_scope:x_'<'_x not
+R8994:8994 ATL.GenLib <> N:97 var
+R9008:9015 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R9004:9006 Coq.Init.Peano <> ::nat_scope:x_'<'_x not
+R9007:9007 ATL.GenLib <> M:98 var
+R9039:9046 Coq.Init.Logic <> ::type_scope:x_'->'_x not
+R9016:9025 ATL.ATL <> consistent meth
+R9029:9029 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R9031:9031 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R9038:9038 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R9030:9030 ATL.GenLib <> N:97 var
+R9032:9032 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R9034:9034 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R9037:9037 Coq.Init.Datatypes <> ::core_scope:'('_x_','_x_','_'..'_','_x_')' not
+R9033:9033 ATL.GenLib <> M:98 var
+R9035:9036 Coq.Init.Datatypes <> tt constr
+R9027:9027 ATL.GenLib <> v:99 var
+R9075:9077 Coq.Init.Logic <> ::type_scope:x_'='_x not
+R9047:9068 ATL.Blur <> blurtwostage_partition def
+R9074:9074 ATL.GenLib <> v:99 var
+R9072:9072 ATL.GenLib <> M:98 var
+R9070:9070 ATL.GenLib <> N:97 var
+R9079:9081 Coq.Init.Datatypes <> nil constr

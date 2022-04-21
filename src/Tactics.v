@@ -1,6 +1,7 @@
 From Coq Require Import Arith.Arith.
 From Coq Require Import Bool.Bool.
-From Coq Require Import omega.Omega.
+From Coq Require Import micromega.Lia.
+From Coq Require Import micromega.Zify.
 From Coq Require Import Lists.List.
 From Coq Require Import Reals.Reals. Import Rdefinitions. Import RIneq.
 From Coq Require Import ZArith.Int. Import Znat BinInt.Z.
@@ -9,20 +10,18 @@ Import ListNotations.
 
 From ATL Require Import ATL.
 
-Set Warnings "-omega-is-deprecated,-deprecated".
-
-Ltac zomega :=
+Ltac zlia :=
   match goal with
-  | |- context[ (Z.of_nat _ < _)%Z ] => zify; omega
-  | |- context[ Z.neg _ ] => zify; omega
-  | |- context[ Pos.to_nat _ ] => zify; omega
-  | |- context[ Z.to_nat (Z.pos _) ] => simpl; zify; omega
-  | |- context[ Z.pos _ ] => zify; omega
-  | |- context[ Pos.of_succ_nat _ ] => zify; omega
-  | |- context[ Z.to_nat < _ ] => zify; omega
-  | |- context[ (Z.succ (Z.of_nat _)) ] => zify; omega
-  | |- context[ (Z.of_nat (S _)) ] => zify; omega
-  | |- (_ < Z.of_nat _)%Z => zify; omega
+  | |- context[ (Z.of_nat _ < _)%Z ] => zify; lia
+  | |- context[ Z.neg _ ] => zify; lia
+  | |- context[ Pos.to_nat _ ] => zify; lia
+  | |- context[ Z.to_nat (Z.pos _) ] => simpl; zify; lia
+  | |- context[ Z.pos _ ] => zify; lia
+  | |- context[ Pos.of_succ_nat _ ] => zify; lia
+  | |- context[ Z.to_nat < _ ] => zify; lia
+  | |- context[ (Z.succ (Z.of_nat _)) ] => zify; lia
+  | |- context[ (Z.of_nat (S _)) ] => zify; lia
+  | |- (_ < Z.of_nat _)%Z => zify; lia
   end.
 
 Ltac eta_reduce_all_private h := repeat change (fun x => ?h x) with h.
@@ -87,10 +86,10 @@ Ltac unbool_goal :=
 Ltac unbool := unbool_hyp; unbool_goal.
 
 Example ex1 : forall a b c, ((a =? b) && (b =? c) = (c =? a) && (b =? a)).
-Proof. intros. unbool. omega. Qed.
+Proof. intros. unbool. lia. Qed.
 
 Ltac app_in_crush H H' := apply H in H';
-        try assumption; try reflexivity; try omega; try ring.
+        try assumption; try reflexivity; try lia; try ring.
 
 Ltac contra_crush := try (simpl in *;
   repeat match goal with
@@ -98,7 +97,7 @@ Ltac contra_crush := try (simpl in *;
          | [ H : _ < 0 |- _ ] => now inversion H
          | [ H : _ <= 0 |- _ ] => now inversion H
          | [ H : ~ ?A |- _] =>
-           (assert A by (try assumption; try omega; try ring)); contradiction
+           (assert A by (try assumption; try lia; try ring)); contradiction
 		 | [ H : 0 <= Z.neg ?A |- _ ] => 
 				 specialize (Zlt_neg_0 A); intros; contradiction
 		 | [ H : 0 < Z.neg _ |- _ ] => now inversion H
@@ -109,7 +108,7 @@ Ltac peel_hyp :=
   repeat match goal with
          | [ H : ?A -> _ |- _ ] => assert (H' : A)
                                      by (try assumption; try reflexivity;
-                                         try omega; try zomega; try ring);
+                                         try lia; try zlia; try ring);
                                    apply H in H'; clear H; rename H' into H
          end.
 
@@ -120,15 +119,15 @@ Ltac analyze_bool := try lazy beta;
          | [ |- context[ (?A =? ?B)%Z ] ] =>
            let v := fresh "H" in
            destruct (A =? B)%Z eqn:v; subst; unbool_hyp;
-           try omega; try ring; try auto with crunch
+           try lia; try ring; try auto with crunch
          | [ |- context[ (?A <? ?B)%Z ] ] =>
            let v := fresh "H" in
            destruct (A <? B)%Z eqn:v; subst; unbool_hyp;
-           try omega; try ring; try auto with crunch
+           try lia; try ring; try auto with crunch
          | [ |- context[ (?A <=? ?B)%Z ] ] =>
            let v := fresh "H" in
            destruct (A <=? B)%Z eqn:v; subst; unbool_hyp;
-           try omega; try ring; try auto with crunch
+           try lia; try ring; try auto with crunch
   end.
 
 Ltac solve_for var :=
@@ -156,11 +155,11 @@ Ltac solve_for var :=
            end;
            ring_simplify in H;
            (apply H + (symmetry; apply H)) |
-           rewrite e in H; unbool_hyp; omega]);
+           rewrite e in H; unbool_hyp; lia]);
     rewrite H'
   end.
 
-Ltac reschedule := intros; eexists; intros;
+Ltac reschedule := intros; intros;
                    repeat
                      match goal with
                      | H : consistent ?V ?S |- _ =>
@@ -177,4 +176,7 @@ Ltac reschedule := intros; eexists; intros;
                      end;
                    try autounfold with examples.
 
-Ltac done := reflexivity.
+Ltac done :=
+  match goal with
+  | |- _ = ?symbol => try subst symbol; reflexivity
+  end.
