@@ -1,4 +1,4 @@
-LIB_MODULES := Relations Map Sets ModelCheck Var Invariant FrapWithoutSets Tactics ATL Div Common CommonTactics LetLifting PairElimination GenPushout Reshape IdentParsing NatToString IntToString Convolution GatherScatter Im2col Blur CheckSafe Normalize CodeGen LoopIR
+LIB_MODULES := Tactics ATL Div Common CommonTactics LetLifting PairElimination GenPushout Reshape IdentParsing NatToString IntToString Convolution GatherScatter Im2col Blur CheckSafe Normalize CodeGen
 EXAMPLE_MODULES := Convolution GatherScatter Im2col Blur
 GENLIB_MODULES := GenLib
 
