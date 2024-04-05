@@ -1,1 +1,7 @@
--Q . ATL 
+-R verified_scheduling/atl/ ATL
+-R verified_scheduling/codegen/ Codegen
+-R verified_scheduling/c/ Test
+-R verified_lowering/proof Lower
+-R verified_lowering/inferpad Inferpad
+-R verified_lowering/stringify Stringify
+-R examples/ Examples

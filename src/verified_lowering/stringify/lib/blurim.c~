@@ -1,0 +1,50 @@
+#include <stdlib.h>
+#include "blurim.h"
+
+void blurim(float* v,int M,int N,float*output){
+for (int H2 = 0; H2 < N; H2++) {
+for (int H3 = 0; H3 < M; H3++) {
+{ float x1 = 0;
+if (0 <= H2 - (1)) {
+{ float x0 = 0;
+if (0 <= H3 - (1)) {
+x0 = v[(H2 - (1)) * (M) + H3 - (1)];
+}
+{ float x1 = 0;
+if (H3 + 1 < M) {
+x1 = v[(H2 - (1)) * (M) + H3 + 1];
+}
+x1 = x0 + (v[(H2 - (1)) * (M) + H3]) + (x1);
+}
+}
+}
+{ float x4 = 0;
+if (H2 + 1 < N) {
+{ float x3 = 0;
+if (0 <= H3 - (1)) {
+x3 = v[(H2 + 1) * (M) + H3 - (1)];
+}
+{ float x4 = 0;
+if (H3 + 1 < M) {
+x4 = v[(H2 + 1) * (M) + H3 + 1];
+}
+x4 = x3 + (v[(H2 + 1) * (M) + H3]) + (x4);
+}
+}
+}
+{ float x5 = 0;
+if (0 <= H3 - (1)) {
+x5 = v[(H2) * (M) + H3 - (1)];
+}
+{ float x6 = 0;
+if (H3 + 1 < M) {
+x6 = v[(H2) * (M) + H3 + 1];
+}
+output[(H2 - (0)) * (M - (0)) + H3 - (0)] = x1 + (x5 + (v[(H2) * (M) + H3]) + (x6)) + (x4);
+}
+}
+}
+}
+}
+}
+}

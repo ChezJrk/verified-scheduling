@@ -1,46 +1,37 @@
-LIB_MODULES := Tactics ATL Div Common CommonTactics LetLifting PairElimination GenPushout Reshape IdentParsing NatToString IntToString Convolution GatherScatter Im2col Blur CheckSafe Normalize CodeGen
-EXAMPLE_MODULES := Convolution GatherScatter Im2col Blur
-GENLIB_MODULES := GenLib
+.PHONY: test lowtest padtest low examples atl clean all assumptions
 
-VSE		:= $(EXAMPLE_MODULES:%=%.v)
-VS		:= $(LIB_MODULES:%=%.v)
-VSL		:= $(GENLIB_MODULES:%=%.v)
+all: libs test assumptions
 
-.PHONY: coq clean clib
+assumptions: low
+	$(MAKE) -C verified_lowering assumptions
 
-exx: Makefilee.coq
-	$(MAKE) -f Makefilee.coq
+libs: atl codegen examples low
 
-ctest: Makefilet.coq
-	touch GenTest.v
-	$(MAKE) -C ctest clean
-	$(MAKE) -s -f Makefilet.coq > ctest/gen
-	$(MAKE) -C ctest scrub
+test: padtest lowtest low figure
 
-clib/gen.out: Makefilel.coq
-	touch GenLib.v
-	$(MAKE) -s -f Makefilel.coq > clib/gen.out
+figure: atl examples codegen low padtest
+	$(MAKE) -C verified_lowering/count_reshape out.csv
 
-clib: clib/gen.out
-	$(MAKE) -C clib clean
-	$(MAKE) -C clib scrub
-	$(MAKE) -C clib libscheds.a
+lowtest: atl examples codegen low padtest figure
+	$(MAKE) -C verified_lowering/stringify lib
+	$(MAKE) -C verified_lowering/stringify test
 
-Makefilel.coq: coq $(VSL)
-	coq_makefile -R . ATL $(VSL) -o Makefilel.coq
+padtest: examples low
+	$(MAKE) -C verified_lowering/inferpad
 
-Makefilet.coq: coq GenTest.v
-	coq_makefile -R . ATL GenTest.v -o Makefilet.coq
+codegen: atl
+	$(MAKE) -C verified_scheduling/codegen
 
-Makefilee.coq: coq Makefile $(VSE)
-	coq_makefile -R . ATL $(VSE) -o Makefilee.coq
+low: atl
+	$(MAKE) -C verified_lowering/proof
 
-coq: Makefile.coq
-	$(MAKE) -f Makefile.coq
+examples: atl
+	$(MAKE) -C examples
 
-Makefile.coq: Makefile $(VS)
-	coq_makefile -R . ATL $(VS) -o Makefile.coq
+atl:
+	$(MAKE) -C verified_scheduling/atl
 
-clean:: Makefile.coq
-	$(MAKE) -f Makefile.coq clean
-	rm -f Makefile.coq Makefilee.coq Makefilet.coq Makefilel.coq *.vo*
+clean:
+	$(MAKE) -C verified_scheduling clean
+	$(MAKE) -C verified_lowering clean
+	$(MAKE) -C examples clean

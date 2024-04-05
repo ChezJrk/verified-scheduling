@@ -1,0 +1,11 @@
+blurim	1000	0.108123s
+blurpart	1000	0.022152s
+blurtiles	2000	0.029054s
+blurtwo	1000	0.014204s
+blurtwopart	1000	0.009849s
+conv1	100	0.001310s
+conv4	100	0.000389s
+gather	10	0.000000s
+im2col	50	0.000330s
+im2collifted	50	0.000364s
+scatter	10	0.000000s
