@@ -19,7 +19,7 @@ From Lower Require Import
      Zexpr Bexpr Array Range Sexpr Result ListMisc Meshgrid VarGeneration
      Injective Constant InterpretReindexer 
      WellFormedEnvironment WellFormedReindexer WellFormedAllocation
-     ResultToArrayDelta ContextsAgree Pad ATLDeep AssignNoOverwrite
+     ResultToArrayDelta ContextsAgree Pad ATLDeep 
      LowerExists LowerCorrect.
 
 Open Scope string_scope.
@@ -48,9 +48,9 @@ Theorem lower_correct_weak_top :
         (* our environment is well-formed *)
         well_formed_environment st h p sh v (vars_of e) ec ->
         (* reindexer is well-formed *)
-        partial_well_formed_reindexer reindexer v r ->
+        well_formed_reindexer reindexer v r st h p asn ->
         (* allocation is well-formed *)
-        partial_well_formed_allocation reindexer r st h p v ->
+        well_formed_allocation reindexer r st h p v ->
         (* expr context and imperative state agree *)
         contexts_agree ec st h sh ->
         forall pads g,
@@ -59,7 +59,6 @@ Theorem lower_correct_weak_top :
             g $? x = Some pads ->
             ec $? x = Some r0 ->
             relate_pads pads r0 (result_shape_nat r0)) ->
-        assign_no_overwrite st h p reindexer r v asn ->
         (* imperative evaluation of lowering *)
         eval_stmt v st h (lower e reindexer p asn sh)
                   (match reindexer (shape_to_index
@@ -82,7 +81,7 @@ Theorem lower_correct_weak_top :
                        h $+ (p,
                               array_add
                                 (h $! p)
-                                (partial_result_to_array_delta
+                                (tensor_to_array_delta
                                    (partial_interpret_reindexer
                                       reindexer
                                       (result_shape_Z r) v) r))
@@ -90,7 +89,7 @@ Theorem lower_correct_weak_top :
 .
 Proof.
   intros e Hconst sh v ec r Heval ls Hsize p st h reindexer asm
-         Henv Hrdx Halloc Hctx pads g Hpad Hrelate Hassign.
+         Henv Hrdx Halloc Hctx pads g Hpad Hrelate.
   pose proof Heval.
   eapply lower_correct_exists in H; eauto. invs. pose proof H.
   eapply lower_correct_weak in H; eauto.
@@ -139,7 +138,7 @@ Theorem lower_correct_top :
                        h $+ (p,
                               array_add
                                 (h $! p)
-                                (partial_result_to_array_delta
+                                (tensor_to_array_delta
                                    (partial_interpret_reindexer
                                       (fun l => l)
                                       (result_shape_Z r) $0) r))
@@ -191,22 +190,55 @@ Proof.
         split. sets.
         split. sets.
         auto.
-  - unfold partial_well_formed_reindexer.
+  - unfold well_formed_reindexer.
     propositional.
     + eapply partial_injective_id_reindexer. rewrite dom_empty. sets.
     + simpl. sets.
     + simpl. sets.
+    + unfold nondestructivity.
+      destruct (result_shape_Z r) eqn:Hr.
+      * simpl in *. invert H2. rewrite dom_add. rewrite lookup_add_eq by auto.
+        rewrite dom_empty. rewrite cup_empty_r. rewrite lookup_empty.
+        rewrite dom_empty.
+        split; intros. discriminate. invert H2. eauto.
+      * simpl in H2. invert H2. unfold alloc_array_in_heap.
+        rewrite dom_empty. rewrite dom_add. rewrite lookup_add_eq by auto.
+        rewrite dom_empty. rewrite cup_empty_r. rewrite lookup_empty.
+        split; intros.
+        2: discriminate.
+        invert H2. pose proof Hr as Hrr.
+        unfold result_shape_Z in Hr. destruct (result_shape_nat r).
+        invert Hr. inversion Hr. subst.
+        pose proof (lookup_alloc_array (fold_left mul (n :: l1) 1) x).
+        invert H2; eauto.
+        eapply lookup_None_dom in H5. rewrite dom_alloc_array in H5.
+        exfalso. apply H5. clear H5.
+        unfold tensor_to_array_delta in H7. rewrite Hrr in *.
+        unfold tensor_to_array_delta_by_indices in H7.
+        erewrite partial_dom_fold_left_array_add in H7.
+        rewrite dom_empty in H7. rewrite cup_empty_r in H7.
+        erewrite <- In_iff_in in *.
+        eapply in_extract_Some in H7. eapply in_map_iff in H7. invs.
+        rewrite partial_interpret_reindexer_id_flatten in H5. invert H5.
+        rewrite filter_idempotent in H7.
+        rewrite Z_of_nat_fold_left_mul.
+        eapply in_mesh_grid_flatten_in_range.
+        eapply Forall_map. eapply Forall_forall. lia.
+        decomp_index. eauto.
+        rewrite filter_idempotent in H7.
+        decomp_index. eauto. rewrite dom_empty. sets.
+        eapply partial_injective_id_reindexer. rewrite dom_empty. sets.
   - unfold result_shape_Z, shape_to_index, shape_to_vars in *.
     cases r.
-    + simpl in *. invert H2. unfold partial_well_formed_allocation.
+    + simpl in *. invert H2. unfold well_formed_allocation.
       simpl. rewrite lookup_add_eq by auto. eauto.
     + cases v.
-      * simpl in *. invert H2. unfold partial_well_formed_allocation.
+      * simpl in *. invert H2. unfold well_formed_allocation.
         simpl. unfold alloc_array_in_heap in *. simpl.
         rewrite lookup_add_eq by auto.
         eexists. split. eauto. sets.
       * invert H2.
-        unfold partial_well_formed_allocation.
+        unfold well_formed_allocation.
         unfold shape_to_index, shape_to_vars.
         set (mesh_grid (map Z.of_nat (result_shape_nat (V (r :: v))))).
         subst l0. unfold alloc_array_in_heap.
@@ -222,68 +254,5 @@ Proof.
         eapply constant_map_flatten_zrange.
   - unfold contexts_agree.
     intros. repeat rewrite lookup_empty. propositional; discriminate.
-  - unfold assign_no_overwrite. 
-    cases r.
-    + split; intros.
-      unfold result_shape_Z, shape_to_index, shape_to_vars in *.
-      simpl in *. invert H2. rewrite dom_add in *. sets.
-      unfold result_shape_Z, shape_to_index, shape_to_vars in *.
-      simpl in *. invert H2. rewrite lookup_add_eq in * by eauto.
-      invert H5. eauto.
-    + split; intros.
-      2: { cases (shape_to_index (result_shape_Z (V v))
-                                 (shape_to_vars (result_shape_Z (V v)))).
-           { eapply shape_to_index_not_empty_Z in Heq. propositional. }
-           invert H2. rewrite lookup_empty in H5. discriminate. }
-      cases (shape_to_index (result_shape_Z (V v))
-                            (shape_to_vars (result_shape_Z (V v)))).
-      { eapply shape_to_index_not_empty_Z in Heq. propositional. }
-      invert H2. unfold alloc_array_in_heap in *.
-      rewrite lookup_add_eq in * by eauto. invert H5.
-      cases v.
-      * simpl in *. rewrite partial_result_to_array_delta_empty_tensor in H8.
-        rewrite dom_empty in *. sets.
-      * unfold partial_result_to_array_delta in *.
-        unfold partial_result_to_array_delta_by_indices in *.
-        rewrite partial_dom_fold_left_array_add in H8.
-        rewrite dom_empty in *. rewrite cup_empty_r in H8.
-        eapply In_iff_in in H8. erewrite <- in_extract_Some in H8.
-        eapply in_map_iff in H8. invs. rewrite @filter_idempotent in * .
-        repeat decomp_index.
-        erewrite partial_interpret_reindexer_id_flatten in H5; eauto.
-        2: { rewrite dom_empty. sets. }
-        2: { eapply partial_injective_id_reindexer. rewrite dom_empty. sets. }
-        invert H5.
-        pose proof (lookup_alloc_array
-                      (fold_left mul (Datatypes.S (length v) ::
-                                                  result_shape_nat r) 1)
-                      (flatten (result_shape_Z (V (r :: v))) x0)).
-        invert H5. 2: eauto.
-        eapply lookup_None_dom in H6. rewrite dom_alloc_array in H6.
-        exfalso. eapply H6. erewrite <- In_iff_in.
-        rewrite Z_of_nat_fold_left_mul in *.
-        pose proof H.
-        eapply constant_nonneg_bounds_size_of_eval_expr_result_has_shape
-          in H5; eauto.
-        pose proof H5. invert H9.
-        erewrite result_has_shape_result_shape_Z in * by eauto.
-        repeat decomp_index. clear Heq.
-        pose proof H2.
-        rewrite mesh_grid_map_Nat2Z_id in H2.
-        erewrite filter_until_0_id.
-        2: { eapply mesh_grid_shape_pos in H2.
-             eapply Forall_map. eapply Forall_impl. 2: eassumption.
-             simpl. lia. }
-        erewrite result_has_shape_result_shape_nat by eauto.
-        rewrite filter_until_0_id.
-        2: { eapply mesh_grid_shape_pos in H9.
-             rewrite <- H12 in H9. invert H9.
-             erewrite Forall_map in H16. eapply Forall_impl.
-             2: eassumption. simpl. lia. }
-        rewrite H12.
-        eapply in_mesh_grid_flatten_in_range.
-        eapply mesh_grid_shape_pos in H9.
-        eapply Forall_impl. 2: eassumption. simpl. lia.
-        eauto.
 Qed.
 

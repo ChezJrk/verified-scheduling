@@ -5,7 +5,7 @@ all: libs test assumptions
 assumptions: low
 	$(MAKE) -C verified_lowering assumptions
 
-libs: atl codegen examples low
+libs: atl examples codegen low
 
 test: padtest lowtest low figure
 

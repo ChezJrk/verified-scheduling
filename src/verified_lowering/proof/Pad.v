@@ -16,7 +16,7 @@ Import ListNotations.
 
 From ATL Require Import ATL Map Sets FrapWithoutSets Div Tactics.
 From Lower Require Import Zexpr Bexpr Array Range Sexpr Result ListMisc Meshgrid VarGeneration
-     Constant ATLDeep.
+     Constant ATLDeep ResultToArrayDelta.
 
 Open Scope string_scope.
 

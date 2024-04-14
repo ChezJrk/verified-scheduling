@@ -20,7 +20,7 @@ From Lower Require Import Zexpr Bexpr Array Range Sexpr Result ListMisc Meshgrid
 
 Open Scope string_scope.
 
-Definition partial_well_formed_allocation
+Definition well_formed_allocation
            reindexer r (st : stack) (h : heap) p v :=
   match reindexer (shape_to_index (result_shape_Z r)
                                   (shape_to_vars (result_shape_Z r))) with
@@ -71,9 +71,9 @@ Proof.
   eapply constant_not_empty in H. propositional. inversion 1.
 Qed.
   
-Lemma partial_well_formed_allocation_result_V :
+Lemma well_formed_allocation_result_V :
   forall l st h p v reindexer,
-    partial_well_formed_allocation reindexer
+    well_formed_allocation reindexer
                                    (V l) st h p v ->
     (forall l : list (Zexpr * Zexpr),
         vars_of_reindexer (reindexer l) =
@@ -90,7 +90,7 @@ Lemma partial_well_formed_allocation_result_V :
                                     (result_lookup_Z_option x (V l))))
                      (mesh_grid (result_shape_Z (V l)))))) \subseteq dom a.
 Proof.
-  unfold partial_well_formed_allocation. intros.
+  unfold well_formed_allocation. intros.
   unfold result_shape_Z in *. simpl in *.
   cases (reindexer
           (shape_to_index
@@ -118,9 +118,9 @@ Proof.
       propositional.
 Qed.
 
-Lemma partial_well_formed_allocation_padl :
+Lemma well_formed_allocation_padl :
   forall reindexer st h p v k l0 l m,
-    partial_well_formed_allocation
+    well_formed_allocation
       reindexer
       (V (repeat (gen_pad (map Z.to_nat (map (eval_Zexpr_Z_total $0) l0)))
                  (Z.to_nat (eval_Zexpr_Z_total $0 k)) ++ l)) st h p v ->
@@ -142,7 +142,7 @@ Lemma partial_well_formed_allocation_padl :
     (forall l2 l3 : list (Zexpr * Zexpr),
         eq_Z_tuple_index_list l2 l3 ->
         eq_Z_tuple_index_list (reindexer l2) (reindexer l3)) ->
-    partial_well_formed_allocation
+    well_formed_allocation
       (fun l : list (Zexpr * Zexpr) =>
          reindexer
            match l with
@@ -153,8 +153,8 @@ Lemma partial_well_formed_allocation_padl :
 Proof.
   intros ? ? ? ? ? ? ? ? ? Halloc Hsh Hvarsub Hknonneg Hmnonneg Hmap Hkz Hm
          Henv Hvarsubdom HeqZlist.
-  eapply partial_well_formed_allocation_result_V in Halloc; eauto.
-  invs. unfold partial_well_formed_allocation.
+  eapply well_formed_allocation_result_V in Halloc; eauto.
+  invs. unfold well_formed_allocation.
   cases (shape_to_index
            (result_shape_Z (V l))
            (shape_to_vars (result_shape_Z (V l)))).
@@ -224,9 +224,9 @@ Proof.
     auto. auto. auto. auto. auto. lia. lia.
 Qed.
 
-Lemma partial_well_formed_allocation_truncl :
+Lemma well_formed_allocation_truncl :
   forall reindexer st h p v k l0 x m,
-    partial_well_formed_allocation reindexer (V x) st h p v ->
+    well_formed_allocation reindexer (V x) st h p v ->
     (forall l0 : list (Zexpr * Zexpr),
         vars_of_reindexer (reindexer l0) =
           vars_of_reindexer (reindexer []) \cup vars_of_reindexer l0) ->
@@ -249,7 +249,7 @@ Lemma partial_well_formed_allocation_truncl :
     (forall l2 l3 : list (Zexpr * Zexpr),
         eq_Z_tuple_index_list l2 l3 ->
         eq_Z_tuple_index_list (reindexer l2) (reindexer l3)) ->
-    partial_well_formed_allocation
+    well_formed_allocation
       (fun l : list (Zexpr * Zexpr) =>
          reindexer
            match l with
@@ -264,8 +264,8 @@ Lemma partial_well_formed_allocation_truncl :
 Proof.
   intros ? ? ? ? ? ? ? ? ? Halloc Hvarsub Hsh Hknonneg Hmap Hkz Hm Henv
          Hvarsubdom HeqZlist.
-  eapply partial_well_formed_allocation_result_V in Halloc; eauto.
-  invs. unfold partial_well_formed_allocation.
+  eapply well_formed_allocation_result_V in Halloc; eauto.
+  invs. unfold well_formed_allocation.
   cases (shape_to_index
            (result_shape_Z
               (V
@@ -339,9 +339,9 @@ Proof.
   repeat decomp_goal_index. propositional.
 Qed.
 
-Lemma partial_well_formed_allocation_truncr :
+Lemma well_formed_allocation_truncr :
   forall reindexer x st h p v k l0 m,
-    partial_well_formed_allocation
+    well_formed_allocation
       reindexer
       (V
          (rev
@@ -376,7 +376,7 @@ Lemma partial_well_formed_allocation_truncr :
     (forall l2 l3 : list (Zexpr * Zexpr),
         eq_Z_tuple_index_list l2 l3 ->
         eq_Z_tuple_index_list (reindexer l2) (reindexer l3)) ->
-    partial_well_formed_allocation
+    well_formed_allocation
       (fun l : list (Zexpr * Zexpr) =>
          reindexer match l with
                    | [] => l
@@ -392,8 +392,8 @@ Proof.
   intros ? ? ? ? ? ? ? ? ? Halloc Hvarsub Hsh Hknonneg Hmap Hkz Henv
          Hvarsubdom HeqZlist.      
   
-  eapply partial_well_formed_allocation_result_V in Halloc; eauto.
-  invs. unfold partial_well_formed_allocation.
+  eapply well_formed_allocation_result_V in Halloc; eauto.
+  invs. unfold well_formed_allocation.
   cases (shape_to_index
           (result_shape_Z
              (V
@@ -495,7 +495,7 @@ Proof.
   2: { eapply result_has_shape_app_r; eauto. }
   rewrite repeat_length in *. lia.
 Qed.
-
+(*
 Definition well_formed_allocation reindexer sh (st : stack) (h : heap) p v :=
   match reindexer (shape_to_index sh (shape_to_vars sh)) with
   | [] => exists a, st $? p = Some a
@@ -507,7 +507,7 @@ Definition well_formed_allocation reindexer sh (st : stack) (h : heap) p v :=
 
 Lemma well_formed_allocation_id_scalar : forall st v h x r k,
     ~ x \in dom h ->
-            well_formed_allocation (fun l => l)
+            partial_well_formed_allocation (fun l => l)
                                    (result_shape_Z (S r))
                                    (st $+ (x, k)) h x v.
 Proof.
@@ -527,15 +527,17 @@ Proof.
   - invs. rewrite lookup_add_eq by auto. eauto.
   - invs. eapply lookup_Some_dom in H1. sets.
 Qed.
+*)
 
 Lemma well_formed_allocation_scalar_id : forall r st (x : var) h v val,
-    well_formed_allocation (fun l : list (Zexpr * Zexpr) => l) 
-                           (result_shape_Z (S r)) (st $+ (x, val)) h x v.
+    well_formed_allocation (fun l : list (Zexpr * Zexpr) => l) (S r)
+      (st $+ (x, val)) h x v.
 Proof.
   intros. unfold well_formed_allocation. simpl.
   rewrite lookup_add_eq by auto. eauto.
 Qed.
 
+(*
 Lemma well_formed_allocation_result_V :
   forall l st h p v reindexer,
     well_formed_allocation reindexer (result_shape_Z (V l)) st h p v ->
@@ -582,7 +584,7 @@ Proof.
   - invs. eapply lookup_Some_dom in H0,H2. sets.
   - invs. rewrite H in H0. invs. eauto.
 Qed.
-
+*)
 Lemma eq_constant_map_transpose_reindexer :
   forall v l reindexer n m xs,
     result_has_shape (V l) (n::m::xs) ->
@@ -686,7 +688,7 @@ Proof.
   simpl.
   eapply not_In_empty_map2_cons.
 Qed.  
-
+(*
 Lemma well_formed_allocation_transpose :
   forall st h p v l reindexer n m xs,
     well_formed_allocation reindexer
@@ -870,7 +872,7 @@ Proof.
            2: eassumption.
            erewrite eq_constant_map_transpose_reindexer;eauto.
 Qed.
-
+*)
 Lemma eq_constant_map_flatten_reindexer :
   forall v l reindexer n m xs,
     result_has_shape (V l) (n::m::xs) ->
@@ -1063,7 +1065,7 @@ Proof.
     eapply mul_add_lt; lia.
     erewrite <- in_mesh_grid_cons_filter_until_0. auto.
 Qed.
-
+(*
 Lemma well_formed_allocation_flatten :
   forall l st h p v reindexer n m xs,
     well_formed_allocation reindexer
@@ -1183,10 +1185,10 @@ Proof.
            ++ eexists. split. eassumption. clear Heq.
               erewrite <- eq_constant_map_flatten_reindexer; eauto.
 Qed.
-
-Lemma partial_well_formed_allocation_eval_step :
+*)
+Lemma well_formed_allocation_eval_step :
   forall reindexer r l st h v p hi lo i a,
-    partial_well_formed_allocation reindexer
+    well_formed_allocation reindexer
                                    (V (r :: l)) st h p v ->
     h $? p = Some a ->
     (forall l1 l2 : list (Zexpr * Zexpr),
@@ -1217,13 +1219,13 @@ Lemma partial_well_formed_allocation_eval_step :
                     negb (is_None (result_lookup_Z_option x (V (r :: l)))))
                     (mesh_grid (result_shape_Z (V (r :: l)))))
      ->
-    partial_well_formed_allocation
+    well_formed_allocation
       (fun l1 : list (Zexpr * Zexpr) =>
          reindexer (((! i ! - lo)%z,
                       (hi - lo)%z) :: l1))
       r st h p (v $+ (i, eval_Zexpr_Z_total $0 lo)).
 Proof.
-  unfold partial_well_formed_allocation in *. propositional.
+  unfold well_formed_allocation in *. propositional.
   cases (reindexer
           (shape_to_index (result_shape_Z (V (r :: l)))
                           (shape_to_vars (result_shape_Z (V (r :: l)))))).
@@ -1250,9 +1252,9 @@ Proof.
       lia.
 Qed.
 
-Lemma partial_well_formed_allocation_reindexer_not_empty :
+Lemma well_formed_allocation_reindexer_not_empty :
   forall reindexer st h p v a b r,
-    partial_well_formed_allocation reindexer r st h p v ->
+    well_formed_allocation reindexer r st h p v ->
     reindexer (shape_to_index (result_shape_Z r)
                               (shape_to_vars (result_shape_Z r))) = a::b ->
     exists a : array,
@@ -1268,18 +1270,18 @@ Lemma partial_well_formed_allocation_reindexer_not_empty :
                      (mesh_grid (result_shape_Z r)))))
                  \subseteq dom a.
 Proof.
-  unfold partial_well_formed_allocation. intros.
+  unfold well_formed_allocation. intros.
   rewrite H0 in *. eauto.
 Qed.
 
-Lemma partial_well_formed_allocation_add_heap :
+Lemma well_formed_allocation_add_heap :
   forall reindexer sh st h p a val v,
-    partial_well_formed_allocation reindexer sh st h p v ->
+    well_formed_allocation reindexer sh st h p v ->
     h $? p = Some a ->
-    partial_well_formed_allocation
+    well_formed_allocation
       reindexer sh st (h $+ (p, array_add a val)) p v.
 Proof.
-  unfold partial_well_formed_allocation. propositional.
+  unfold well_formed_allocation. propositional.
   cases (reindexer
            (shape_to_index (result_shape_Z sh)
                            (shape_to_vars (result_shape_Z sh)))).
@@ -1290,9 +1292,9 @@ Proof.
   rewrite dom_array_add. sets.
 Qed.
 
-Lemma partial_well_formed_allocation_add_valuation :
+Lemma well_formed_allocation_add_valuation :
   forall sh st h p v i x reindexer,
-    partial_well_formed_allocation reindexer sh st h p v ->
+    well_formed_allocation reindexer sh st h p v ->
     ~ i \in dom v ->
     ~ contains_substring "?" i ->            
     (forall (var : var) (k : Z) (l : list (Zexpr * Zexpr)),
@@ -1300,9 +1302,9 @@ Lemma partial_well_formed_allocation_add_valuation :
                   map (subst_var_in_Z_tup var k) (reindexer l) =
                     reindexer (map (subst_var_in_Z_tup var k) l)) ->
     vars_of_reindexer (reindexer []) \subseteq dom v ->
-    partial_well_formed_allocation reindexer sh st h p (v $+ (i, x)).
+    well_formed_allocation reindexer sh st h p (v $+ (i, x)).
 Proof.
-  unfold partial_well_formed_allocation. propositional.
+  unfold well_formed_allocation. propositional.
   cases (reindexer
            (shape_to_index (result_shape_Z sh)
                            (shape_to_vars (result_shape_Z sh)))).
@@ -1324,13 +1326,13 @@ Proof.
     intros. eapply H0. eapply H3. eassumption.
 Qed.
 
-Lemma partial_well_formed_allocation_add_stack :
+Lemma well_formed_allocation_add_stack :
   forall sh st h p v x reindexer val,
-    partial_well_formed_allocation reindexer sh st h p v ->
+    well_formed_allocation reindexer sh st h p v ->
     p <> x ->
-    partial_well_formed_allocation reindexer sh (st $+ (x, val)) h p v.
+    well_formed_allocation reindexer sh (st $+ (x, val)) h p v.
 Proof.
-  unfold partial_well_formed_allocation. propositional.
+  unfold well_formed_allocation. propositional.
   cases (reindexer
            (shape_to_index (result_shape_Z sh)
                            (shape_to_vars (result_shape_Z sh)))).
@@ -1338,9 +1340,9 @@ Proof.
   - eauto.
 Qed.
 
-Lemma partial_well_formed_allocation_shift_top_dim_reindexer :
+Lemma well_formed_allocation_shift_top_dim_reindexer :
   forall reindexer r l st h v p hi lo i a,
-    partial_well_formed_allocation reindexer
+    well_formed_allocation reindexer
                                    (V (r :: l)) st h p v ->
     h $? p = Some a ->
     (forall l1 l2 : list (Zexpr * Zexpr),
@@ -1363,12 +1365,12 @@ Lemma partial_well_formed_allocation_shift_top_dim_reindexer :
          (fun x =>
             negb (is_None (result_lookup_Z_option x (V (r :: l)))))
          (mesh_grid (result_shape_Z (V (r :: l))))) ->
-    partial_well_formed_allocation
+    well_formed_allocation
       (shift_top_dim_reindexer reindexer) 
       (V l) st
       (h $+ (p,
               array_add a
-                        (partial_result_to_array_delta
+                        (tensor_to_array_delta
                            (partial_interpret_reindexer
                               (fun l1 : list (Zexpr * Zexpr) =>
                                  reindexer (((! i ! - lo)%z,
@@ -1379,10 +1381,10 @@ Proof.
   intros ? ? ? ? ? ? ? ? ? ? ? Halloc Heq HeqZlist Hvar Hvarsub Hmap
          Hvarindexsub Hsh Hinj.
   cases l.
-  { eapply partial_well_formed_allocation_result_V in Halloc. invs.
+  { eapply well_formed_allocation_result_V in Halloc. invs.
     rewrite H0 in *. invs. unfold result_shape_Z in *. simpl in *.
     repeat rewrite app_nil_r in *. invert Hsh.
-    unfold partial_well_formed_allocation.
+    unfold well_formed_allocation.
     unfold shape_to_index, shape_to_vars, shift_top_dim_reindexer.
     simpl.
     cases (reindexer [((! "?" ! + | 1 |)%z, (| 0 | + | 1 |)%z)]).
@@ -1392,9 +1394,9 @@ Proof.
     eapply constant_not_empty in H. propositional. inversion 1.
     rewrite lookup_add_eq by auto. eexists. split. reflexivity.
     sets. auto. }
-  eapply partial_well_formed_allocation_result_V in Halloc. invs.
+  eapply well_formed_allocation_result_V in Halloc. invs.
   rewrite H0 in *. invs.
-  unfold partial_well_formed_allocation.
+  unfold well_formed_allocation.
   cases (shift_top_dim_reindexer
            reindexer
            (shape_to_index (result_shape_Z (V (r0::l)))
@@ -1450,16 +1452,16 @@ Proof.
   - auto.
 Qed.
 
-Lemma partial_well_formed_allocation_add_result_l :
+Lemma well_formed_allocation_add_result_l :
   forall r1 r2 r3 reindexer st h p v sh,
     add_result r1 r2 r3 ->
     result_has_shape r1 sh ->
     result_has_shape r2 sh ->
     result_has_shape r3 sh ->
-    partial_well_formed_allocation reindexer r3 st h p v ->
-    partial_well_formed_allocation reindexer r1 st h p v.
+    well_formed_allocation reindexer r3 st h p v ->
+    well_formed_allocation reindexer r1 st h p v.
 Proof.
-  unfold partial_well_formed_allocation. propositional.
+  unfold well_formed_allocation. propositional.
   cases r1.
   - invert H.
     + unfold result_shape_Z in *. simpl in *.
@@ -1496,16 +1498,16 @@ Proof.
       econstructor. eauto.
 Qed.    
 
-Lemma partial_well_formed_allocation_add_result_r :
+Lemma well_formed_allocation_add_result_r :
   forall r1 r2 r3 reindexer st h p v sh,
     add_result r1 r2 r3 ->
     result_has_shape r1 sh ->
     result_has_shape r2 sh ->
     result_has_shape r3 sh ->
-    partial_well_formed_allocation reindexer r3 st h p v ->
-    partial_well_formed_allocation reindexer r2 st h p v.
+    well_formed_allocation reindexer r3 st h p v ->
+    well_formed_allocation reindexer r2 st h p v.
 Proof.
-  unfold partial_well_formed_allocation. propositional.
+  unfold well_formed_allocation. propositional.
   cases r1.
   - invert H.
     + unfold result_shape_Z in *. simpl in *.
@@ -1545,15 +1547,15 @@ Proof.
       econstructor. eauto.
 Qed.    
 
-Lemma partial_well_formed_allocation_letbind1 :
+Lemma well_formed_allocation_letbind1 :
   forall st h v nz x r,
   (forall var : var, contains_substring "?" var -> ~ var \in dom v) ->
   ~ x \in dom st ->
   (nz = (fold_left Z.mul (result_shape_Z (V r)) 1%Z)) ->
-  partial_well_formed_allocation
+  well_formed_allocation
     (fun l => l) (V r) st (alloc_array_in_heap [Z.to_nat nz] h x) x v.
 Proof.
-  unfold partial_well_formed_allocation in *. propositional.
+  unfold well_formed_allocation in *. propositional.
   cases (shape_to_index (result_shape_Z (V r))
                         (shape_to_vars (result_shape_Z (V r)))).
   - eapply shape_to_index_not_empty_Z in Heq. propositional. 
@@ -1590,13 +1592,13 @@ Proof.
       eauto.
 Qed.
 
-Lemma partial_well_formed_allocation_add_heap_var :
+Lemma well_formed_allocation_add_heap_var :
   forall reindexer sh st h p v val x,
-    partial_well_formed_allocation reindexer sh st h p v ->
+    well_formed_allocation reindexer sh st h p v ->
     p <> x ->
-    partial_well_formed_allocation reindexer sh st (h $+ (x, val)) p v.
+    well_formed_allocation reindexer sh st (h $+ (x, val)) p v.
 Proof.
-  unfold partial_well_formed_allocation. propositional.
+  unfold well_formed_allocation. propositional.
   cases (reindexer
            (shape_to_index (result_shape_Z sh)
                            (shape_to_vars (result_shape_Z sh)))).
@@ -1689,14 +1691,14 @@ Proof.
   lia. lia. eauto.
 Qed.  
 
-Lemma partial_well_formed_allocation_transpose :
+Lemma well_formed_allocation_transpose :
   forall l n0 m0 l0 reindexer st h p v,
   result_has_shape (V l)
                    (Z.to_nat
                       (eval_Zexpr_Z_total $0 n0)
                       :: Z.to_nat (eval_Zexpr_Z_total $0 m0)
                       :: map Z.to_nat (map (eval_Zexpr_Z_total $0) l0)) ->
-  partial_well_formed_allocation
+  well_formed_allocation
     reindexer
     (transpose_result l
                       (Z.to_nat
@@ -1715,7 +1717,7 @@ Lemma partial_well_formed_allocation_transpose :
   (forall l4 l5 : list (Zexpr * Zexpr),
       eq_Z_tuple_index_list l4 l5 ->
       eq_Z_tuple_index_list (reindexer l4) (reindexer l5)) ->
-  partial_well_formed_allocation
+  well_formed_allocation
     (fun l1 : list (Zexpr * Zexpr) =>
      reindexer
        match l1 with
@@ -1725,7 +1727,7 @@ Lemma partial_well_formed_allocation_transpose :
        end) (V l) st h p v.
 Proof.
   intros ? ? ? ? ? ? ? ? ? Hsh Halloc Henv Hmap Hvarsub Hvarsarg HeqZlist.
-  unfold partial_well_formed_allocation in *.
+  unfold well_formed_allocation in *.
   cases (shape_to_index
            (result_shape_Z (V l))
            (shape_to_vars (result_shape_Z (V l)))).
@@ -1809,9 +1811,9 @@ Proof.
   eapply constant_subseteq_transpose; eauto.
 Qed.
 
-Lemma partial_well_formed_allocation_concat_l :
+Lemma well_formed_allocation_concat_l :
   forall l1 l2 st h p v reindexer xs x2 n m,
-    partial_well_formed_allocation
+    well_formed_allocation
       reindexer (V (l1 ++ l2)%list)
                            st h p v->
     result_has_shape (V l1) (n::xs) ->
@@ -1829,7 +1831,7 @@ Lemma partial_well_formed_allocation_concat_l :
     (forall l : list (Zexpr * Zexpr),
         vars_of_reindexer (reindexer l) =
           vars_of_reindexer (reindexer []) \cup vars_of_reindexer l) ->
-    partial_well_formed_allocation
+    well_formed_allocation
       (fun l : list (Zexpr * Zexpr) =>
          reindexer
          match l with
@@ -1838,7 +1840,7 @@ Lemma partial_well_formed_allocation_concat_l :
                ((v0, (d + x2)%z) :: xs)
          end) (V l1) st h p v.
 Proof.
-  unfold partial_well_formed_allocation. propositional.
+  unfold well_formed_allocation. propositional.
   -  pose proof (result_has_shape_concat _ _ _ _ _ H0 H1).
      cases (shape_to_index (result_shape_Z (V l1))
                            (shape_to_vars (result_shape_Z (V l1)))).
@@ -1903,9 +1905,9 @@ Proof.
      eapply filter_In. propositional.
 Qed.
 
-Lemma partial_well_formed_allocation_concat_r :
+Lemma well_formed_allocation_concat_r :
   forall l1 l2 st h p v reindexer l0 n m,
-    partial_well_formed_allocation
+    well_formed_allocation
       reindexer (V (l1 ++ l2)%list)
                            st h p v->
     result_has_shape (V l1) (map Z.to_nat (map (eval_Zexpr_Z_total $0)
@@ -1926,7 +1928,7 @@ Lemma partial_well_formed_allocation_concat_r :
           vars_of_reindexer (reindexer []) \cup vars_of_reindexer l) ->
     eq_zexpr n (| eval_Zexpr_Z_total $0 n |)%z ->
     (0 <= eval_Zexpr_Z_total $0 n)%Z ->
-    partial_well_formed_allocation
+    well_formed_allocation
       (fun l : list (Zexpr * Zexpr) =>
          reindexer
          match l with
@@ -1935,7 +1937,7 @@ Lemma partial_well_formed_allocation_concat_r :
                (((v0 + n)%z, (d + n)%z) :: xs)
          end) (V l2) st h p v.
 Proof.
-  unfold partial_well_formed_allocation. propositional.
+  unfold well_formed_allocation. propositional.
   simpl in H0,H1.
   pose proof (result_has_shape_concat _ _ _ _ _ H0 H1).
   cases (shape_to_index (result_shape_Z (V l2))
@@ -2106,9 +2108,9 @@ Proof.
   lia. eassumption. eauto. lia. lia. eauto.
 Qed.
 
-Lemma partial_well_formed_allocation_flatten :
+Lemma well_formed_allocation_flatten :
   forall l st h p v reindexer n m xs,
-    partial_well_formed_allocation reindexer
+    well_formed_allocation reindexer
                                    (V (flatten_result l)) st h p v ->
     result_has_shape (V l)
                      (Z.to_nat (eval_Zexpr_Z_total $0 n)
@@ -2126,7 +2128,7 @@ Lemma partial_well_formed_allocation_flatten :
     (forall l3 l4 : list (Zexpr * Zexpr),
         eq_Z_tuple_index_list l3 l4 ->
         eq_Z_tuple_index_list (reindexer l3) (reindexer l4)) ->
-    partial_well_formed_allocation
+    well_formed_allocation
       (fun l2 : list (Zexpr * Zexpr) =>
          reindexer
            match l2 with
@@ -2136,7 +2138,7 @@ Lemma partial_well_formed_allocation_flatten :
            end) (V l) st h p v.
 Proof.
   intros ? ? ? ? ? ? ? ? ? Halloc Hsh Henv Hmap Hvarsub Hvarsarg HeqZlist.
-  unfold partial_well_formed_allocation in *.
+  unfold well_formed_allocation in *.
   simpl in *.
   cases (shape_to_index
            (result_shape_Z (V l))
@@ -2210,13 +2212,13 @@ Proof.
   eapply constant_subseteq_flatten; eauto.
 Qed.  
 
-Lemma partial_well_formed_allocation_padr :
+Lemma well_formed_allocation_padr :
   forall l m l0 k st h p v reindexer,
     result_has_shape (V l)
                      (map Z.to_nat (map (eval_Zexpr_Z_total $0) (m :: l0))) ->
     eq_zexpr k (| eval_Zexpr_Z_total $0 k |)%z ->
     (0 <= eval_Zexpr_Z_total $0 k)%Z ->
-    partial_well_formed_allocation
+    well_formed_allocation
       reindexer
       (V
          (l ++
@@ -2234,7 +2236,7 @@ Lemma partial_well_formed_allocation_padr :
         (var \in vars_of_reindexer (reindexer []) -> False) ->
         map (subst_var_in_Z_tup var k0) (reindexer l4) =
           reindexer (map (subst_var_in_Z_tup var k0) l4)) ->
-    partial_well_formed_allocation
+    well_formed_allocation
       (fun l1 : list (Zexpr * Zexpr) =>
          reindexer match l1 with
                    | [] => l1
@@ -2243,7 +2245,7 @@ Lemma partial_well_formed_allocation_padr :
 Proof.
   intros ? ? ? ? ? ? ? ? ? Hsh Hk Hknonneg Halloc Hvarsarg Henv HeqZlist
          Hvarsub Hmap.
-  unfold partial_well_formed_allocation in *.
+  unfold well_formed_allocation in *.
   simpl in *.
   cases (shape_to_index
            (result_shape_Z (V l))
@@ -2327,13 +2329,13 @@ Proof.
   rewrite Z2Nat.id by lia. auto.
 Qed.  
 
-Lemma partial_well_formed_allocation_gen_pad :
+Lemma well_formed_allocation_gen_pad :
   forall s st h p v sh reindexer,
-    partial_well_formed_allocation reindexer s st h p v ->
+    well_formed_allocation reindexer s st h p v ->
     result_has_shape s sh ->
-    partial_well_formed_allocation reindexer (gen_pad sh) st h p v.
+    well_formed_allocation reindexer (gen_pad sh) st h p v.
 Proof.
-  intros. unfold partial_well_formed_allocation in *.
+  intros. unfold well_formed_allocation in *.
   erewrite result_has_shape_result_shape_Z in * by eauto.
   erewrite result_has_shape_result_shape_Z.
   2: { eapply result_has_shape_gen_pad. }
@@ -2347,12 +2349,12 @@ Proof.
   invs. eexists. split. eassumption. sets.
 Qed.
 
-Lemma partial_well_formed_allocation_same_add_stack :
+Lemma well_formed_allocation_same_add_stack :
   forall s st h p v reindexer val,
-  partial_well_formed_allocation reindexer s st h p v ->
-  partial_well_formed_allocation reindexer s (st $+ (p, val)) h p v.
+  well_formed_allocation reindexer s st h p v ->
+  well_formed_allocation reindexer s (st $+ (p, val)) h p v.
 Proof.
-  intros. unfold partial_well_formed_allocation in *.
+  intros. unfold well_formed_allocation in *.
   cases (reindexer
            (shape_to_index
               (result_shape_Z s) (shape_to_vars (result_shape_Z s)))).
@@ -2360,9 +2362,9 @@ Proof.
   - invs. eexists. split. eauto. eauto.
 Qed.
 
-Lemma partial_well_formed_allocation_split :
+Lemma well_formed_allocation_split :
   forall reindexer st h p v k l0 l n,
-partial_well_formed_allocation reindexer
+    well_formed_allocation reindexer
              (V (split_result (Z.to_nat (eval_Zexpr_Z_total $0 k)) l)) st h p v ->
 result_has_shape (V l)
           (Z.to_nat (eval_Zexpr_Z_total $0 n)
@@ -2383,7 +2385,7 @@ result_has_shape (V l)
     (forall l2 l3 : list (Zexpr * Zexpr),
         eq_Z_tuple_index_list l2 l3 ->
         eq_Z_tuple_index_list (reindexer l2) (reindexer l3)) ->
-partial_well_formed_allocation
+well_formed_allocation
     (fun l2 : list (Zexpr * Zexpr) =>
      reindexer
        match l2 with
@@ -2393,8 +2395,8 @@ partial_well_formed_allocation
 Proof.
   intros ? ? ? ? ? ? ? ? ? Halloc Hsh Hvarsub Hknonneg Hmnonneg Hmap Hkz Hm
          Henv Hvarsubdom HeqZlist.
-  eapply partial_well_formed_allocation_result_V in Halloc; eauto.
-  invs. unfold partial_well_formed_allocation.
+  eapply well_formed_allocation_result_V in Halloc; eauto.
+  invs. unfold well_formed_allocation.
   cases (shape_to_index
            (result_shape_Z (V l))
            (shape_to_vars (result_shape_Z (V l)))).

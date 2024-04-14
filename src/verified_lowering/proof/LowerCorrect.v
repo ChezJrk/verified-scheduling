@@ -19,7 +19,7 @@ From Lower Require Import
      Zexpr Bexpr Array Range Sexpr Result ListMisc Meshgrid VarGeneration
      Injective Constant InterpretReindexer 
      WellFormedEnvironment WellFormedReindexer WellFormedAllocation
-     ResultToArrayDelta ContextsAgree Pad ATLDeep AssignNoOverwrite.
+     ResultToArrayDelta ContextsAgree Pad ATLDeep.
 
 Open Scope string_scope.
 Local Hint Constructors eval_Zexpr eval_Bexpr eval_Sexpr size_of.
@@ -35,8 +35,6 @@ Hint Extern 3 (Datatypes.length _ = Datatypes.length _) =>
        rewrite map_length; rewrite length_nat_range_rec;
        eapply length_mesh_grid_indices; eassumption : reindexers.
 Arguments flatten : simpl nomatch.
-
-
             
 Theorem lower_correct_weak :
   forall e,
@@ -51,9 +49,9 @@ Theorem lower_correct_weak :
         (* our environment is well-formed *)
         well_formed_environment st h p sh v (vars_of e) ec ->
         (* reindexer is well-formed *)
-        partial_well_formed_reindexer reindexer v r ->
+        well_formed_reindexer reindexer v r st h p asn ->
         (* allocation is well-formed *)
-        partial_well_formed_allocation reindexer r st h p v ->
+        well_formed_allocation reindexer r st h p v ->
         (* expr context and imperative state agree *)
         contexts_agree ec st h sh ->
         forall pads g,
@@ -62,7 +60,6 @@ Theorem lower_correct_weak :
             g $? x = Some pads ->
             ec $? x = Some r0 ->
             relate_pads pads r0 (result_shape_nat r0)) ->
-        assign_no_overwrite st h p reindexer r v asn ->
         match reindexer (shape_to_index
                            (result_shape_Z r)
                            (shape_to_vars (result_shape_Z r))) with
@@ -78,7 +75,7 @@ Theorem lower_correct_weak :
             (h' = h $+ (p,
                          array_add
                            (h $! p)
-                           (partial_result_to_array_delta
+                           (tensor_to_array_delta
                               (partial_interpret_reindexer reindexer
                                                    (result_shape_Z r) v) r))
              /\ st' = st)
@@ -86,7 +83,7 @@ Theorem lower_correct_weak :
 Proof.
   intros e Hconst sh v ec r.
   induct 1; intros ls Hsize p st h st' h' reindexer asm
-                   Heval Henv Hrdx Halloc Hctx pads g Hpad Hrelate Hassign.
+                   Heval Henv Hrdx Halloc Hctx pads g Hpad Hrelate.
   12: { (* SPLIT *) simpl in *. invert Hsize. simpl in Hconst. invert Hconst.
      invert H2. pose proof H3 as Hconst.
      assert (result_has_shape (V l)
@@ -108,15 +105,18 @@ Proof.
      2: { eauto. }
      2: { eauto. }
      2: { eauto. }
-     2: { eapply partial_well_formed_reindexer_split; eauto.
+     2: { eapply well_formed_allocation_result_V in Halloc.
+          2: { apply Hrdx. } invs.
+          eapply well_formed_reindexer_split; eauto.
           apply Henv.
           eapply vars_of_Zexpr_empty_eq_zexpr_eval_Zexpr_Z_total. eauto.
           eq_size_of. invert H2.
           eapply constant_nonneg_bounds_size_of_nonneg in H3; eauto.
           2: { eapply forall_no_vars_eval_Zexpr_Z_total with (v:=$0).
                eapply constant_nonneg_bounds_size_of_no_vars. eauto. eauto. }
-          invert H3. lia. }
-     2: { eapply partial_well_formed_allocation_split; eauto.
+          invert H3. lia.
+     }
+     2: { eapply well_formed_allocation_split; eauto.
           apply Hrdx.
           eq_size_of. invert H2.
           eapply constant_nonneg_bounds_size_of_nonneg in H3; eauto.
@@ -183,24 +183,24 @@ Proof.
        simpl. inversion 1.
        simpl. inversion 1. }
      pose proof Halloc.
-     eapply partial_well_formed_allocation_result_V in H2.
+     eapply well_formed_allocation_result_V in H2.
      invs.
      unfold lookup_total. rewrite H2. split; auto.
      2: apply Hrdx.
      f_equal. f_equal.
-     unfold partial_result_to_array_delta.
+     unfold tensor_to_array_delta.
      erewrite result_has_shape_result_shape_Z.
      2: { eauto. }
      erewrite result_has_shape_result_shape_Z.
      2: { eauto. }
      cases l.
      { simpl. invert Hsh. rewrite div_ceil_n_0. simpl.
-       unfold partial_result_to_array_delta_by_indices. reflexivity. lia. }
+       unfold tensor_to_array_delta_by_indices. reflexivity. lia. }
      cases (Z.to_nat (eval_Zexpr_Z_total $0 m)).
      {  invert Hsh. }
      rewrite filter_until_0_cons by lia.
      symmetry.
-     eapply partial_eq_result_to_array_delta_by_indices_shuffle
+     eapply eq_tensor_to_array_delta_by_indices_shuffle
        with (shuffle:= fun l =>
                          match l with
                          | x::xs => (x/eval_Zexpr_Z_total $0 k)%Z
@@ -316,9 +316,7 @@ Proof.
           rewrite H18. rewrite H19. reflexivity. lia. lia.
         - eapply no_dup_filter. eauto with reindexers.
         - eapply no_dup_filter. eauto with reindexers.
-        - pose proof Halloc.
-          eapply partial_well_formed_allocation_result_V in H2. invs.
-          eapply assign_no_overwrite_split; eauto. apply Hrdx. }
+  }
    - (* EMPTY GEN *)
      simpl in *.
      rewrite array_add_empty_r.
@@ -326,7 +324,7 @@ Proof.
      invert Heval.
      rewrite H,H0 in *. invert H6. invert H9. lia.
      rewrite H,H0 in *. invert H10. invert H11.
-     eapply partial_well_formed_allocation_result_V in Halloc; try apply Hrdx.
+     eapply well_formed_allocation_result_V in Halloc; try apply Hrdx.
      cases (reindexer
               (shape_to_index (result_shape_Z (V []))
                               (shape_to_vars (result_shape_Z (V []))))).
@@ -360,17 +358,22 @@ Proof.
        3: eassumption. eauto.
        econstructor. eauto. }
      pose proof Halloc as Halloc1.
-     eapply partial_well_formed_allocation_result_V in Halloc; try apply Hrdx.
+     eapply well_formed_allocation_result_V in Halloc; try apply Hrdx.
      invs.
      cases (reindexer
       (shape_to_index (result_shape_Z (V (r :: l)))
                       (shape_to_vars (result_shape_Z (V (r :: l)))))).
      eapply reindexer_not_empty in Heq; propositional; try apply Hrdx;
        discriminate.
-     erewrite <- partial_result_to_array_delta_cons
+     erewrite <- tensor_to_array_delta_cons
        with (i:=i) (hi:=hi) (lo:=lo);
          try eapply result_shape_gen_length in H5;
        eauto; simpl; try rewrite H; try rewrite H0; try reflexivity; try lia.
+     2: apply Hrdx.
+     2: apply Hrdx.
+     2: apply Hrdx.
+     2: apply Hrdx.
+     2: apply Hrdx.
      2: apply Henv.
      2: { unfold shape_to_vars. unfold not. intros. eapply H3.
           eapply in_map_iff in H6. invs.
@@ -404,7 +407,7 @@ Proof.
               (h:=(h $+ (p,
                           array_add
                             x
-                            (partial_result_to_array_delta
+                            (tensor_to_array_delta
                                (partial_interpret_reindexer
                                   (fun l =>
                                      reindexer
@@ -413,7 +416,7 @@ Proof.
                                   (v $+ (i, eval_Zexpr_Z_total $0 lo))) r)))).
             rewrite lookup_add_eq in * by auto.
             rewrite add_overwrite in H6.
-            rewrite (array_add_comm (partial_result_to_array_delta _ _)).
+            rewrite (array_add_comm (tensor_to_array_delta _ _)).
             rewrite array_add_assoc.
             cases (shift_top_dim_reindexer
                      reindexer
@@ -448,7 +451,7 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
             rewrite H0. eauto.
             intros.
             eapply eq_eval_stmt_lower_eq_reindexers;
-              simpl; intros; decomp_partial_well_formed_reindexer.
+              simpl; intros; decomp_well_formed_reindexer.
             ++ eassumption.
             ++ invs. eapply HeqZlist.
                erewrite <- eq_Z_tuple_index_list_cons.
@@ -497,9 +500,9 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
                eapply constant_cap_empty. auto.
                propositional.
          -- unfold well_formed_environment in *. invs.
-            eapply partial_well_formed_reindexer_shift_top_dim_reindexer;
+            eapply well_formed_reindexer_shift_top_dim_reindexer;
               eauto.
-         -- eapply partial_well_formed_allocation_shift_top_dim_reindexer;
+         -- eapply well_formed_allocation_shift_top_dim_reindexer;
               try apply Hrdx; try apply Henv; eauto.
          -- eapply contexts_agree_add_heap; try apply Henv; auto.
          -- eapply HasPadGen with (k:=k) (c:=c) (ll:=ll) (rr:=rr).
@@ -522,27 +525,25 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
             erewrite eval_Zexpr_Z_total_add_distr by auto.
             unfold eval_Zexpr_Z_total at 3. simpl. lia.
          -- eauto.
-         -- clear H6.
-            eapply assign_no_overwrite_array_add_shift_top_dim_reindexer;
-              eauto.
      * invert Hconst. propositional.
      * eassumption.
      * eapply well_formed_environment_add_valuation.
        simpl in Henv.
        auto. auto. auto.
-     * eapply partial_well_formed_reindexer_eval0. eassumption.
+     * eapply well_formed_allocation_result_V in Halloc1.
+       eapply well_formed_reindexer_eval0. eassumption.
        eapply Henv.
        eauto. eauto. 
        unfold not. intros.
        eapply shape_to_vars_contains_substring in H6.
        propositional.
-       simpl in *. lia. auto. auto.
-     * eapply partial_well_formed_allocation_eval_step;
+       simpl in *. lia. auto. auto. eauto.
+       lia. eauto. apply Hrdx.
+     * eapply well_formed_allocation_eval_step;
          try apply Halloc; eauto; try apply Hrdx; try apply Henv.
      * eauto.
      * eapply H25. lia. lia.
      * eauto.
-     * eapply assign_no_overwrite_cons_0; eauto.
 }
 
      (* k = 0, no left padding *)
@@ -570,7 +571,7 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
               (h:=(h $+ (p,
                           array_add
                             x
-                            (partial_result_to_array_delta
+                            (tensor_to_array_delta
                                (partial_interpret_reindexer
                                   (fun l =>
                                      reindexer
@@ -579,7 +580,7 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
                                   (v $+ (i, eval_Zexpr_Z_total $0 lo))) r)))).
             rewrite lookup_add_eq in * by auto.
             rewrite add_overwrite in H6.
-            rewrite (array_add_comm (partial_result_to_array_delta _ _)).
+            rewrite (array_add_comm (tensor_to_array_delta _ _)).
             rewrite array_add_assoc.
             cases (shift_top_dim_reindexer
                      reindexer
@@ -614,7 +615,7 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
             rewrite H0. eauto.
             intros.
             eapply eq_eval_stmt_lower_eq_reindexers;
-              simpl; intros; decomp_partial_well_formed_reindexer.
+              simpl; intros; decomp_well_formed_reindexer.
             ++ eassumption.
             ++ invs. eapply HeqZlist.
                erewrite <- eq_Z_tuple_index_list_cons.
@@ -663,9 +664,9 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
                eapply constant_cap_empty. auto.
                propositional.
          -- unfold well_formed_environment in *. invs.
-            eapply partial_well_formed_reindexer_shift_top_dim_reindexer;
+            eapply well_formed_reindexer_shift_top_dim_reindexer;
               eauto.
-         -- eapply partial_well_formed_allocation_shift_top_dim_reindexer;
+         -- eapply well_formed_allocation_shift_top_dim_reindexer;
               try apply Hrdx; try apply Henv; eauto.
          -- eapply contexts_agree_add_heap; try apply Henv; auto.
          -- eapply HasPadGen with (k:=0) (c:=c) (ll:=ll) (rr:=rr).
@@ -688,27 +689,24 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
             erewrite eval_Zexpr_Z_total_add_distr by auto.
             unfold eval_Zexpr_Z_total at 3. simpl. lia.
          -- eauto.
-         -- clear H6.
-            eapply assign_no_overwrite_array_add_shift_top_dim_reindexer;
-              eauto.
      * invert Hconst. propositional.
      * eassumption.
      * eapply well_formed_environment_add_valuation.
        simpl in Henv.
        auto. auto. auto.
-     * eapply partial_well_formed_reindexer_eval0. eassumption.
+     * eapply well_formed_allocation_result_V in Halloc1.
+       eapply well_formed_reindexer_eval0. eassumption.
        eapply Henv.
        eauto. eauto. 
        unfold not. intros.
        eapply shape_to_vars_contains_substring in H6.
        propositional.
-       simpl in *. lia. auto. auto.
-     * eapply partial_well_formed_allocation_eval_step;
+       simpl in *. lia. auto. auto. eauto. lia. eauto. apply Hrdx.
+     * eapply well_formed_allocation_eval_step;
          try apply Halloc; eauto; try apply Hrdx; try apply Henv.
      * eauto.
      * eapply H22. lia.
      * eauto.
-     * eapply assign_no_overwrite_cons_0; eauto.
      }
 
      cases rr.
@@ -735,7 +733,7 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
               (h:=(h $+ (p,
                           array_add
                             x
-                            (partial_result_to_array_delta
+                            (tensor_to_array_delta
                                (partial_interpret_reindexer
                                   (fun l =>
                                      reindexer
@@ -744,7 +742,7 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
                                   (v $+ (i, eval_Zexpr_Z_total $0 lo))) r)))).
             rewrite lookup_add_eq in * by auto.
             rewrite add_overwrite in H6.
-            rewrite (array_add_comm (partial_result_to_array_delta _ _)).
+            rewrite (array_add_comm (tensor_to_array_delta _ _)).
             rewrite array_add_assoc.
             cases (shift_top_dim_reindexer
                      reindexer
@@ -779,7 +777,7 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
             rewrite H0. eauto.
             intros.
             eapply eq_eval_stmt_lower_eq_reindexers;
-              simpl; intros; decomp_partial_well_formed_reindexer.
+              simpl; intros; decomp_well_formed_reindexer.
             ++ eassumption.
             ++ invs. eapply HeqZlist.
                erewrite <- eq_Z_tuple_index_list_cons.
@@ -828,9 +826,9 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
                eapply constant_cap_empty. auto.
                propositional.
          -- unfold well_formed_environment in *. invs.
-            eapply partial_well_formed_reindexer_shift_top_dim_reindexer;
+            eapply well_formed_reindexer_shift_top_dim_reindexer;
               eauto.
-         -- eapply partial_well_formed_allocation_shift_top_dim_reindexer;
+         -- eapply well_formed_allocation_shift_top_dim_reindexer;
               try apply Hrdx; try apply Henv; eauto.
          -- eapply contexts_agree_add_heap; try apply Henv; auto.
          -- eapply HasPadGen with (k:=0) (c:=c) (ll:=0) (rr:=rr).
@@ -853,27 +851,24 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
             erewrite eval_Zexpr_Z_total_add_distr by auto.
             unfold eval_Zexpr_Z_total at 3. simpl. lia.
          -- eauto.
-         -- clear H6.
-            eapply assign_no_overwrite_array_add_shift_top_dim_reindexer;
-              eauto.
      * invert Hconst. propositional.
      * eassumption.
      * eapply well_formed_environment_add_valuation.
        simpl in Henv.
        auto. auto. auto.
-     * eapply partial_well_formed_reindexer_eval0. eassumption.
+     * eapply well_formed_allocation_result_V in Halloc1.
+       eapply well_formed_reindexer_eval0. eassumption.
        eapply Henv.
        eauto. eauto. 
        unfold not. intros.
        eapply shape_to_vars_contains_substring in H6.
        propositional.
-       simpl in *. lia. auto. auto.
-     * eapply partial_well_formed_allocation_eval_step;
+       simpl in *. lia. auto. auto. eauto. lia. eauto. apply Hrdx.
+     * eapply well_formed_allocation_eval_step;
          try apply Halloc; eauto; try apply Hrdx; try apply Henv.
      * eauto.
      * eapply H24. lia.
      * eauto.
-     * eapply assign_no_overwrite_cons_0; eauto.
  }
 
           eapply IHeval_expr1 in H19.
@@ -899,7 +894,7 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
               (h:=(h $+ (p,
                           array_add
                             x
-                            (partial_result_to_array_delta
+                            (tensor_to_array_delta
                                (partial_interpret_reindexer
                                   (fun l =>
                                      reindexer
@@ -908,7 +903,7 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
                                   (v $+ (i, eval_Zexpr_Z_total $0 lo))) r)))).
             rewrite lookup_add_eq in * by auto.
             rewrite add_overwrite in H6.
-            rewrite (array_add_comm (partial_result_to_array_delta _ _)).
+            rewrite (array_add_comm (tensor_to_array_delta _ _)).
             rewrite array_add_assoc.
             cases (shift_top_dim_reindexer
                      reindexer
@@ -943,7 +938,7 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
             rewrite H0. eauto.
             intros.
             eapply eq_eval_stmt_lower_eq_reindexers;
-              simpl; intros; decomp_partial_well_formed_reindexer.
+              simpl; intros; decomp_well_formed_reindexer.
             ++ eassumption.
             ++ invs. eapply HeqZlist.
                erewrite <- eq_Z_tuple_index_list_cons.
@@ -992,9 +987,9 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
                eapply constant_cap_empty. auto.
                propositional.
          -- unfold well_formed_environment in *. invs.
-            eapply partial_well_formed_reindexer_shift_top_dim_reindexer;
+            eapply well_formed_reindexer_shift_top_dim_reindexer;
               eauto.
-         -- eapply partial_well_formed_allocation_shift_top_dim_reindexer;
+         -- eapply well_formed_allocation_shift_top_dim_reindexer;
               try apply Hrdx; try apply Henv; eauto.
          -- eapply contexts_agree_add_heap; try apply Henv; auto.
          -- eapply HasPadGen with (k:=0) (c:=c-1) (ll:=0) (rr:=0).
@@ -1017,27 +1012,24 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
             erewrite eval_Zexpr_Z_total_add_distr by auto.
             unfold eval_Zexpr_Z_total at 3. simpl. lia.
          -- eauto.
-         -- clear H6.
-            eapply assign_no_overwrite_array_add_shift_top_dim_reindexer;
-              eauto.
      * invert Hconst. propositional.
      * eassumption.
      * eapply well_formed_environment_add_valuation.
        simpl in Henv.
        auto. auto. auto.
-     * eapply partial_well_formed_reindexer_eval0. eassumption.
+     * eapply well_formed_allocation_result_V in Halloc1.
+       eapply well_formed_reindexer_eval0. eassumption.
        eapply Henv.
        eauto. eauto. 
        unfold not. intros.
        eapply shape_to_vars_contains_substring in H6.
        propositional.
-       simpl in *. lia. auto. auto.
-     * eapply partial_well_formed_allocation_eval_step;
+       simpl in *. lia. auto. auto. eauto. lia. eauto. apply Hrdx.
+     * eapply well_formed_allocation_eval_step;
          try apply Halloc; eauto; try apply Hrdx; try apply Henv.
      * eauto.
      * eapply H25. lia. lia.
      * eauto.
-     * eapply assign_no_overwrite_cons_0; eauto.
    - (* STEPPING SUM *)
      simpl in *.
      unfold lookup_total in *.
@@ -1069,7 +1061,6 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
                 (shape_to_index (result_shape_Z s)
                                 (shape_to_vars (result_shape_Z s)))).
      + pose proof Halloc as Halloc1.
-       unfold well_formed_allocation in Halloc1.       
        erewrite result_has_shape_result_shape_Z in *; try eassumption.
        rewrite Heq in *. invs.
        cases r.
@@ -1083,7 +1074,7 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
        invert H6.
        * invert Hsh. invert Hsh1. invert Hsh2.
          rewrite <- H10 in *. simpl in *.
-         unfold partial_well_formed_allocation in Halloc1.
+         unfold well_formed_allocation in Halloc1.
          unfold result_shape_Z in Halloc1.
          simpl in Halloc1. rewrite Heq in Halloc1. invs.
          rewrite H0.
@@ -1119,10 +1110,12 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
              2: { eapply well_formed_environment_add_stack. eauto.
                   eapply lookup_Some_dom in H0. sets. }
              2: { replace (S SX) with (gen_pad []) by reflexivity.
-                  eapply partial_well_formed_reindexer_gen_pad. eauto. }
-             2: { eapply partial_well_formed_allocation_same_add_stack.
+                  decomp_well_formed_reindexer. simpl. propositional.
+                  unfold partial_injective. intros. invert H21.
+                  unfold nondestructivity. split; intros; discriminate. }
+             2: { eapply well_formed_allocation_same_add_stack.
                   replace (S SX) with (gen_pad []) by reflexivity.
-                  eapply partial_well_formed_allocation_gen_pad. eauto.
+                  eapply well_formed_allocation_gen_pad. eauto.
                   econstructor. }
              2: { unfold well_formed_environment in *. invs.
                   eapply contexts_agree_add_in_stack.
@@ -1137,7 +1130,6 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
              rewrite add_overwrite.
              propositional. f_equal. ring.
              eauto.
-             eapply assign_no_overwrite_reduce.
            * rewrite H0 in *.
              assert (vars_of_Zexpr lo ++/ [] = [] /\
                        vars_of_Zexpr hi = [] /\ constant_nonneg_bounds body).
@@ -1149,10 +1141,12 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
              2: { eapply well_formed_environment_add_stack. eauto.
                   eapply lookup_Some_dom in H0. sets. }
              2: { replace (S SX) with (gen_pad []) by reflexivity.
-                  eapply partial_well_formed_reindexer_gen_pad. eauto. }
+                  decomp_well_formed_reindexer. propositional.
+                  simpl. unfold nondestructivity.
+                  split; intros; discriminate. }
              2: { rewrite Rplus_0_r. rewrite add_id by auto.
                   replace (S SX) with (gen_pad []) by reflexivity.
-                  eapply partial_well_formed_allocation_gen_pad. eauto.
+                  eapply well_formed_allocation_gen_pad. eauto.
                   econstructor. }
              2: { unfold well_formed_environment in *. invs.
                   eapply contexts_agree_add_in_stack.
@@ -1166,7 +1160,6 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
              rewrite lookup_add_eq in * by auto.
              rewrite add_overwrite.
              propositional. f_equal. ring. eauto.
-             eapply assign_no_overwrite_reduce.
          }
          pose proof Heq0 as Heq'. clear Heq0.
          eapply IHeval_expr2 with (asn:=Reduce) in H19; clear IHeval_expr2.
@@ -1185,14 +1178,16 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
          rewrite H. propositional. eauto. eauto.
          eapply well_formed_environment_add_stack. eauto.
          eapply lookup_Some_dom. eauto.
-         auto.
-         decomp_partial_well_formed_reindexer.
+         decomp_well_formed_reindexer.
          unfold result_shape_Z in *. simpl in *. propositional.
          cases s2; cases s3; simpl in *; auto.
          invert H9. invert H9. simpl in *.
          unfold partial_injective in *.
          propositional. simpl in *. propositional.
-         unfold partial_well_formed_allocation.
+         rewrite H0.
+         unfold nondestructivity.
+         split; intros; discriminate.
+         unfold well_formed_allocation.
          unfold result_shape_Z. simpl. rewrite Heq.
          eexists. rewrite H0. rewrite lookup_add_eq by auto.
          reflexivity.
@@ -1212,9 +1207,8 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
          lia.
          eapply vars_of_Zexpr_empty_eq_zexpr_eval_Zexpr_Z_total; eauto. eauto.
          eauto.
-         eapply assign_no_overwrite_reduce.
      + pose proof Heq.
-       eapply partial_well_formed_allocation_reindexer_not_empty in Heq;
+       eapply well_formed_allocation_reindexer_not_empty in Heq;
          try apply Halloc.       
        invs. rewrite H10 in *.
        erewrite result_has_shape_result_shape_Z in *; try eassumption.
@@ -1259,9 +1253,15 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
          2: { econstructor. eauto. }
          2: { eauto. }
          2: { eapply well_formed_environment_add_heap. eauto. eauto. }
-         2: { eapply partial_well_formed_reindexer_gen_pad. eauto. }
-         2: { eapply partial_well_formed_allocation_add_heap.
-              eapply partial_well_formed_allocation_gen_pad. eauto.
+         2: { pose proof Hrdx.
+              decomp_well_formed_reindexer.
+              propositional.
+              unfold partial_injective. intros.
+              erewrite filter_negb_is_None_result_lookup_Z_option_gen_pad
+                in *. invert H29.
+              unfold nondestructivity. split; intros; discriminate. }
+         2: { eapply well_formed_allocation_add_heap.
+              eapply well_formed_allocation_gen_pad. eauto.
               pose proof (result_has_shape_gen_pad (map Z.to_nat lz)).
               eapply result_has_shape_result_shape_nat in H14,Hsh2.
               rewrite Hsh2 in *.
@@ -1281,12 +1281,11 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
          rewrite lookup_add_eq in * by auto.
          invs. propositional.
          rewrite add_overwrite.
-         rewrite partial_result_to_array_delta_gen_pad.
+         rewrite tensor_to_array_delta_gen_pad.
          rewrite array_add_empty_r.
          f_equal. f_equal. f_equal.
          eapply partial_interpret_reindexer_add_valuation; eauto.
          eauto.
-         eapply assign_no_overwrite_reduce.
        }
 
        eapply IHeval_expr2 with (asn:=Reduce) in H19; clear IHeval_expr2;
@@ -1297,10 +1296,11 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
        rewrite <- array_add_assoc. split. 2: auto. f_equal. f_equal.
        2: { rewrite H0. propositional. }
        2: { eapply well_formed_environment_add_heap; eauto. }
-       2 :{ decomp_partial_well_formed_reindexer. propositional.
-            eapply partial_injective_add_result_r; try apply H6; eauto. }
-       2: { eapply partial_well_formed_allocation_add_heap; eauto.
-            eapply partial_well_formed_allocation_add_result_r; eauto. }
+       2 :{ decomp_well_formed_reindexer. propositional.
+            eapply partial_injective_add_result_r; try apply H6; eauto.
+            unfold nondestructivity. split; intros; discriminate. }
+       2: { eapply well_formed_allocation_add_heap; eauto.
+            eapply well_formed_allocation_add_result_r; eauto. }
        2: { eapply contexts_agree_add_heap; eauto.
             apply Henv. apply Henv. }
        
@@ -1309,7 +1309,7 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
                                        (map (eval_Zexpr_Z_total $0) ls)) 0))
          with (result_shape_Z r) at 1.
        2: { erewrite result_has_shape_result_shape_Z; eauto. }
-       erewrite partial_result_to_array_delta_add_valuation; eauto;
+       erewrite tensor_to_array_delta_add_valuation; eauto;
          try apply Hrdx.
        2: { eapply partial_injective_add_result_l; try apply H6; eauto.
             eapply partial_injective_add_valuation; try apply Hrdx; eauto. }
@@ -1325,12 +1325,13 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
                with (result_shape_Z s) at 1.
        2: { erewrite result_has_shape_result_shape_Z; eauto. }
 
-       eapply partial_result_to_array_delta_add_result. auto.
+       eapply tensor_to_array_delta_add_result. auto.
        eapply result_has_shape_self; eassumption.
        erewrite result_has_shape_result_shape_nat by eassumption.
        erewrite <- result_has_shape_filter_until_0. eauto.
        erewrite result_has_shape_result_shape_nat by eassumption.
        erewrite <- result_has_shape_filter_until_0. eauto.
+       apply Hrdx. apply Hrdx. apply Hrdx. apply Hrdx. apply Hrdx.
        auto. apply Henv.
        apply HasPadSum.
        rewrite eval_Zexpr_Z_total_add_distr.
@@ -1343,18 +1344,19 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
        unfold eval_Zexpr_Z_total at 3. simpl.
        lia.
        eapply vars_of_Zexpr_empty_eq_zexpr_eval_Zexpr_Z_total; eauto. eauto.
-       eapply assign_no_overwrite_reduce.
      + propositional.
      + eauto.
      + eapply well_formed_environment_add_valuation; eauto.
-     + eapply partial_well_formed_reindexer_add_valuation; eauto.
-       decomp_partial_well_formed_reindexer.
+     + eapply well_formed_reindexer_add_valuation; eauto.
+       decomp_well_formed_reindexer.
        propositional.
        eapply partial_injective_add_result_l; try apply H6; eauto.
+       unfold nondestructivity. propositional; try discriminate.
        apply Henv.
-     + eapply partial_well_formed_allocation_add_valuation;
+       eapply result_has_shape_self; eauto.
+     + eapply well_formed_allocation_add_valuation;
          eauto; try apply Hrdx.
-       eapply partial_well_formed_allocation_add_result_l; eauto.
+       eapply well_formed_allocation_add_result_l; eauto.
      + eauto.
      + eapply H15. invs.
        eapply vars_of_Zexpr_empty_eq_zexpr_eval_Zexpr_Z_total
@@ -1362,7 +1364,6 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
        invert H. invert H7. eapply eval_Zexpr_Z_eval_Zexpr in H11,H14.
        eapply H0 in H11. eapply H in H14. invert H11. invert H14. lia.
      + eauto.
-     + eapply assign_no_overwrite_reduce.
      + erewrite H15 in *. erewrite H16 in *. invs. lia.
    - (* EMPTY SUM *)
      simpl in Heval. invert Heval.
@@ -1379,13 +1380,13 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
                  (result_shape_Z (gen_pad (map Z.to_nat lz)))
                  (shape_to_vars (result_shape_Z (gen_pad
                                                    (map Z.to_nat lz)))))).
-     { unfold partial_well_formed_allocation in *. rewrite Heq in *. invs.
+     { unfold well_formed_allocation in *. rewrite Heq in *. invs.
        rewrite H. split. auto.
        cases lz; simpl; rewrite add_id; try rewrite Rplus_0_r; auto. }
-     eapply partial_well_formed_allocation_reindexer_not_empty in Heq;
+     eapply well_formed_allocation_reindexer_not_empty in Heq;
        try apply Halloc. invs.
      rewrite H0 in *.
-     rewrite partial_result_to_array_delta_gen_pad.
+     rewrite tensor_to_array_delta_gen_pad.
      rewrite array_add_empty_r.
      split; auto.
      rewrite add_id; auto.
@@ -1397,18 +1398,18 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
                  (result_shape_Z (gen_pad (map Z.to_nat lz)))
                  (shape_to_vars
                     (result_shape_Z (gen_pad (map Z.to_nat lz)))))).
-     { unfold partial_well_formed_allocation in *. rewrite Heq in *. invs.
+     { unfold well_formed_allocation in *. rewrite Heq in *. invs.
        rewrite H3. split. auto.
        cases lz; simpl; rewrite add_id; try rewrite Rplus_0_r; auto. }
-     eapply partial_well_formed_allocation_reindexer_not_empty in Heq;
+     eapply well_formed_allocation_reindexer_not_empty in Heq;
        try apply Halloc. invs.
-     rewrite H4. rewrite partial_result_to_array_delta_gen_pad.
+     rewrite H4. rewrite tensor_to_array_delta_gen_pad.
      rewrite array_add_empty_r. rewrite add_id. propositional. auto.
     - (* TRUE IVERSON *)
       cases (reindexer
                (shape_to_index (result_shape_Z r)
                                (shape_to_vars (result_shape_Z r)))).
-     + unfold partial_well_formed_allocation in *.
+     + unfold well_formed_allocation in *.
        rewrite Heq in *. invs. 
        simpl in Heval. invert Heval; eq_eval_B; try lia.
        invert Hpad. eq_eval_B. discriminate. 
@@ -1429,8 +1430,17 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
      eapply IHeval_expr1 in H10; try eassumption.
      2: { eapply well_formed_environment_alloc_stack; eauto. sets.
           sets. }
-     2: { eapply partial_well_formed_reindexer_id. apply Henv. }
-     2: { apply well_formed_allocation_scalar_id. eauto. eauto. eauto. }
+     2: { decomp_well_formed_reindexer. propositional.
+          simpl. unfold partial_injective.
+          { destruct r1.
+          - simpl. intros. propositional. subst. propositional.
+          - simpl. propositional. }
+          simpl. sets.
+          simpl. sets.
+          unfold nondestructivity. simpl.
+          rewrite lookup_add_eq by eauto. rewrite dom_add.
+          split; intros. sets. invert H12. sets. }
+     2: { apply well_formed_allocation_scalar_id. } 
      2: { eapply contexts_agree_alloc_stack; eauto. }
      simpl in H10. rewrite lookup_add_eq in * by auto.
      rewrite add_overwrite in H10. invert H10.
@@ -1441,8 +1451,14 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
      2: { rewrite Rplus_0_l.
           eapply well_formed_environment_let_bind1_scalar.
           eauto. sets. sets. sets. }
-     2: { eauto. }
-     2: { eapply partial_well_formed_allocation_add_stack. auto.
+     2: { decomp_well_formed_reindexer. propositional.
+          unfold nondestructivity in *. rewrite dom_add.
+          invert Henv. rewrite lookup_add_ne.
+          2: { sets. }
+          split; intros.
+          eapply Hnondstr. eauto. eauto. sets.
+          eauto. eapply Hnondstr. eauto. eauto. sets. }
+     2: { eapply well_formed_allocation_add_stack. auto.
           unfold well_formed_environment in *. sets. }
      2: { rewrite Rplus_0_l.
           eapply contexts_agree_let_bind1_scalar. auto. }
@@ -1460,7 +1476,7 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
           - rewrite lookup_add_ne in * by eauto. eauto. }
             
      pose proof Halloc as Halloc1.
-     unfold partial_well_formed_allocation in Halloc1.
+     unfold well_formed_allocation in Halloc1.
      cases (reindexer
               (shape_to_index (result_shape_Z l2)
                               (shape_to_vars (result_shape_Z l2)))).
@@ -1491,9 +1507,6 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
        eapply cup_empty in H8. invs.
        eapply constant_cap_empty in H12.
        sets.
-     + rewrite Rplus_0_l. pose proof Hassign.
-       eapply assign_no_overwrite_add_stack; eauto.
-     + eapply assign_no_overwrite_alloc_stack; eauto.
    - (* VECTOR LET *)
      simpl in *.
      cases esh1; simpl in *; try now propositional.
@@ -1519,8 +1532,63 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
      2: eauto.
      2: { eassumption. }
      2: { eapply well_formed_environment_letbind1; eauto. }
-     2: { eapply partial_well_formed_reindexer_id. apply Henv. }
-     2: { eapply partial_well_formed_allocation_letbind1.
+     2: { decomp_well_formed_reindexer. propositional.
+          eapply partial_injective_id_reindexer. apply Henv.
+          simpl. sets. simpl. sets.
+          unfold nondestructivity. unfold alloc_array_in_heap.
+          rewrite lookup_add_eq by auto. rewrite dom_add.
+          split; intros.
+          2: sets. invert H10. clear H1. rewrite add_0_r.
+          eapply dom_lookup_Some in H16. invert H16.
+          unfold flat_sizeof in *.
+          erewrite size_of_sizeof in * by eauto.
+          simpl in H21.
+          eapply eval_Zexpr_ZTimes_no_vars in H21.
+          subst.
+          pose proof (lookup_alloc_array (Z.to_nat
+       (fold_left Z.mul
+          (map Z.of_nat
+             (filter_until (map Z.to_nat (map (eval_Zexpr_Z_total $0) (z :: esh1)))
+                0)) 1%Z)) x0). invert H10.
+          2: eauto.
+          eapply lookup_None_dom in H16.
+          rewrite dom_alloc_array in H16.
+          rewrite Z2Nat.id in H16.
+          2: { eapply fold_left_mul_nonneg.
+               eapply Forall_map. eapply Forall_forall. intros. lia. lia. }
+          exfalso. apply H16.
+          erewrite <- In_iff_in.
+          eapply In_zrange. clear H16.
+          unfold tensor_to_array_delta in *.          
+          eapply lookup_Some_dom in H1.
+          unfold tensor_to_array_delta_by_indices in H1.
+          erewrite partial_dom_fold_left_array_add in H1.
+          rewrite dom_empty in *. rewrite cup_empty_r in *.
+          rewrite filter_idempotent in H1.
+          eapply In_iff_in in H1.
+          eapply in_extract_Some in H1. eapply in_map_iff in H1. invert H1.
+          invert H10. decomp_index.
+          rewrite partial_interpret_reindexer_id_flatten in H1; eauto.
+          invert H1.
+          erewrite result_has_shape_result_shape_Z by eauto.
+          eapply In_zrange.
+          eapply in_mesh_grid_flatten_in_range.
+          eapply Forall_map. eapply Forall_forall. intros. lia.
+          erewrite result_has_shape_result_shape_Z in H10 by eauto.
+          eauto.
+          apply Henv.
+
+          eauto.
+          eapply partial_injective_id_reindexer; eauto. apply Henv.
+          eapply constant_nonneg_bounds_size_of_no_vars.
+          2: eauto. eauto.
+          eapply constant_nonneg_bounds_size_of_nonneg. 2: apply H0.
+          eauto. rewrite <- map_cons.
+          eapply forall_no_vars_eval_Zexpr_Z_total with (v:=v).
+          eapply constant_nonneg_bounds_size_of_no_vars.
+          2: apply H0.
+          eauto. }
+     2: { eapply well_formed_allocation_letbind1.
           try apply Henv. clear IHeval_expr2.
           eapply well_formed_environment_not_in_stack_heap. apply Henv.
           sets.
@@ -1550,13 +1618,18 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
      2: { unfold alloc_array_in_heap. rewrite add_overwrite.
           eapply well_formed_environment_alloc_heap; try apply Henv; eauto.
           sets. }
-     2: { auto. }
+     2: { unfold alloc_array_in_heap.
+          rewrite add_overwrite.
+          unfold lookup_total. rewrite lookup_add_eq by auto.
+          decomp_well_formed_reindexer. propositional.
+          eapply WellFormedReindexer.nondestructivity_add_heap. eauto. 
+          eauto. }
      2: { unfold alloc_array_in_heap.
           rewrite add_overwrite.
           cases (p ==v x). subst. 
           unfold well_formed_environment in *. invs.
           sets.
-          eapply partial_well_formed_allocation_add_heap_var; eauto. }
+          eapply well_formed_allocation_add_heap_var; eauto. }
      2: { unfold alloc_array_in_heap.
           rewrite add_overwrite.
           rewrite lookup_total_add_eq. simpl.
@@ -1569,7 +1642,7 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
           eapply forall_no_vars_eval_Zexpr_Z_total with (v:=v) in H1.
           invert H1. 
           eq_eval_Z. eq_eval_Zlist.
-          erewrite partial_result_to_array_delta_id_valuation.
+          erewrite tensor_to_array_delta_id_valuation.
           2: { apply Henv. }
           eapply contexts_agree_add_alloc_heap; eauto.
           eapply constant_nonneg_bounds_sizeof_nonneg in H3.
@@ -1598,14 +1671,11 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
             eapply contexts_agree_result_has_shape. eauto.
             eauto.
           - rewrite lookup_add_ne in * by auto. eauto. }
-     2: { unfold lookup_total in *. unfold alloc_array_in_heap in *.
-          rewrite lookup_add_eq in * by auto. rewrite add_overwrite in *.
-          eapply assign_no_overwrite_add_heap; eauto. }
      2: { eapply contexts_agree_alloc_array_in_heap; eauto. }
      cases (reindexer
               (shape_to_index (result_shape_Z l2)
                               (shape_to_vars (result_shape_Z l2)))).
-     + unfold partial_well_formed_allocation in *. rewrite Heq0 in *.
+     + unfold well_formed_allocation in *. rewrite Heq0 in *.
        invs. rewrite H1.
        rewrite add_remove.
        unfold alloc_array_in_heap.
@@ -1616,7 +1686,7 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
        rewrite cap_distr in Hsthec. eapply cup_empty in Hsthec. invs.
        rewrite cap_distr in H10. eapply cup_empty in H10. invs.
        eapply constant_cap_empty in H12. sets.
-     + unfold partial_well_formed_allocation in *. rewrite Heq0 in *.
+     + unfold well_formed_allocation in *. rewrite Heq0 in *.
        invs. unfold lookup_total. rewrite H10.
        unfold alloc_array_in_heap.
        repeat rewrite add_overwrite.
@@ -1627,19 +1697,16 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
        2: { intros. pose proof var_eq. specialize (H1 k k').
             invert H1; propositional. }
        2: { unfold well_formed_environment in *. invs.
-            unfold well_formed_allocation in *. invs.
             sets. }
        2: { unfold well_formed_environment in *. invs.
-            unfold well_formed_allocation in *. invs.
             sets. }
      rewrite <- add_remove_id.
      2: { eapply well_formed_environment_not_in_stack_heap.
           eapply Henv. sets. }
      auto.
-     + eapply assign_no_overwrite_alloc_heap. eapply H3. all: eauto.
    - (* CONCAT *)
      pose proof Halloc as Halloc1.
-     eapply partial_well_formed_allocation_result_V in Halloc1.
+     eapply well_formed_allocation_result_V in Halloc1.
      invert Halloc1. invert H1.
      simpl in *.
      cases (reindexer
@@ -1669,7 +1736,6 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
      pose proof (result_has_shape_length _ _ _ Hsh1).
      pose proof (result_has_shape_length _ _ _ Hsh2). subst.
      pose proof (result_has_shape_concat _ _ _ _ _ Hsh1 Hsh2).
-     unfold eval_Zexpr_Z_total in *.
      invert Hconst. pose proof H6. pose proof H7.
      eapply constant_nonneg_bounds_sizeof_no_vars in H6,H7.
      erewrite size_of_sizeof in * by eassumption.
@@ -1679,6 +1745,11 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
      invert H13. invert H12.
      pose proof (H11 $0). pose proof (H13 $0).
      eapply eval_Zexpr_Z_eval_Zexpr in H12,H16.
+     unfold eval_Zexpr_Z_total in Hsh1 at 1.
+     unfold eval_Zexpr_Z_total in Hsh2 at 1.
+     unfold eval_Zexpr_Z_total in H1,H4.
+     unfold eval_Zexpr_Z_total in H5 at 1.
+     unfold eval_Zexpr_Z_total in H5 at 1.
      rewrite H12,H16 in *.
      pose proof H9. pose proof H10.
      eapply constant_nonneg_bounds_sizeof_nonneg in H17,H18.
@@ -1706,16 +1777,15 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
      2: { eauto. }
      2: { eapply well_formed_environment_subseteq_vars. eassumption. sets. }
      2: { rewrite <- H1 in *. rewrite <- H4 in *.
-          eapply partial_well_formed_reindexer_concat_l;
-            try apply Hrdx; eauto.
+          eapply well_formed_allocation_result_V in Halloc.
+          eapply well_formed_reindexer_concat_l;
+            try apply Hrdx.
+          rewrite H4 in *. eauto. rewrite H1 in *. eauto.
+          lia. lia.
+          eauto. eauto. 
           apply Henv.
-          eapply eq_zexpr_transitivity.
-          eapply vars_of_Zexpr_empty_eq_zexpr_eval_Zexpr_Z_total.
-          eauto.
-          eapply eq_zexpr_id.
-          f_equal. rewrite H4. rewrite Z2Nat.id by lia.
-          unfold eval_Zexpr_Z_total. reflexivity. }
-     2: { eapply partial_well_formed_allocation_concat_l; eauto;
+          eauto. apply Hrdx. }
+     2: { eapply well_formed_allocation_concat_l; eauto;
           try eapply Henv; try eapply Hrdx.
           rewrite Z2Nat.id. eauto. lia. }
      cases (shape_to_index (result_shape_Z (V l1))
@@ -1776,10 +1846,10 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
      rewrite add_overwrite. split; auto.
      rewrite <- array_add_assoc. f_equal. f_equal.
      symmetry.
-     unfold partial_result_to_array_delta at 1.
+     unfold tensor_to_array_delta at 1.
 
-     erewrite array_add_partial_result_to_array_delta_concat; auto.
-     unfold partial_result_to_array_delta.
+     erewrite array_add_tensor_to_array_delta_concat; auto.
+     unfold tensor_to_array_delta.
      2: { eapply cap_empty_exclusion. intros.
           repeat erewrite <- In_iff_in.
           repeat rewrite <- in_extract_Some.
@@ -1791,7 +1861,7 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
             repeat rewrite mesh_grid_map_Nat2Z_id in *.
             rewrite <- H18 in H17.
             clear Heq. clear Heq0. clear Heq2. clear H3.
-            decomp_partial_well_formed_reindexer.
+            decomp_well_formed_reindexer.
             erewrite result_has_shape_result_shape_Z in Hinj by eauto.
             replace (fun e : Zexpr =>
                           match eval_Zexpr_Z $0 e with
@@ -1856,7 +1926,7 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
             repeat rewrite mesh_grid_map_Nat2Z_id in *.
             rewrite <- H18 in H17.
             clear Heq. clear Heq0. clear Heq2. clear H3.
-            decomp_partial_well_formed_reindexer.
+            decomp_well_formed_reindexer.
             erewrite result_has_shape_result_shape_Z in Hinj by eauto.
             replace (fun e : Zexpr =>
                           match eval_Zexpr_Z $0 e with
@@ -1924,8 +1994,8 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
      }
      2: { eauto. }
      2: { eauto. }
-     2: { decomp_partial_well_formed_reindexer.
-          unfold partial_well_formed_reindexer. propositional.
+     2: { decomp_well_formed_reindexer.
+          unfold well_formed_reindexer. propositional.
           erewrite result_has_shape_result_shape_Z by eauto.
             replace (fun e : Zexpr =>
                           match eval_Zexpr_Z $0 e with
@@ -1935,7 +2005,7 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
               (eval_Zexpr_Z_total $0) in * by reflexivity.          
             eapply partial_injective_concat_l; eauto; try apply Henv.
             rewrite Z2Nat.id by lia. auto. }
-     2: { decomp_partial_well_formed_reindexer.
+     2: { decomp_well_formed_reindexer.
           erewrite size_of_sizeof by eassumption. simpl.
           erewrite result_has_shape_result_shape_Z by eauto.
           replace (fun e : Zexpr =>
@@ -1952,21 +2022,25 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
           eapply well_formed_environment_subseteq_vars. eassumption.
           sets. auto. }
      2: { erewrite size_of_sizeof by eassumption. simpl.
-          eapply partial_well_formed_reindexer_concat_r;
-            try apply Henv; eauto. }
-     2: { eapply partial_well_formed_allocation_add_heap.
+          eapply well_formed_allocation_result_V in Halloc.
+          invert Halloc. invert H17.
+          eapply well_formed_reindexer_concat_r;
+            try apply Henv; eauto.
+          apply Hrdx.
+     }
+     2: { eapply well_formed_allocation_add_heap.
           erewrite size_of_sizeof by eauto.
-          eapply partial_well_formed_allocation_concat_r; eauto;
+          eapply well_formed_allocation_concat_r; eauto;
             try apply Henv; try apply Hrdx.
           simpl. eauto.
           simpl. eauto.
           auto. }
        2: { eapply contexts_agree_add_heap; eauto;
             try apply Henv. }
-       eapply partial_eq_result_to_array_delta_by_indices. intros.
+       eapply eq_tensor_to_array_delta_by_indices. intros.
      2: { eapply Hrdx. }
      2: { erewrite size_of_sizeof by eauto. simpl.
-          decomp_partial_well_formed_reindexer.
+          decomp_well_formed_reindexer.
           repeat erewrite result_has_shape_result_shape_Z by eauto.
           replace (fun e : Zexpr =>
                           match eval_Zexpr_Z $0 e with
@@ -2308,25 +2382,12 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
      eauto.
      apply Henv. apply Hrdx. apply Hrdx. apply Hrdx. apply Hrdx. lia. lia.
      eauto. eauto.
-     { replace (fun e : Zexpr =>
-                     match eval_Zexpr_Z $0 e with
-                     | Some x => x
-                     | None => 0%Z
-                     end) with (eval_Zexpr_Z_total $0) in * by auto.
-       eapply assign_no_overwrite_concat_r; eauto.
-     }
      eauto. eauto.
-     { replace (fun e : Zexpr =>
-                     match eval_Zexpr_Z $0 e with
-                     | Some x => x
-                     | None => 0%Z
-                     end) with (eval_Zexpr_Z_total $0) in * by reflexivity.
-       eapply assign_no_overwrite_concat_l; eauto. }
      apply Hrdx.
    - (* TRANSPOSE *)
      simpl in *.
      pose proof Halloc as Halloc1.
-     eapply partial_well_formed_allocation_result_V in Halloc1.
+     eapply well_formed_allocation_result_V in Halloc1.
      inversion Halloc1 as [ a Htmp  ]. clear Halloc1.
      inversion Htmp as [ Heq Hsub ]. clear Htmp.
      assert (result_has_shape (V l)
@@ -2402,8 +2463,8 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
      invs.
      split; auto.
      f_equal. f_equal.
-     { unfold partial_result_to_array_delta.
-       eapply partial_eq_result_to_array_delta_by_indices_shuffle
+     { unfold tensor_to_array_delta.
+       eapply eq_tensor_to_array_delta_by_indices_shuffle
          with (shuffle:=(fun l => match l with
                                  | x::y::xs => y::x::xs
                                  | _ => l
@@ -2463,7 +2524,7 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
          reflexivity.
          lia. lia. eauto.
        - apply Hrdx.
-       - decomp_partial_well_formed_reindexer.
+       - decomp_well_formed_reindexer.
          eapply partial_injective_transpose; eauto.
          apply Henv.
        - erewrite result_has_shape_result_shape_Z.
@@ -2475,10 +2536,9 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
          invert H12. auto.
        - eapply no_dup_filter. eapply no_dup_mesh_grid.
        - eapply no_dup_filter. eapply no_dup_mesh_grid. }
-     eapply partial_well_formed_reindexer_transpose; try apply Henv; eauto.
-     eapply partial_well_formed_allocation_transpose;
+     eapply well_formed_reindexer_transpose; try apply Henv; eauto.
+     eapply well_formed_allocation_transpose;
        try apply Henv; try apply Hrdx; eauto.
-     eapply assign_no_overwrite_transpose; eauto.
      }
      { 
      eapply IHeval_expr in Heval; eauto. invs. clear IHeval_expr.
@@ -2531,8 +2591,8 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
      invs.
      split; auto.
      f_equal. f_equal.
-     { unfold partial_result_to_array_delta.
-       eapply partial_eq_result_to_array_delta_by_indices_shuffle
+     { unfold tensor_to_array_delta.
+       eapply eq_tensor_to_array_delta_by_indices_shuffle
          with (shuffle:=(fun l => match l with
                                  | x::y::xs => y::x::xs
                                  | _ => l
@@ -2592,7 +2652,7 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
          reflexivity.
          lia. lia. eauto.
        - apply Hrdx.
-       - decomp_partial_well_formed_reindexer.
+       - decomp_well_formed_reindexer.
          eapply partial_injective_transpose; eauto.
          apply Henv.
        - erewrite result_has_shape_result_shape_Z.
@@ -2604,10 +2664,9 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
          invert H11. auto.
        - eapply no_dup_filter. eapply no_dup_mesh_grid.
        - eapply no_dup_filter. eapply no_dup_mesh_grid. }
-     eapply partial_well_formed_reindexer_transpose; try apply Henv; eauto.
-     eapply partial_well_formed_allocation_transpose;
+     eapply well_formed_reindexer_transpose; try apply Henv; eauto.
+     eapply well_formed_allocation_transpose;
        try apply Henv; try apply Hrdx; eauto.
-     eapply assign_no_overwrite_transpose; eauto.
      }
      apply Hrdx.     
    - (* FLATTEN *)
@@ -2630,7 +2689,7 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
        inversion 1. inversion 1. }
      clear Heq.
      pose proof Halloc as Halloc1.
-     eapply partial_well_formed_allocation_result_V in Halloc1.
+     eapply well_formed_allocation_result_V in Halloc1.
      inversion Halloc1 as [a Htmp]. clear Halloc1.
      inversion Htmp as [ Heq Hsub ]. clear Htmp.
      unfold lookup_total. rewrite Heq.
@@ -2667,12 +2726,12 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
      invs. split; auto.
      unfold lookup_total. rewrite Heq.
      f_equal. f_equal.
-     unfold partial_result_to_array_delta.
+     unfold tensor_to_array_delta.
      erewrite result_has_shape_result_shape_Z by eauto.
      erewrite result_has_shape_result_shape_Z.
      2: { eapply result_has_shape_flatten; eauto. }
      { symmetry.
-       eapply partial_eq_result_to_array_delta_by_indices_shuffle
+       eapply eq_tensor_to_array_delta_by_indices_shuffle
          with (shuffle:= fun l =>
                            match l with
                            | x::y::xs =>
@@ -2747,11 +2806,11 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
          eauto. eauto.
          lia. lia.
          eauto.
-       - decomp_partial_well_formed_reindexer.
+       - decomp_well_formed_reindexer.
          erewrite result_has_shape_result_shape_Z in Hinj.
          2: { eapply result_has_shape_flatten; eauto. }
          eapply partial_injective_flatten; try apply Henv; eauto.
-       - decomp_partial_well_formed_reindexer.
+       - decomp_well_formed_reindexer.
          erewrite result_has_shape_result_shape_Z in Hinj.
          2: { eapply result_has_shape_flatten; eauto. }
          eauto.
@@ -2766,12 +2825,10 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
          eapply no_dup_mesh_grid.
        - eapply no_dup_filter.
          eapply no_dup_mesh_grid. }
-     eapply partial_well_formed_reindexer_flatten; try apply Henv; eauto.
-     eapply partial_well_formed_allocation_flatten;
+     eapply well_formed_reindexer_flatten; try apply Henv; eauto.
+     eapply well_formed_allocation_flatten;
        try apply Henv; try apply Hrdx; eauto.
-     eq_size_of. invert H3.
-     eapply assign_no_overwrite_flatten; eauto. 
-     apply Hrdx.
+     apply Hrdx. 
    - (* TRUNCR *) simpl in *. invert Hsize. invert Hconst.
      assert (result_has_shape (V l)
                               (map Z.to_nat
@@ -2843,26 +2900,47 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
        2: { eauto. }
        2: { eauto. }
        2: { simpl. rewrite <- gen_pad_cons.
-            eapply partial_well_formed_reindexer_gen_pad.
-            eapply partial_well_formed_reindexer_truncr
-              with (x:=[]) (l0:=l0).
-            simpl. rewrite rev_repeat.
-            pose proof (truncl_list_length_empty
-                          (Z.to_nat (eval_Zexpr_Z_total $0 k))
-                          (repeat (gen_pad (map Z.to_nat (map (eval_Zexpr_Z_total $0) l0)))
-                                  (Z.to_nat (eval_Zexpr_Z_total $0 k)))).
-            rewrite repeat_length in *.
-            assert (Z.to_nat (eval_Zexpr_Z_total $0 k) <= Z.to_nat (eval_Zexpr_Z_total $0 k)) by lia.
-            eapply H6 in H7.
-            rewrite H7. eauto.
-            simpl. eapply result_has_shape_repeat.
-            eapply result_has_shape_gen_pad.
-            apply Henv.
-            eapply vars_of_Zexpr_empty_eq_zexpr_eval_Zexpr_Z_total; eauto.
-            lia. lia. }
+            apply well_formed_allocation_result_V in Halloc.
+            2: apply Hrdx.
+            invert Halloc.
+
+            decomp_well_formed_reindexer.
+            rewrite filter_negb_is_None_result_lookup_Z_option_gen_pad in *.
+            split.
+            unfold partial_injective. intros. invert H7.
+            split.
+            intros. destruct l2; destruct l3.
+            eauto. invert H7. simpl in *. lia. invert H7. simpl in *. lia.
+            destruct p0. destruct p1.
+            eapply HeqZlist.
+            erewrite <- eq_Z_tuple_index_list_cons_tup.
+            erewrite <- eq_Z_tuple_index_list_cons_tup in H7.
+            propositional. eapply eq_zexpr_sub. eauto. eauto.
+            eapply eq_zexpr_sub. eauto. eauto.
+            split.
+            auto.
+            split. intros.
+            destruct l2. simpl. rewrite Hmap. eauto. eauto.
+            destruct p0. simpl. rewrite Hmap. simpl.
+            unfold subst_var_in_Z_tup at 1. simpl.
+            erewrite subst_var_in_Zexpr_id with (lo:=k). eauto.
+            rewrite H4. sets. eauto.
+            split.
+            intros.
+            destruct l2. rewrite Hvarsarg. sets.
+            destruct p0. simpl. rewrite Hvarsarg. simpl.
+            rewrite H4. rewrite app_no_dups_empty_r. sets.
+            unfold nondestructivity.
+            split; intros.
+            unfold tensor_to_array_delta in H14.
+            rewrite filter_negb_is_None_result_lookup_Z_option_gen_pad in *.
+            unfold tensor_to_array_delta_by_indices in *. simpl in *.
+            rewrite dom_empty in *. sets.
+            invert H6.
+            eapply lookup_Some_dom in H14. sets. } 
        2: { simpl. rewrite <- gen_pad_cons.
-            eapply partial_well_formed_allocation_gen_pad.
-            eapply partial_well_formed_allocation_truncr
+            eapply well_formed_allocation_gen_pad.
+            eapply well_formed_allocation_truncr
               with (x:=[]) (l0:=l0).
             simpl. rewrite rev_repeat.
             pose proof (truncl_list_length_empty
@@ -2942,16 +3020,12 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
            eapply cup_empty in H7. invert H7.
            eapply constant_not_empty in H6. propositional. inversion 1. }
        unfold lookup_total in *. invs. split; auto.
-       eapply partial_well_formed_allocation_result_V in Halloc.
+       eapply well_formed_allocation_result_V in Halloc.
        invs. rewrite H7 in *. f_equal. f_equal.
-       rewrite partial_result_to_array_delta_empty_tensor.
+       rewrite tensor_to_array_delta_empty_tensor.
        simpl. rewrite <- gen_pad_cons.
-       rewrite partial_result_to_array_delta_gen_pad. reflexivity.
+       rewrite tensor_to_array_delta_gen_pad. reflexivity.
        apply Hrdx.
-       { clear IHeval_expr. pose proof Halloc.
-         eapply partial_well_formed_allocation_result_V in H6. invs.
-         eapply assign_no_overwrite_gen_pad; eauto. apply Hrdx.
-       }
      }     
      invert H2. 
      2: { pose proof Hpad as Hpad'. invert Hpad'.
@@ -2959,7 +3033,7 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
           2: { eauto. }
           2: { eauto. }
           2: { eauto. }
-          2: { decomp_partial_well_formed_reindexer.
+          2: { decomp_well_formed_reindexer.
                split.
                { erewrite result_has_shape_result_shape_Z by eauto.
                  unfold partial_injective. intros.
@@ -2988,20 +3062,45 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
                split.
                auto.
                split.
-               { intros. rewrite Hmap by auto.
-                 cases l2. reflexivity. cases p0. simpl.
-                 unfold subst_var_in_Z_tup at 1. simpl.
-                 rewrite (subst_var_in_Zexpr_id k). reflexivity.
-                 rewrite H4. sets. }
+               intros. rewrite Hmap by auto.
+               cases l2. reflexivity. cases p0. simpl.
+               unfold subst_var_in_Z_tup at 1. simpl.
+               rewrite (subst_var_in_Zexpr_id k). reflexivity.
+               rewrite H4. sets.
+               split.
                { intros. rewrite Hvarsarg.
                  cases l2. reflexivity. cases p0. f_equal.
                  simpl.
                  rewrite H4. rewrite app_no_dups_empty_r. reflexivity. }
+               { invert Hpad.
+                 pose proof Hconst as HH. pose proof H18 as Hpad.
+                 eapply has_pad_gen_pad in H18.
+                 2: { eauto. }
+                 2: { eauto. }
+                 2: { eauto. }
+                 2: { eauto. }
+                 2: { eapply contexts_agree_result_has_shape. eauto. }
+                 2: { eauto. }
+                 simpl in H18. invs.
+                 unfold nondestructivity in *. split; intros.
+                 unfold tensor_to_array_delta in H18.
+                 rewrite exists_0_empty_mesh_grid in H18.
+                 2: { erewrite result_has_shape_result_shape_Z by eauto.
+                      pose proof H6.
+                      eapply Exists_map.
+                      eapply exists_filter_until_0. simpl.
+                      right. eauto. }
+                 simpl in H18. unfold tensor_to_array_delta_by_indices in H18.
+                 simpl in H18. rewrite dom_empty in H18. sets.
+                 eapply well_formed_allocation_result_V in Halloc.
+                 invert Halloc. invert H18. eapply lookup_Some_dom in H16.
+                 sets. eauto.                 
+               }
           }
-          2: { unfold partial_well_formed_allocation.
+          2: { unfold well_formed_allocation.
                rewrite exists_0_empty_mesh_grid.
                simpl.
-               eapply partial_well_formed_allocation_result_V in Halloc.
+               eapply well_formed_allocation_result_V in Halloc.
                invs. rewrite H8.
                cases (shape_to_index (result_shape_Z (V l))
                                      (shape_to_vars (result_shape_Z (V l)))).
@@ -3061,7 +3160,7 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
               inversion 1. }
           invs.
           unfold lookup_total.
-          eapply partial_well_formed_allocation_result_V in Halloc. invs.
+          eapply well_formed_allocation_result_V in Halloc. invs.
           rewrite H8. 
           cases (reindexer
                    (shape_to_index
@@ -3105,8 +3204,8 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
               inversion 1. }
           split. 2: auto.
           f_equal. f_equal.
-          unfold partial_result_to_array_delta,
-            partial_result_to_array_delta_by_indices.
+          unfold tensor_to_array_delta,
+            tensor_to_array_delta_by_indices.
           rewrite exists_0_empty_mesh_grid.
           rewrite exists_0_empty_mesh_grid.
           simpl. reflexivity.
@@ -3126,10 +3225,6 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
           eapply exists_filter_until_0.
           simpl. right. eauto.
           apply Hrdx. eauto.
-
-          clear IHeval_expr. pose proof Halloc.
-          eapply partial_well_formed_allocation_result_V in H2. invs.
-          eapply assign_no_overwrite_tensor_shape_0; eauto. apply Hrdx.
      }
      
      assert (exists l', l =
@@ -3167,12 +3262,16 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
      invert Hpad.
      
      eapply IHeval_expr in Heval; clear IHeval_expr; eauto.
-     2: { eapply partial_well_formed_reindexer_truncr. eauto.
+     2: { eapply well_formed_allocation_result_V in Halloc.
+          invert Halloc.
+          eapply well_formed_reindexer_truncr. eauto.
           repeat rewrite map_cons in Hsh. eauto.
           try apply Henv.
           eapply vars_of_Zexpr_empty_eq_zexpr_eval_Zexpr_Z_total; eauto.
-          lia. lia. }
-     2: { eapply partial_well_formed_allocation_truncr. eauto.
+          lia. lia. apply H2.
+          eauto. lia. apply Hrdx.
+     }
+     2: { eapply well_formed_allocation_truncr. eauto.
           apply Hrdx. repeat rewrite map_cons in *. eauto. lia.
           try apply Henv; try apply Hrdx; eauto.
           eapply vars_of_Zexpr_empty_eq_zexpr_eval_Zexpr_Z_total; eauto.
@@ -3252,7 +3351,7 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
          eapply constant_not_empty in H2. propositional. inversion 1. }
      invs.
      pose proof Halloc as Halloc1.
-     eapply partial_well_formed_allocation_result_V in Halloc1;
+     eapply well_formed_allocation_result_V in Halloc1;
        try apply Hrdx. invs.
      unfold lookup_total. rewrite H8.
      split. 2: auto. f_equal.
@@ -3268,7 +3367,7 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
           eassumption. }
      repeat rewrite <- map_cons.
 
-     unfold partial_result_to_array_delta.
+     unfold tensor_to_array_delta.
 
      rewrite rev_app_distr in *.
      simpl gen_pad_list in *.
@@ -3299,7 +3398,7 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
           eauto. }
      2: { lia. }
 
-     eapply partial_eq_result_to_array_delta_by_indices_shuffle with
+     eapply eq_tensor_to_array_delta_by_indices_shuffle with
        (shuffle:=fun x => x).
         + intros.
           erewrite result_has_shape_result_shape_Z in H2.
@@ -3333,7 +3432,7 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
           2: { repeat rewrite map_cons in Hsh.
                eapply result_has_shape_app_r; eauto. }
           rewrite repeat_length in *. eauto.
-        + decomp_partial_well_formed_reindexer.
+        + decomp_well_formed_reindexer.
           pose proof Hinj.
           erewrite result_has_shape_result_shape_Z in H2.
           2: { repeat rewrite map_cons in Hsh.
@@ -3342,7 +3441,7 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
           2: { repeat rewrite map_cons in Hsh.
                eapply result_has_shape_app_r; eauto. }
           rewrite repeat_length in *. eauto.
-        + decomp_partial_well_formed_reindexer.
+        + decomp_well_formed_reindexer.
           erewrite result_has_shape_result_shape_Z in Hinj.
           2: { repeat rewrite map_cons in Hsh.
                eapply result_has_shape_app_r; eauto. }
@@ -3356,18 +3455,6 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
           eapply no_dup_mesh_grid.
         + eapply no_dup_filter.
           eapply no_dup_mesh_grid.
-        + pose proof Halloc.
-          eapply partial_well_formed_allocation_result_V in H2. invs.
-          clear H12.
-          pose proof Hassign. rewrite rev_app_distr in *.
-          simpl in *. rewrite @rev_repeat in *.
-          rewrite truncl_list_app in H8.
-          2: { rewrite repeat_length. lia. }
-          rewrite truncl_list_skipn in H8.
-          rewrite skipn_all2 in H8.
-          2: { rewrite repeat_length. lia. }
-          simpl in H8. rewrite rev_involutive in H8.
-          eapply assign_no_overwrite_trunc_r; eauto. apply Hrdx.
    - (* TRUNCL *) simpl in *. invert Hsize. invert Hconst.
      assert (result_has_shape (V l)
                               (map Z.to_nat
@@ -3430,19 +3517,47 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
        2: { eauto. }
        2: { eauto. }
        2: { simpl. rewrite <- gen_pad_cons.
-            eapply partial_well_formed_reindexer_gen_pad.
-            eapply partial_well_formed_reindexer_truncl
-              with (x:=[]) (l0:=l0).
-            simpl.  eauto.
-            rewrite app_nil_r.
-            simpl. eapply result_has_shape_repeat.
-            eapply result_has_shape_gen_pad.
-            apply Henv.
-            eapply vars_of_Zexpr_empty_eq_zexpr_eval_Zexpr_Z_total; eauto.
-            lia. lia. }
+            eapply well_formed_allocation_result_V in Halloc.
+            invert Halloc.
+            decomp_well_formed_reindexer.
+            erewrite filter_negb_is_None_result_lookup_Z_option_gen_pad.
+            split.
+            unfold partial_injective. intros. invert H11.
+            split.
+            intros. destruct l2; destruct l3. eauto.
+            invert H11. simpl in *. lia.
+            invert H11. simpl in *. lia.
+            destruct p0. destruct p1.
+            eapply HeqZlist.
+            erewrite <- eq_Z_tuple_index_list_cons_tup.
+            erewrite <- eq_Z_tuple_index_list_cons_tup in H11.
+            propositional.
+            eapply eq_zexpr_sub; eauto.
+            eapply eq_zexpr_sub; eauto.
+            eapply eq_zexpr_sub; eauto.
+            eapply eq_zexpr_sub; eauto.
+            split. auto.
+            split. intros.
+            destruct l2. simpl. rewrite Hmap. eauto. eauto.
+            destruct p0. rewrite Hmap. simpl.
+            unfold subst_var_in_Z_tup at 1. simpl.
+            rewrite subst_var_in_Zexpr_id with (lo:=k). eauto.
+            rewrite H4. sets. eauto.
+            split.
+            intros. destruct l2. rewrite Hvarsarg. sets.
+            destruct p0. simpl. rewrite Hvarsarg. simpl.
+            rewrite H4. rewrite app_no_dups_empty_r.
+            rewrite app_no_dups_empty_r. sets.
+            unfold nondestructivity.
+            unfold tensor_to_array_delta.
+            erewrite filter_negb_is_None_result_lookup_Z_option_gen_pad.
+            unfold tensor_to_array_delta_by_indices.
+            simpl. rewrite dom_empty. split; intros. sets.
+            invert H10.
+            eapply lookup_Some_dom in H14. sets. apply Hrdx. }
        2: { simpl. rewrite <- gen_pad_cons.
-            eapply partial_well_formed_allocation_gen_pad.
-            eapply partial_well_formed_allocation_truncl
+            eapply well_formed_allocation_gen_pad.
+            eapply well_formed_allocation_truncl
               with (x:=[]) (l0:=l0).
             eauto.
             eapply Hrdx. 
@@ -3515,15 +3630,12 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
            eapply cup_empty in H11. invert H11.
            eapply constant_not_empty in H10. propositional. inversion 1. }
        unfold lookup_total in *. invs. split; auto.
-       eapply partial_well_formed_allocation_result_V in Halloc.
+       eapply well_formed_allocation_result_V in Halloc.
        invs. rewrite H8 in *. f_equal. f_equal.
-       rewrite partial_result_to_array_delta_empty_tensor.
+       rewrite tensor_to_array_delta_empty_tensor.
        simpl. rewrite <- gen_pad_cons.
-       rewrite partial_result_to_array_delta_gen_pad. reflexivity.
-       apply Hrdx.
-       pose proof Halloc.
-       eapply partial_well_formed_allocation_result_V in H10. invs. clear H12.
-       eapply assign_no_overwrite_gen_pad; eauto. apply Hrdx. }
+       rewrite tensor_to_array_delta_gen_pad. reflexivity.
+       apply Hrdx. }
        
      invert H6. 
      2: { pose proof Hpad as Hpad'. invert Hpad'.
@@ -3531,7 +3643,7 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
           2: { eauto. }
           2: { eauto. }
           2: { eauto. }
-          2: { decomp_partial_well_formed_reindexer.
+          2: { decomp_well_formed_reindexer.
                split.
                { erewrite result_has_shape_result_shape_Z by eauto.
                  unfold partial_injective. intros.
@@ -3560,21 +3672,34 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
                split.
                auto.
                split.
-               { intros. rewrite Hmap by auto.
-                 cases l2. reflexivity. cases p0. simpl.
-                 unfold subst_var_in_Z_tup at 1. simpl.
-                 rewrite (subst_var_in_Zexpr_id k). reflexivity.
-                 rewrite H4. sets. }
-               { intros. rewrite Hvarsarg.
-                 cases l2. reflexivity. cases p0. f_equal.
-                 simpl.
-                 rewrite H4. repeat rewrite app_no_dups_empty_r.
-                 reflexivity. }
+              intros. rewrite Hmap by auto.
+              cases l2. reflexivity. cases p0. simpl.
+              unfold subst_var_in_Z_tup at 1. simpl.
+              rewrite (subst_var_in_Zexpr_id k). reflexivity.
+              rewrite H4. sets.
+              split.
+              { intros. rewrite Hvarsarg.
+                cases l2. reflexivity. cases p0. f_equal.
+                simpl.
+                rewrite H4. repeat rewrite app_no_dups_empty_r.
+                reflexivity. }
+              { unfold nondestructivity in *. split; intros.
+                 unfold tensor_to_array_delta in H12.
+                 rewrite exists_0_empty_mesh_grid in H12.
+                 2: { erewrite result_has_shape_result_shape_Z by eauto.
+                      eapply Exists_map.
+                      eapply exists_filter_until_0. simpl.
+                      right. eauto. }
+                 simpl in H12. unfold tensor_to_array_delta_by_indices in H12.
+                 simpl in H12. rewrite dom_empty in H12. sets.
+                 eapply well_formed_allocation_result_V in Halloc.
+                 invert Halloc. invert H12. eapply lookup_Some_dom in H9.
+                 sets. eauto. }
           }
-          2: { unfold partial_well_formed_allocation.
+          2: { unfold well_formed_allocation.
                rewrite exists_0_empty_mesh_grid.
                simpl.
-               eapply partial_well_formed_allocation_result_V in Halloc.
+               eapply well_formed_allocation_result_V in Halloc.
                invs. rewrite H9.
                cases (shape_to_index (result_shape_Z (V l))
                                      (shape_to_vars (result_shape_Z (V l)))).
@@ -3648,7 +3773,7 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
               inversion 1. }
           invs.
           unfold lookup_total.
-          eapply partial_well_formed_allocation_result_V in Halloc. invs.
+          eapply well_formed_allocation_result_V in Halloc. invs.
           rewrite H9. 
           cases (reindexer
                    (shape_to_index
@@ -3678,8 +3803,8 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
               eapply constant_not_empty in H6. propositional. inversion 1. }
           split. 2: auto.
           f_equal. f_equal.
-          unfold partial_result_to_array_delta,
-            partial_result_to_array_delta_by_indices.
+          unfold tensor_to_array_delta,
+            tensor_to_array_delta_by_indices.
           rewrite exists_0_empty_mesh_grid.
           rewrite exists_0_empty_mesh_grid.
           simpl. reflexivity.
@@ -3696,38 +3821,7 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
           eapply Exists_map.
           eapply exists_filter_until_0.
           simpl. right. eauto.
-          apply Hrdx. eauto.
-          pose proof Halloc.
-          eapply partial_well_formed_allocation_result_V in H6. invs.
-          2: apply Hrdx. clear H11. pose proof Hassign.
-          assert (exists l', l =                        
-                          gen_pad_list
-                            (Z.to_nat
-                               (eval_Zexpr_Z_total $0 k)
-                               :: map Z.to_nat
-                               (map (eval_Zexpr_Z_total $0) l0))++l')%list.
-          { invert Hpad.
-            eapply has_pad_gen_pad in H10.
-            2: { eauto. }
-            2: { eauto. } 
-            2: { eauto. }
-            2: { eauto. }
-            2: { eapply contexts_agree_result_has_shape. eauto. }
-            2: { eauto. }
-            simpl in *. invs.
-            erewrite <- firstn_skipn
-              with (l:=l) (n:=(Z.to_nat (eval_Zexpr_Z_total $0 k))).
-            eexists (skipn (Z.to_nat (eval_Zexpr_Z_total $0 k)) l).
-            f_equal.
-            eapply forall_firstn_ge in H11.
-            2: { apply H14. }
-            eapply forall_eq_gen_pad in H11.
-            simpl in H11. rewrite H11. rewrite firstn_length.
-            erewrite result_has_shape_length by eauto. f_equal. lia. }
-          invert H11.
-          rewrite truncl_list_gen_pad_id in H9.
-          eapply assign_no_overwrite_tensor_shape_0.
-          eauto. eauto. eauto. }
+          apply Hrdx. eauto. }
      
      assert (exists l', l =                        
                           gen_pad_list
@@ -3761,12 +3855,14 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
 
      invert Hpad.
      eapply IHeval_expr in Heval; clear IHeval_expr; eauto.
-     2: { eapply partial_well_formed_reindexer_truncl; 
+     2: { eapply well_formed_allocation_result_V in Halloc.
+          invert Halloc.
+          eapply well_formed_reindexer_truncl; 
           try apply Henv.
           auto. simpl in *. eassumption.
           eapply vars_of_Zexpr_empty_eq_zexpr_eval_Zexpr_Z_total. eauto.
-          lia. lia. }
-     2: { eapply partial_well_formed_allocation_truncl;
+          lia. lia. eapply H6. lia. apply Hrdx. }
+     2: { eapply well_formed_allocation_truncl;
           try apply Henv; try apply Hrdx; auto.
           simpl in *. eauto.
           eapply vars_of_Zexpr_empty_eq_zexpr_eval_Zexpr_Z_total; eauto.
@@ -3821,13 +3917,13 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
      invs.
      pose proof Halloc as Halloc1.
      
-     eapply partial_well_formed_allocation_result_V in Halloc1;
+     eapply well_formed_allocation_result_V in Halloc1;
        try apply Hrdx. invs.
      unfold lookup_total. rewrite H9.
      split. 2: auto. f_equal.     
      f_equal.
      invs. subst.
-     unfold partial_result_to_array_delta.
+     unfold tensor_to_array_delta.
      erewrite result_has_shape_result_shape_Z.
      2: { eauto. }
      erewrite result_has_shape_result_shape_Z.
@@ -3838,7 +3934,7 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
      rewrite <- map_cons.
      rewrite <- map_cons.
      rewrite filter_pad_l_mesh_grid; auto.
-     eapply partial_eq_result_to_array_delta_by_indices_shuffle
+     eapply eq_tensor_to_array_delta_by_indices_shuffle
        with (shuffle:=(fun l => match l with
                                 | [] => l
                                 | x::xs => (x+eval_Zexpr_Z_total $0 k)%Z::xs
@@ -3865,12 +3961,12 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
           eapply filter_In. propositional.
           repeat decomp_goal_index.
           propositional.
-        + decomp_partial_well_formed_reindexer. pose proof Hinj.
+        + decomp_well_formed_reindexer. pose proof Hinj.
           erewrite result_has_shape_result_shape_Z in H6.
           eapply H6.
           eapply result_has_shape_app_l; eauto.
           simpl. rewrite repeat_length. reflexivity.
-        + decomp_partial_well_formed_reindexer.
+        + decomp_well_formed_reindexer.
           eapply partial_injective_truncl.
           eauto.
           eassumption.
@@ -3888,10 +3984,6 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
           propositional.
           repeat decomp_index.
           invert H15. f_equal. lia.
-        + pose proof Halloc.
-          eapply partial_well_formed_allocation_result_V in H6. invs.
-          clear H11.
-          eapply assign_no_overwrite_trunc_l; eauto. apply Hrdx.
    - (* PADR *) simpl in *. invert Hconst. invert Hsize. eq_size_of.
      invert H6.
         assert (result_has_shape (V l)
@@ -3913,7 +4005,7 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
         erewrite size_of_sizeof in * by eassumption.
         invert H6. invs.
         pose proof Halloc as Halloc1.
-        eapply partial_well_formed_allocation_result_V in Halloc1.
+        eapply well_formed_allocation_result_V in Halloc1.
         inversion Halloc1 as [a Htmp]. clear Halloc1.
         inversion Htmp as [Heq Hsub]. clear Htmp.
 
@@ -3974,14 +4066,36 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
           unfold result_shape_Z in IHeval_expr.
           unfold shape_to_index, shape_to_vars in IHeval_expr. 
           simpl in IHeval_expr.
-          rewrite partial_result_to_array_delta_gen_pad in *.
+          rewrite tensor_to_array_delta_gen_pad in *.
           rewrite array_add_empty_r. rewrite add_id by auto.
           eapply IHeval_expr in Heval; clear IHeval_expr; eauto.
-          2: { eapply partial_well_formed_reindexer_padr
-            with (m:=dim) (l0:=rest).
-               simpl. rewrite H21.
-               simpl. econstructor. simpl. eauto. 
-               eauto. eauto. apply Henv. }
+          2: { apply well_formed_allocation_result_V in Halloc.
+               invert Halloc.
+               decomp_well_formed_reindexer.
+               propositional. simpl. unfold partial_injective. intros.
+               invert H5.
+               destruct l1; destruct l2; eauto.
+               invert H5; simpl in *; try lia.
+               invert H5; simpl in *; try lia.
+               destruct p1. destruct p2. eapply HeqZlist.
+               erewrite <- eq_Z_tuple_index_list_cons_tup.
+               erewrite <- eq_Z_tuple_index_list_cons_tup in H5.
+               propositional.
+               eapply eq_zexpr_add; eauto.
+               destruct l0. simpl. rewrite Hmap. eauto. eauto.
+               destruct p1. simpl. rewrite Hmap.
+               simpl. unfold subst_var_in_Z_tup at 1. simpl.
+               rewrite subst_var_in_Zexpr_id with (lo:=k). eauto.
+               invert Heqk. rewrite H15. sets. auto.
+               destruct l0. rewrite Hvarsarg. sets. destruct p1.
+               rewrite Hvarsarg. simpl.
+               invert Heqk. rewrite H14. simpl.
+               rewrite app_no_dups_empty_r. sets. 
+               unfold nondestructivity.
+               unfold tensor_to_array_delta. simpl.
+               unfold tensor_to_array_delta_by_indices. simpl.
+               rewrite dom_empty. split; intros. sets.
+               eapply lookup_Some_dom in Heq. sets. apply Hrdx. }
           cases (reindexer [((! "?" !)%z, (| 0 | + k)%z)]).
           eapply reindexer_not_empty_vars_in_index in Heq1. propositional.
           apply Hrdx. simpl.
@@ -3990,14 +4104,13 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
           eapply cup_empty in H8. invs.
           apply constant_not_empty in H5. propositional. inversion 1.
           invs. subst. unfold lookup_total. rewrite Heq.
-          rewrite partial_result_to_array_delta_empty_tensor.
+          rewrite tensor_to_array_delta_empty_tensor.
           rewrite array_add_empty_r. rewrite add_id. propositional. auto.
 
-          eapply partial_well_formed_allocation_padr with (m:=dim) (l0:=rest).
+          eapply well_formed_allocation_padr with (m:=dim) (l0:=rest).
           simpl. rewrite H21. econstructor. eauto. eauto.
           simpl. eauto. apply Hrdx. apply Henv. apply Hrdx. apply Hrdx.
           apply Hrdx.
-          eapply assign_no_overwrite_empty_tensor; eauto.
         }
           
         eapply IHeval_expr in Heval; eauto.
@@ -4056,7 +4169,7 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
      unfold lookup_total. rewrite Heq.
      f_equal.
 
-     unfold partial_result_to_array_delta.
+     unfold tensor_to_array_delta.
      symmetry.
      erewrite result_has_shape_result_shape_Z.
      2: { eapply result_has_shape_concat.
@@ -4077,7 +4190,7 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
      erewrite result_has_shape_result_shape_Z by eauto.
      rewrite Z2Nat.inj_add by lia.
      rewrite add_sub.
-     eapply partial_eq_result_to_array_delta_by_indices_shuffle
+     eapply eq_tensor_to_array_delta_by_indices_shuffle
        with (shuffle:=fun l1  => l1).
         + intros.
           repeat decomp_index.
@@ -4106,7 +4219,7 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
           eapply filter_In. propositional.
           repeat decomp_goal_index.
           propositional.
-        + decomp_partial_well_formed_reindexer.
+        + decomp_well_formed_reindexer.
           erewrite result_has_shape_result_shape_Z in Hinj.
           2: { eapply result_has_shape_concat.
                simpl in Hsh. eauto.
@@ -4122,7 +4235,7 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
           auto.
           eapply result_has_shape_repeat_gen_pad.
           rewrite Z2Nat.id by lia. auto.
-        + decomp_partial_well_formed_reindexer.
+        + decomp_well_formed_reindexer.
           erewrite result_has_shape_result_shape_Z in Hinj.
           2: { eapply result_has_shape_concat.
                simpl in Hsh. eauto.
@@ -4160,12 +4273,11 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
         + lia.
         + lia.
         + subst.
-          eapply partial_well_formed_reindexer_padr; try apply Henv; eauto.
+          eapply well_formed_reindexer_padr; try apply Henv; eauto.
+          invert H5. lia.
         + subst.
-          eapply partial_well_formed_allocation_padr;
+          eapply well_formed_allocation_padr;
             try apply Hrdx; try apply Henv; eauto.
-        + invert H5. clear Hsub. clear IHeval_expr.
-          eapply assign_no_overwrite_pad_r; eauto.
         + apply Hrdx.
    - (* PADL *) simpl in *. invert Hconst. invert Hsize. eq_size_of.
         invert H6.
@@ -4188,7 +4300,7 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
         erewrite size_of_sizeof in * by eassumption.
         invert H6. invs.
         pose proof Halloc as Halloc1.
-        eapply partial_well_formed_allocation_result_V in Halloc1.
+        eapply well_formed_allocation_result_V in Halloc1.
         inversion Halloc1 as [a Htmp]. clear Halloc1.
         inversion Htmp as [Heq Hsub]. clear Htmp.
 
@@ -4244,18 +4356,38 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
           unfold result_shape_Z in IHeval_expr.
           unfold shape_to_index, shape_to_vars in IHeval_expr. 
           simpl in IHeval_expr.
-          rewrite partial_result_to_array_delta_gen_pad in *.
+          rewrite tensor_to_array_delta_gen_pad in *.
           rewrite array_add_empty_r. rewrite add_id by auto.
 
           eapply IHeval_expr in Heval; eauto.
-          2: { eapply partial_well_formed_reindexer_padl.
-               rewrite app_nil_r. apply Hrdx.
-               rewrite H21. econstructor. apply Henv.
-               eapply vars_of_Zexpr_empty_eq_zexpr_eval_Zexpr_Z_total. eauto. 
-               eapply vars_of_Zexpr_empty_eq_zexpr_eval_Zexpr_Z_total. eauto. 
-               lia. lia.
-               apply Hrdx. apply Hrdx. apply Hrdx. apply Hrdx. }
-          2: { eapply partial_well_formed_allocation_padl.
+          2: { eapply well_formed_allocation_result_V in Halloc.
+               invert Halloc.
+               decomp_well_formed_reindexer.
+               propositional.
+               unfold partial_injective. simpl. propositional.
+               destruct l1; destruct l2; eauto.
+               invert H14; simpl in *; lia.
+               invert H14; simpl in *; lia.
+               destruct p1. destruct p2. eapply HeqZlist.
+               erewrite <- eq_Z_tuple_index_list_cons_tup.
+               erewrite <- eq_Z_tuple_index_list_cons_tup in H14.
+               propositional. eapply eq_zexpr_add; eauto.
+               eapply eq_zexpr_add; eauto.
+               destruct l0. rewrite Hmap. eauto. eauto.
+               destruct p1. simpl. rewrite Hmap. simpl.
+               unfold subst_var_in_Z_tup at 1. simpl.
+               rewrite subst_var_in_Zexpr_id with (lo:=k). eauto.
+               rewrite H6. sets. eauto.
+               destruct l0. rewrite Hvarsarg. sets.
+               destruct p1. rewrite Hvarsarg. simpl.
+               rewrite H6. repeat rewrite app_no_dups_empty_r. sets.
+               unfold nondestructivity.
+               unfold tensor_to_array_delta, tensor_to_array_delta_by_indices.
+               simpl. rewrite dom_empty. split; intros. sets.
+               eapply lookup_Some_dom in Heq. sets.
+               apply Hrdx.
+          }
+          2: { eapply well_formed_allocation_padl.
                rewrite app_nil_r. eauto.
                simpl. rewrite H21. econstructor.
                apply Hrdx. lia. lia. apply Hrdx.
@@ -4272,9 +4404,8 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
           eapply cup_empty in H8. invs.
           apply constant_not_empty in H5. propositional. inversion 1.
           invs. subst. unfold lookup_total. rewrite Heq.
-          rewrite partial_result_to_array_delta_empty_tensor.
+          rewrite tensor_to_array_delta_empty_tensor.
           rewrite array_add_empty_r. rewrite add_id. propositional. auto.
-          eapply assign_no_overwrite_empty_tensor; eauto.
         }
           
         eapply IHeval_expr in Heval.
@@ -4334,7 +4465,7 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
      unfold lookup_total. rewrite Heq.
      f_equal.
 
-     unfold partial_result_to_array_delta.
+     unfold tensor_to_array_delta.
      symmetry.
      erewrite result_has_shape_result_shape_Z.
      2: { eapply result_has_shape_concat.
@@ -4352,7 +4483,7 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
        try eapply vars_of_Zexpr_empty_eq_zexpr_eval_Zexpr_Z_total; eauto.
 
      erewrite result_has_shape_result_shape_Z by eauto.
-     eapply partial_eq_result_to_array_delta_by_indices_shuffle
+     eapply eq_tensor_to_array_delta_by_indices_shuffle
        with (shuffle:=fun l1 : list Z =>
                         match l1 with
                         | [] => l1
@@ -4389,13 +4520,13 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
                     eval_Zexpr_Z_total $0 m <> 0)%Z by lia. invert H13.
           { rewrite H14. simpl.
             unfold partial_injective. propositional. invert H16. }
-          decomp_partial_well_formed_reindexer.
+          decomp_well_formed_reindexer.
           eapply partial_injective_padl; eauto.
           apply Henv.
           eapply vars_of_Zexpr_empty_eq_zexpr_eval_Zexpr_Z_total. eauto.
           eapply vars_of_Zexpr_empty_eq_zexpr_eval_Zexpr_Z_total. eauto.
           lia.
-        + decomp_partial_well_formed_reindexer.
+        + decomp_well_formed_reindexer.
           erewrite result_has_shape_result_shape_Z in Hinj.
           2: { eapply result_has_shape_concat.
                eapply result_has_shape_repeat_gen_pad.
@@ -4441,14 +4572,19 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
         + eauto.
         + eauto.
         + eauto.
-        + decomp_partial_well_formed_reindexer. subst.
-          eapply partial_well_formed_reindexer_padl; auto. eauto.
+        + decomp_well_formed_reindexer. subst.
+          eapply well_formed_allocation_result_V in Halloc. invert Halloc.
+          eapply well_formed_reindexer_padl; auto. eauto.
           simpl in Hsh. eauto. apply Henv.
           eapply vars_of_Zexpr_empty_eq_zexpr_eval_Zexpr_Z_total. eauto.
           eapply vars_of_Zexpr_empty_eq_zexpr_eval_Zexpr_Z_total. eauto.
-          lia. 
-        + decomp_partial_well_formed_reindexer. subst.
-          eapply partial_well_formed_allocation_padl; auto.
+          invert H5. lia.
+          eapply H8.
+          eauto. 
+          apply H8.
+          eauto.
+        + decomp_well_formed_reindexer. subst.
+          eapply well_formed_allocation_padl; auto.
           eauto. eauto. lia. 
           eapply vars_of_Zexpr_empty_eq_zexpr_eval_Zexpr_Z_total. eauto.
           eapply vars_of_Zexpr_empty_eq_zexpr_eval_Zexpr_Z_total. eauto.
@@ -4456,41 +4592,39 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
         + eauto.
         + eauto.
         + eauto.
-        + invert H5.
-          eapply assign_no_overwrite_pad_l; eauto.
         + apply Hrdx.
    - (* SCALAR *)
      simpl in *.     
      invert Heval.
-     + unfold well_formed_allocation in Halloc.
-       unfold result_shape_Z in *. simpl in *.
+     + unfold result_shape_Z in *. simpl in *.
        unfold shape_to_index, shape_to_vars in *.
        simpl in *. rewrite H10 in *. invs.
        rewrite H9 in *. invs.
        split. auto.
        
        eapply eval_Sexpr_eval_Sstmt in H8; eauto. subst.
-       eapply Hassign in H9. subst. f_equal. ring. reflexivity.
+       eapply Hrdx in H9. subst. f_equal. ring. reflexivity.
        eapply lookup_Some_dom in H9. unfold well_formed_environment in *.
        sets.
      + cases (reindexer
                 (shape_to_index
                    (result_shape_Z (S r))
                    (shape_to_vars (result_shape_Z (S r))))).
-       { unfold partial_well_formed_allocation in Halloc. rewrite Heq in *.
+       { unfold well_formed_allocation in Halloc. rewrite Heq in *.
          invs.
          eapply lookup_Some_dom in H0,H10.
          unfold well_formed_environment in Henv. invs. sets. }
        unfold lookup_total. rewrite H10.
        unfold partial_interpret_reindexer. simpl.
        eapply eval_Zexpr_Z_eval_Zexpr in H11.
-       simpl in *. unfold partial_result_to_array_delta.
-       unfold partial_result_to_array_delta_by_indices.
+       simpl in *. unfold tensor_to_array_delta.
+       unfold tensor_to_array_delta_by_indices.
        unfold result_shape_Z in *. unfold shape_to_index in *.
        simpl in *.
        cases r.
        2: { simpl in *. rewrite array_add_empty_r. propositional.
-            unfold assign_no_overwrite in Hassign. invert Hassign. clear H1.
+            decomp_well_formed_reindexer.
+            unfold nondestructivity in Hnondstr. invert Hnondstr. clear H1.
             invert H.
             - cases r; try discriminate.
             - cases r; try discriminate.
@@ -4501,7 +4635,7 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
        simpl.
        rewrite array_add_empty_l.
        unfold index_to_partial_function.
-       decomp_partial_well_formed_reindexer.
+       decomp_well_formed_reindexer.
        rewrite map_id.
        eapply vars_of_reindexer_subseteq_map_partially_eval_Z_tup in Hvarsub.
        invs.
@@ -4536,7 +4670,7 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
        2: { eauto. }
        2: { eauto. }
        rewrite H.
-       eapply Hassign with
+       eapply Hnondstr with
          (x:=flatten
                (map (eval_Zexpr_Z_total v) (map snd (reindexer [])))
                (map (eval_Zexpr_Z_total v) (map fst (reindexer []))))
@@ -4544,8 +4678,8 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
        2: { eapply lookup_Some_dom in H10.
             unfold well_formed_environment in *. sets. }
        2: { clear H2. unfold result_shape_Z. simpl.
-            unfold partial_result_to_array_delta. simpl.
-            unfold partial_result_to_array_delta_by_indices. simpl.
+            unfold tensor_to_array_delta. simpl.
+            unfold tensor_to_array_delta_by_indices. simpl.
             rewrite array_add_empty_l. unfold shape_to_index,shape_to_vars.
             simpl. rewrite dom_add. rewrite dom_empty. rewrite cup_empty_r.
             rewrite map_id.
@@ -4557,7 +4691,7 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
             sets. }
        rewrite H10 in *. invert H12. ring.
        intros; cases x; auto.
-     + unfold partial_well_formed_allocation in Halloc.
+     + unfold well_formed_allocation in Halloc.
        unfold result_shape_Z in *. simpl in *.
        unfold shape_to_index, shape_to_vars in *.
        simpl in *. rewrite H10 in *. invs.
@@ -4569,15 +4703,15 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
                 (shape_to_index
                    (result_shape_Z (S r))
                    (shape_to_vars (result_shape_Z (S r))))).
-       { unfold partial_well_formed_allocation in Halloc. rewrite Heq in *.
+       { unfold well_formed_allocation in Halloc. rewrite Heq in *.
          invs.
          eapply lookup_Some_dom in H0,H10.
          unfold well_formed_environment in Henv. invs. sets. }
        unfold lookup_total. rewrite H10.
        unfold partial_interpret_reindexer. simpl.
        eapply eval_Zexpr_Z_eval_Zexpr in H11.
-       simpl in *. unfold partial_result_to_array_delta.
-       unfold partial_result_to_array_delta_by_indices.
+       simpl in *. unfold tensor_to_array_delta.
+       unfold tensor_to_array_delta_by_indices.
        unfold result_shape_Z in *. unfold shape_to_index in *.
        simpl in *.
        cases r.
@@ -4587,14 +4721,14 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
             simpl.
             rewrite array_add_empty_r.
             f_equal.
-            unfold partial_well_formed_allocation in *.
+            unfold well_formed_allocation in *.
             unfold result_shape_Z, shape_to_index, shape_to_vars in *.
             simpl in *. rewrite Heq in *. invs. rewrite H0 in *. invs.
             rewrite add_arr_id. auto. rewrite H12. f_equal. ring. }
        simpl.
        rewrite array_add_empty_l.
        unfold index_to_partial_function.
-       decomp_partial_well_formed_reindexer.
+       decomp_well_formed_reindexer.
        rewrite map_id.
        eapply vars_of_reindexer_subseteq_map_partially_eval_Z_tup in Hvarsub.
        invs.
@@ -4666,7 +4800,7 @@ Theorem lower_correct :
             (h' = h $+ (p,
                          array_add
                            (h $! p)
-                           (partial_result_to_array_delta
+                           (tensor_to_array_delta
                               (partial_interpret_reindexer (fun l => l)
                                                    (result_shape_Z r) $0) r))
              /\ st' = st)
@@ -4718,22 +4852,68 @@ Proof.
         split. sets.
         split. sets.
         auto.
-  - unfold partial_well_formed_reindexer.
+  - unfold well_formed_reindexer.
     propositional.
     + eapply partial_injective_id_reindexer. rewrite dom_empty. sets.
     + simpl. sets.
     + simpl. sets.
+    + destruct r.
+      * simpl in *. invert H2.
+        unfold nondestructivity. rewrite lookup_empty. rewrite dom_add.
+        rewrite dom_empty. rewrite cup_empty_r. rewrite lookup_add_eq by auto.
+        rewrite dom_empty.
+        split; intros. discriminate. invert H2. eauto.
+      * destruct (shape_to_index (result_shape_Z (V v))
+                    (shape_to_vars (result_shape_Z (V v)))) eqn:ee.
+        eapply shape_to_index_not_empty_Z in ee. propositional.
+        invert H2.
+        unfold nondestructivity. rewrite lookup_empty.
+        unfold alloc_array_in_heap. rewrite dom_add.
+        repeat rewrite dom_empty. rewrite cup_empty_r.
+        rewrite lookup_add_eq by auto.
+        split; intros. invert H2.
+        2: { discriminate. }
+        destruct v. simpl in *.
+        unfold tensor_to_array_delta in H8. simpl in H8.
+        unfold tensor_to_array_delta_by_indices in H8. simpl in H8.
+        rewrite dom_empty in *. sets.
+        pose proof (lookup_alloc_array
+                      (fold_left mul (Datatypes.S (length v) ::
+                                        result_shape_nat r) 1) x).
+        invert H2; eauto.
+        eapply lookup_None_dom in H6.
+        rewrite dom_alloc_array in H6.
+        unfold tensor_to_array_delta in H8.
+        unfold tensor_to_array_delta_by_indices in H8.
+        erewrite partial_dom_fold_left_array_add in H8.
+        rewrite dom_empty in H8. rewrite cup_empty_r in H8.
+        2: { eapply partial_injective_id_reindexer; eauto.
+             rewrite dom_empty. sets. }
+        exfalso. apply H6.
+        erewrite <- In_iff_in. eapply In_iff_in in H8.
+        eapply in_extract_Some in H8. eapply in_map_iff in H8. invs.
+        rewrite filter_idempotent in H9.
+        erewrite partial_interpret_reindexer_id_flatten in H8.
+        2: { decomp_index. eauto. }
+        2: { rewrite dom_empty. sets. }
+        invert H8.
+        unfold result_shape_Z. simpl result_shape_nat.
+        erewrite Z_of_nat_fold_left_mul.
+        eapply in_mesh_grid_flatten_in_range.
+        2: { unfold result_shape_Z in *. simpl result_shape_nat in *.
+             decomp_index. eauto. }
+        eapply Forall_map. eapply Forall_forall. intros. lia.
   - unfold result_shape_Z, shape_to_index, shape_to_vars in *.
     cases r.
-    + simpl in *. invert H2. unfold partial_well_formed_allocation.
+    + simpl in *. invert H2. unfold well_formed_allocation.
       simpl. rewrite lookup_add_eq by auto. eauto.
     + cases v.
-      * simpl in *. invert H2. unfold partial_well_formed_allocation.
+      * simpl in *. invert H2. unfold well_formed_allocation.
         simpl. unfold alloc_array_in_heap in *. simpl.
         rewrite lookup_add_eq by auto.
         eexists. split. eauto. sets.
       * invert H2.
-        unfold partial_well_formed_allocation.
+        unfold well_formed_allocation.
         unfold shape_to_index, shape_to_vars.
         set (mesh_grid (map Z.of_nat (result_shape_nat (V (r :: v))))).
         subst l0. unfold alloc_array_in_heap.
@@ -4749,68 +4929,5 @@ Proof.
         eapply constant_map_flatten_zrange.
   - unfold contexts_agree.
     intros. repeat rewrite lookup_empty. propositional; discriminate.
-  - unfold assign_no_overwrite. 
-    cases r.
-    + split; intros.
-      unfold result_shape_Z, shape_to_index, shape_to_vars in *.
-      simpl in *. invert H2. rewrite dom_add in *. sets.
-      unfold result_shape_Z, shape_to_index, shape_to_vars in *.
-      simpl in *. invert H2. rewrite lookup_add_eq in * by eauto.
-      invert H6. eauto.
-    + split; intros.
-      2: { cases (shape_to_index (result_shape_Z (V v))
-                                 (shape_to_vars (result_shape_Z (V v)))).
-           { eapply shape_to_index_not_empty_Z in Heq. propositional. }
-           invert H2. rewrite lookup_empty in H6. discriminate. }
-      cases (shape_to_index (result_shape_Z (V v))
-                            (shape_to_vars (result_shape_Z (V v)))).
-      { eapply shape_to_index_not_empty_Z in Heq. propositional. }
-      invert H2. unfold alloc_array_in_heap in *.
-      rewrite lookup_add_eq in * by eauto. invert H6.
-      cases v.
-      * simpl in *. rewrite partial_result_to_array_delta_empty_tensor in H9.
-        rewrite dom_empty in *. sets.
-      * unfold partial_result_to_array_delta in *.
-        unfold partial_result_to_array_delta_by_indices in *.
-        rewrite partial_dom_fold_left_array_add in H9.
-        rewrite dom_empty in *. rewrite cup_empty_r in H9.
-        eapply In_iff_in in H9. erewrite <- in_extract_Some in H9.
-        eapply in_map_iff in H9. invs. rewrite @filter_idempotent in * .
-        repeat decomp_index.
-        erewrite partial_interpret_reindexer_id_flatten in H6; eauto.
-        2: { rewrite dom_empty. sets. }
-        2: { eapply partial_injective_id_reindexer. rewrite dom_empty. sets. }
-        invert H6.
-        pose proof (lookup_alloc_array
-                      (fold_left mul (Datatypes.S (length v) ::
-                                                  result_shape_nat r) 1)
-                      (flatten (result_shape_Z (V (r :: v))) x0)).
-        invert H6. 2: eauto.
-        eapply lookup_None_dom in H7. rewrite dom_alloc_array in H7.
-        exfalso. eapply H7. erewrite <- In_iff_in.
-        rewrite Z_of_nat_fold_left_mul in *.
-        pose proof H.
-        eapply constant_nonneg_bounds_size_of_eval_expr_result_has_shape
-          in H6; eauto.
-        pose proof H6. invert H10.
-        erewrite result_has_shape_result_shape_Z in * by eauto.
-        repeat decomp_index. clear Heq.
-        pose proof H2.
-        rewrite mesh_grid_map_Nat2Z_id in H2.
-        erewrite filter_until_0_id.
-        2: { eapply mesh_grid_shape_pos in H2.
-             eapply Forall_map. eapply Forall_impl. 2: eassumption.
-             simpl. lia. }
-        erewrite result_has_shape_result_shape_nat by eauto.
-        rewrite filter_until_0_id.
-        2: { eapply mesh_grid_shape_pos in H10.
-             rewrite <- H13 in H10. invert H10.
-             erewrite Forall_map in H17. eapply Forall_impl.
-             2: eassumption. simpl. lia. }
-        rewrite H13.
-        eapply in_mesh_grid_flatten_in_range.
-        eapply mesh_grid_shape_pos in H10.
-        eapply Forall_impl. 2: eassumption. simpl. lia.
-        eauto.
 Qed.
 
