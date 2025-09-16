@@ -42,9 +42,33 @@ Inductive scalar_result :=
 | SS (r: R)
 | SX.
 
+Unset Elimination Schemes.
 Inductive result :=
 | S (z : scalar_result)
 | V (v : list result).
+Set Elimination Schemes.
+
+Local Fixpoint result_sz (r : result) :=
+  match r with
+  | Result.S _ => O
+  | V v => Datatypes.S (fold_right Nat.max O (map result_sz v))
+  end.
+
+Lemma result_ind P :
+  (forall z, P (Result.S z)) ->
+  (forall v, Forall P v -> P (V v)) ->
+  forall r, P r.
+Proof.
+  intros * H1 H2 r. remember (result_sz r) as sz eqn:E.
+  assert (Hr: (result_sz r < Datatypes.S sz)%nat) by lia.
+  clear E. revert r Hr. induction (Datatypes.S sz); intros.
+  - lia.
+  - destruct r; auto. apply H2. induction v.
+    + constructor.
+    + constructor.
+      -- apply IHn. simpl in Hr. lia.
+      -- apply IHv. simpl in Hr. simpl. lia.
+Qed.
 
 Inductive result_has_shape : result -> list nat -> Prop :=
 | ScalarShape : forall s, result_has_shape (S s) []
