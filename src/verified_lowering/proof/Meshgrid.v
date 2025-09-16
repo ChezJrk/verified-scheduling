@@ -1135,10 +1135,9 @@ Proof.
   reflexivity.
 Qed.
 
-Lemma nth_error_flatten : forall l n m xs z z0 x,
+Lemma nth_error_flatten : forall l n m xs z z0,
     (0 <= z)%Z ->
     (z < Z.of_nat n)%Z ->
-    In x (mesh_grid (map Z.of_nat xs)) ->
     (0 <= z0)%Z ->
     (z0 < Z.of_nat m)%Z ->
     result_has_shape (V l) (n::m::xs) ->
@@ -1147,11 +1146,11 @@ Lemma nth_error_flatten : forall l n m xs z z0 x,
       | Some (V v) => nth_error v (Z.to_nat z0)
       | _ => None
       end.
-Proof.
+ Proof.
   induct l; intros.
-  - invert H4. simpl in *. lia.
-  - invert H4. cases a. invert H10.
-    assert (z = 0 \/ 0 < z)%Z by lia. invert H4.
+  - invert H3. simpl in *. lia.
+  - invert H3. cases a. invert H9.
+    assert (z = 0 \/ 0 < z)%Z by lia. invert H3.
     + simpl. rewrite nth_error_app1.
       2: erewrite result_has_shape_length by eassumption; lia.
       reflexivity.
@@ -1181,9 +1180,9 @@ Proof.
       cases l. rewrite nth_error_empty. simpl. rewrite nth_error_empty. auto.
       erewrite IHl. 4: eassumption.
       rewrite Nat2Z.id. auto. lia.
-      4: { econstructor. reflexivity. invert H11. auto.
-           invert H11. auto. }
-      simpl in *. lia. lia. lia.
+      3: { econstructor. reflexivity. invert H10. eassumption.
+           invert H10. auto. }
+      simpl in *. lia. lia.
 Qed.
 
 Lemma result_lookup_Z_option_flatten : forall l n m xs z z0 x,
