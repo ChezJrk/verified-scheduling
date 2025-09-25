@@ -1,12 +1,12 @@
-From Coq Require Import Arith.Arith.
-From Coq Require Import Arith.EqNat.
-From Coq Require Import Arith.PeanoNat. Import Nat.
-From Coq Require Import micromega.Lia.
-From Coq Require Import micromega.Zify.
-From Coq Require Import Lists.List.
-From Coq Require Import Reals.Reals.
-From Coq Require Import Logic.FunctionalExtensionality.
-From Coq Require Import Reals.Rpower.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Arith.EqNat.
+From Stdlib Require Import Arith.PeanoNat. Import Nat.
+From Stdlib Require Import micromega.Lia.
+From Stdlib Require Import micromega.Zify.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Reals.Reals.
+From Stdlib Require Import Logic.FunctionalExtensionality.
+From Stdlib Require Import Reals.Rpower.
 Import ListNotations.
 
 From ATL Require Import ATL Common Tactics CommonTactics.

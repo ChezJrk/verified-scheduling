@@ -1,7 +1,7 @@
-From Coq Require Import Bool.Bool.
-From Coq Require Import ZArith.Zdiv.
-From Coq Require Import ZArith.Int.
-From Coq Require Import ZArith.Znat.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import ZArith.Zdiv.
+From Stdlib Require Import ZArith.Int.
+From Stdlib Require Import ZArith.Znat.
 
 Set Warnings "-deprecate-hint-without-locality,-deprecated".
 From ATL Require Import FrapWithoutSets.

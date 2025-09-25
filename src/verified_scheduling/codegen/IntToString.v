@@ -1,7 +1,7 @@
-From Coq Require Import Ascii String.
-From Coq Require Import ZArith.Zdiv.
-From Coq Require Import ZArith.Int.
-From Coq Require Import ZArith.Znat.
+From Stdlib Require Import Ascii String.
+From Stdlib Require Import ZArith.Zdiv.
+From Stdlib Require Import ZArith.Int.
+From Stdlib Require Import ZArith.Znat.
 
 Require Import Coq.Strings.String.
 
