@@ -8,7 +8,7 @@ From Stdlib Require Import Lists.List.
 From Stdlib Require Import micromega.Lia.
 From Stdlib Require Import Reals.Rpower.
 
-Require Import Coq.Logic.FunctionalExtensionality.
+From Stdlib Require Import Logic.FunctionalExtensionality.
 From Stdlib Require Import Reals.Reals. Import Rdefinitions. Import RIneq.
 
 Set Warnings "-deprecate-hint-without-locality,-deprecated".

@@ -52,7 +52,7 @@ Ltac unbool_hyp :=
          | [ H : (false = _) |- _ ] => symmetry in H
          | [ H : (_ =? _ = true)   |- _ ] => apply eqb_eq in H
          | [ H : (_ =? _ = false)  |- _ ] => apply eqb_neq in H
-         | [ H : (_ <=? _ = true)  |- _ ] => apply Zle_is_le_bool in H
+         | [ H : (_ <=? _ = true)  |- _ ] => apply Zbool.Zle_bool_imp_le in H
          | [ H : (_ <=? _ = false) |- _ ] => apply leb_gt in H
          | [ H : (_ <? _ = true)   |- _ ] => apply ltb_lt in H
          | [ H : (_ <? _ = false)   |- _ ] => apply ltb_ge in H
@@ -99,7 +99,7 @@ Ltac contra_crush := try (simpl in *;
          | [ H : ~ ?A |- _] =>
            (assert A by (try assumption; try lia; try ring)); contradiction
 		 | [ H : 0 <= Z.neg ?A |- _ ] => 
-				 specialize (Zlt_neg_0 A); intros; contradiction
+				 specialize (Zorder.Zlt_neg_0 A); intros; contradiction
 		 | [ H : 0 < Z.neg _ |- _ ] => now inversion H
 		 | [ H : Z.pos _ < Z.neg _ |- _ ] => now inversion H
          end).

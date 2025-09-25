@@ -12,6 +12,7 @@ From Stdlib Require Import ZArith.Znat.
 From Stdlib Require Import Setoids.Setoid.
 From Stdlib Require Import Logic.FunctionalExtensionality.
 From Stdlib Require Import Classes.Morphisms.
+Import Zorder.
 
 Set Warnings "-deprecate-hint-without-locality,-deprecated".
 
@@ -39,9 +40,7 @@ Lemma nth_map {X} `{TensorElem X} : forall i f v,
 Proof.
   induction i; intros f v H0; destruct v; simpl in *;
     try contra_crush; auto.
-    apply lt_S_n in H0.
-    eapply IHi in H0.
-    apply H0.
+  apply IHi. lia.
 Qed.
 
 (* Hole Establishing and Context Diving *)
@@ -494,11 +493,8 @@ Proof.
   - simpl. 
     destruct i; try reflexivity.
     simpl. rewrite Z.add_0_r. reflexivity.
-    apply lt_S_n in H0.
-    apply (IHn _ m (inc e0)) in H0. simpl.
-    rewrite H0. rewrite <- Z.add_assoc.
-    rewrite Zpos_P_of_succ_nat. 
-    reflexivity.
+    simpl. rewrite IHn by lia.
+    f_equal. f_equal. lia.
 Qed.
 
 Lemma get_gen_helper_some {X} `{TensorElem X} : forall n m f i,
@@ -734,7 +730,7 @@ Lemma iverson_length {X} `{TensorElem X} :
   forall b (l : list X), length (|[ b ]| l) = length l.
 Proof.
   destruct b; intros; simpl; unfold iverson; unfold scalar_mul; simpl;
-         rewrite map_length; auto.
+         rewrite length_map; auto.
 Qed.
 Hint Rewrite @iverson_length : crunch.
 
@@ -1891,8 +1887,7 @@ Lemma gen_neg_empty {X} `{TensorElem X} : forall n f,
 Proof.
   intros. destruct n.
   - lia.
-  - specialize (Zgt_pos_0 p). intros.
-    lia.
+  - lia.
   - reflexivity.
 Qed.
 
@@ -2489,7 +2484,7 @@ Proof.
       pose proof (Z.mod_pos_bound i (Z.of_nat k)). peel_hyp. auto with crunch.
     - destruct (0 <=? i/zk - i1)%Z eqn:e; unbool_hyp.
       + auto.
-      + assert ((i / zk - i1) * zk <= - zk)%Z .
+      + assert ((i / zk - i1) * zk <= - zk)%Z.
         apply Zle_0_minus_le.
         replace (-zk)%Z with ((-1)*zk)%Z by lia.
         rewrite <- Z.mul_sub_distr_r.
@@ -2749,7 +2744,7 @@ Proof.
         reflexivity.
         assert (length (scalar_mul 0 x :: List.map (scalar_mul 0) e) <=
                 Pos.to_nat p).
-        { simpl. rewrite map_length. simpl in *. zify. lia. }
+        { simpl. rewrite length_map. simpl in *. zify. lia. }
         zify. lia.
   - zify. lia.
 Qed.

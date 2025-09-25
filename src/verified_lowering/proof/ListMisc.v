@@ -9,7 +9,7 @@ From Stdlib Require Import ZArith.Znat.
 From Stdlib Require Import Strings.String.
 From Stdlib Require Import Lists.List.
 From Stdlib Require Import micromega.Lia.
-Require Import Coq.Logic.FunctionalExtensionality.
+From Stdlib Require Import Logic.FunctionalExtensionality.
 Import ListNotations.
 Open Scope list_scope.
 
@@ -189,7 +189,7 @@ Lemma length_concat {X} : forall (l : list (list X)) k,
 Proof.
   induct l; intros.
   - reflexivity.
-  - simpl. rewrite app_length. invert H.
+  - simpl. rewrite length_app. invert H.
     f_equal.
     eapply IHl. auto.
 Qed.
@@ -904,20 +904,20 @@ Proof.
       cases (rev (truncl_list k (rev l ++ [a]))).
       * erewrite rev_arg_empty in Heq.
         eapply truncl_list_length_empty in Heq.
-        rewrite app_length in *. rewrite rev_length in *. simpl in Heq.
+        rewrite length_app in *. rewrite length_rev in *. simpl in Heq.
         simpl length in H. lia.
       * simpl length in H.
         assert (k = length l \/ k <> length l) by lia. invert H0.
         -- rewrite truncl_list_app in Heq.
-           2: try rewrite rev_length; lia.
+           2: try rewrite length_rev; lia.
            rewrite rev_app_distr in Heq.
            simpl in Heq. invert Heq. auto.
         -- rewrite truncl_list_app in Heq.
            rewrite rev_app_distr in Heq.
            simpl in Heq. invert Heq. auto. 
-           rewrite rev_length. lia.
+           rewrite length_rev. lia.
     + simpl. simpl length in H.
-      rewrite truncl_list_app by (rewrite rev_length; lia).
+      rewrite truncl_list_app by (rewrite length_rev; lia).
       rewrite rev_app_distr. simpl. eapply IHl. lia.
 Qed.
 
@@ -999,11 +999,11 @@ Proof.
     assert (k < length l \/ k >= length l) as Hcase by lia.
     inversion Hcase as [ Hcase1 | Hcase2 ]; clear Hcase.
     + replace (k - length (rev l)) with 0.
-      2: { rewrite rev_length. lia. }
+      2: { rewrite length_rev. lia. }
       simpl. rewrite rev_app_distr. simpl. econstructor. eauto. eauto.
     + rewrite skipn_all2.
-      2: { rewrite rev_length. lia. }
-      simpl. rewrite rev_length.
+      2: { rewrite length_rev. lia. }
+      simpl. rewrite length_rev.
       cases (k - length l). simpl. econstructor. auto.
       rewrite firstn_nil. auto.
       simpl. rewrite skipn_nil. simpl. eauto.
@@ -1049,7 +1049,7 @@ Proof.
   induct l; intros.
   - rewrite @nth_error_empty in *. discriminate.
   - simpl.
-    rewrite firstn_app. rewrite rev_length. simpl length in *.
+    rewrite firstn_app. rewrite length_rev. simpl length in *.
     eapply in_or_app.
     cases x.
     + simpl in H. invert H.
@@ -1128,7 +1128,7 @@ Proof.
     cases (length (x::l) - n).
     + simpl.
       rewrite skipn_all2 with (n:=n).
-      2: { rewrite rev_length. simpl length in *. lia. }
+      2: { rewrite length_rev. simpl length in *. lia. }
       rewrite skipn_nil. auto.
     + rewrite firstn_cons. rewrite skipn_cons.
       simpl length in Heq.
@@ -1136,7 +1136,7 @@ Proof.
       replace l with (rev (rev l)) at 1.
       2: rewrite rev_involutive; auto.      
       rewrite firstn_rev.
-      rewrite rev_length.
+      rewrite length_rev.
       f_equal. f_equal. f_equal. lia.
 Qed.    
 
@@ -1189,13 +1189,13 @@ Proof.
     rewrite sub_0_r.
     cases (length l - n).
     + simpl. rewrite nth_error_app2.
-      2: { rewrite rev_length. lia. }
-      rewrite rev_length.
+      2: { rewrite length_rev. lia. }
+      rewrite length_rev.
       assert (n = length l) by lia. subst. rewrite sub_diag.
       reflexivity.
     + simpl.
       rewrite nth_error_app1.
-      2: { rewrite rev_length. lia. }
+      2: { rewrite length_rev. lia. }
       erewrite <- IHl.
       2: reflexivity. 2: lia.
       f_equal. lia.
@@ -1291,7 +1291,7 @@ Proof.
   assert (k < length l \/ length l <= k) by lia.
   invert H0.
   - rewrite nth_error_app1. auto.
-    rewrite firstn_length. rewrite min_l by lia. lia.
+    rewrite length_firstn. rewrite min_l by lia. lia.
   - rewrite firstn_all2 by auto.
     rewrite skipn_all2 by lia. rewrite app_nil_r. eauto.
 Qed.
@@ -1303,11 +1303,11 @@ Lemma nth_error_skipn_mod {X} : forall x (l : list X) k,
 Proof.
   intros. symmetry. rewrite <- (firstn_skipn (k * (x / k)) l) at 1.
   rewrite nth_error_app2.
-  2: { rewrite firstn_length. rewrite min_l.
+  2: { rewrite length_firstn. rewrite min_l.
        eapply Div0.mul_div_le.
        eapply le_trans.
        eapply Div0.mul_div_le. lia. }
-  rewrite firstn_length.
+  rewrite length_firstn.
   rewrite min_l.
   2: { eapply le_trans. eapply Div0.mul_div_le. lia. }
   rewrite Div0.mod_eq by lia. eauto.

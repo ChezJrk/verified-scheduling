@@ -9,7 +9,7 @@ From Stdlib Require Import ZArith.Znat.
 From Stdlib Require Import Strings.String.
 From Stdlib Require Import Lists.List.
 From Stdlib Require Import micromega.Lia.
-Require Import Coq.Logic.FunctionalExtensionality.
+From Stdlib Require Import Logic.FunctionalExtensionality.
 
 Set Warnings "-deprecate-hint-without-locality,-deprecated".
 Import ListNotations.
@@ -1161,7 +1161,7 @@ Proof.
       assert (-1 * Z.of_nat (Z.to_nat (eval_Zexpr_Z_total $0 m)) <
                 z0 * Z.of_nat (Z.to_nat (eval_Zexpr_Z_total $0 m)))%Z
         by lia.
-      eapply Zmult_lt_reg_r in H11.
+      eapply Zorder.Zmult_lt_reg_r in H11.
       lia. lia.
       rewrite Nat2Z.inj_mul in H10.
       rewrite
@@ -1171,7 +1171,7 @@ Proof.
       assert (-1 * Z.of_nat (Z.to_nat (eval_Zexpr_Z_total $0 m)) <
                 z0 * Z.of_nat (Z.to_nat (eval_Zexpr_Z_total $0 m)))%Z
         by lia.
-      eapply Zmult_lt_reg_r in H11.
+      eapply Zorder.Zmult_lt_reg_r in H11.
       lia. lia.
       lia.
       repeat decomp_goal_index. propositional.
@@ -1181,7 +1181,7 @@ Proof.
       assert (-1 * Z.of_nat (Z.to_nat (eval_Zexpr_Z_total $0 m)) <
                 z0 * Z.of_nat (Z.to_nat (eval_Zexpr_Z_total $0 m)))%Z
         by lia.
-      eapply Zmult_lt_reg_r in H11.
+      eapply Zorder.Zmult_lt_reg_r in H11.
       lia. lia. 
       rewrite Nat2Z.inj_mul in H10.
       rewrite
@@ -1191,7 +1191,7 @@ Proof.
       assert (-1 * Z.of_nat (Z.to_nat (eval_Zexpr_Z_total $0 m)) <
                 z0 * Z.of_nat (Z.to_nat (eval_Zexpr_Z_total $0 m)))%Z
         by lia.
-      eapply Zmult_lt_reg_r in H11.
+      eapply Zorder.Zmult_lt_reg_r in H11.
       lia. lia.
       eauto. eauto.
       lia. lia.

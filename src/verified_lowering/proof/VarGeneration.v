@@ -1,7 +1,7 @@
 From Stdlib Require Import ZArith.Zdiv.
 From Stdlib Require Import ZArith.Int.
 From Stdlib Require Import ZArith.Znat.
-Require Import String.
+From Stdlib Require Import String.
 From Stdlib Require Import Lists.List.
 From Stdlib Require Import micromega.Lia.
 

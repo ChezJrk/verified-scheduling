@@ -9,7 +9,7 @@ From Stdlib Require Import ZArith.Znat.
 From Stdlib Require Import Strings.String.
 From Stdlib Require Import Lists.List.
 From Stdlib Require Import micromega.Lia.
-Require Import Coq.Logic.FunctionalExtensionality.
+From Stdlib Require Import Logic.FunctionalExtensionality.
 
 Set Warnings "-deprecate-hint-without-locality,-deprecated".
 Import ListNotations.
@@ -895,7 +895,7 @@ Proof.
   posnats.
   unfold shape_to_vars. simpl. rewrite shape_to_index_cons.
   rewrite index_to_partial_function_vars_cons by eauto with reindexers.
-  unfold nat_range. repeat rewrite map_length.
+  unfold nat_range. repeat rewrite length_map.
   rewrite Hmap by (eapply not_var_generation_in_index; eauto).
   rewrite map_cons.
   unfold subst_var_in_Z_tup at 1. simpl. posnats.
@@ -917,15 +917,15 @@ Proof.
   rewrite fold_left_subst_var_in_Z_tup_ZLit.
   rewrite map_fold_left_subst_var_in_Z_tup_shape_to_index.
   reflexivity.
-  rewrite map_length. rewrite length_nat_range_rec.
+  rewrite length_map. rewrite length_nat_range_rec.
   eapply length_mesh_grid_indices. decomp_index. auto.
   eapply no_dup_var_generation.
-  rewrite map_length. rewrite length_nat_range_rec.
+  rewrite length_map. rewrite length_nat_range_rec.
   eapply length_mesh_grid_indices. decomp_index. auto.
   eapply no_dup_var_generation.
-  rewrite map_length. rewrite length_nat_range_rec.
+  rewrite length_map. rewrite length_nat_range_rec.
   eapply length_mesh_grid_indices. decomp_index. auto.
-  rewrite map_length. rewrite length_nat_range_rec.
+  rewrite length_map. rewrite length_nat_range_rec.
   eapply length_mesh_grid_indices. decomp_index. auto.
   eapply not_In_var_map. lia.
   eapply partial_injective_cons_0. apply Hinj.

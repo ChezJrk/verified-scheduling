@@ -1,4 +1,4 @@
-Require Import Bool Classical FunctionalExtensionality List.
+From Stdlib Require Import Bool Classical FunctionalExtensionality List.
 
 Set Implicit Arguments.
 
@@ -288,7 +288,7 @@ Ltac unifyTails :=
 
 (** * But wait... there's a reflective way to do some of this, too. *)
 
-Require Import Arith.
+From Stdlib Require Import Arith.
 Import List ListNotations.
 
 Section setexpr.

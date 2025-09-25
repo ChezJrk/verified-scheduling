@@ -7,7 +7,7 @@ From Stdlib Require Import ZArith.Znat.
 From Stdlib Require Import Lists.List.
 From Stdlib Require Import micromega.Lia.
 From Stdlib Require Import Reals.Reals. Import Rdefinitions. Import RIneq.
-Require Import Coq.Logic.FunctionalExtensionality.
+From Stdlib Require Import Logic.FunctionalExtensionality.
 
 Set Warnings "-deprecate-hint-without-locality,-deprecated".
 Import ListNotations.
@@ -78,7 +78,7 @@ Proof.
     rewrite succ_repeat_app_end.
     rewrite concat_app.
     rewrite map2_app.
-    2:{ erewrite length_concat. rewrite map_length.
+    2:{ erewrite length_concat. rewrite length_map.
         rewrite length_zrange'.
         all: cycle 1.
         eapply Forall_map.
@@ -102,7 +102,7 @@ Proof.
     rewrite succ_repeat_app_end in H.
     rewrite concat_app in H.
     rewrite map2_app in H.
-    2:{ erewrite length_concat. rewrite map_length.
+    2:{ erewrite length_concat. rewrite length_map.
         rewrite length_zrange'.
         all: cycle 1.
         eapply Forall_map.
@@ -150,7 +150,7 @@ Proof.
     rewrite Z.sub_0_r in IHk. setoid_rewrite Nat2Z.id in IHk.
     rewrite map2_app.
     2: { erewrite length_concat.
-         rewrite map_length. rewrite length_zrange'.
+         rewrite length_map. rewrite length_zrange'.
          erewrite length_concat. rewrite repeat_length.
          reflexivity.
          eapply Forall_repeat. reflexivity.
@@ -299,7 +299,7 @@ Proof.
     erewrite length_concat.
     2: { eapply Forall_map. eapply Forall_forall. intros.
          rewrite repeat_length. reflexivity. }
-    rewrite map_length. unfold zrange.
+    rewrite length_map. unfold zrange.
     rewrite length_zrange'.
     rewrite Z.sub_0_r.
     erewrite length_concat.
@@ -395,7 +395,7 @@ Proof.
       erewrite length_concat.
       2: { eapply Forall_map. simpl. eapply Forall_forall. intros.
            reflexivity. }
-      rewrite map_length. unfold zrange.
+      rewrite length_map. unfold zrange.
       rewrite length_zrange'. lia.
     + cases x. eapply not_In_empty_map2_cons in H5. propositional.
       replace (z * fold_left Z.mul (z0 :: sh) 1)%Z with
@@ -569,7 +569,7 @@ Proof.
         by lia. invert H3.
       * rewrite H4.
         lia.
-      * eapply Zle_mult_approx. lia. lia. lia.
+      * eapply auxiliary.Zle_mult_approx. lia. lia. lia.
 Qed.
 
 Lemma exists_0_empty_mesh_grid : forall l,
@@ -640,7 +640,7 @@ Proof.
     erewrite length_concat.
     2: { eapply Forall_forall. intros.
          eapply repeat_spec in H1. subst. reflexivity. }
-    rewrite map_length. rewrite length_zrange'.
+    rewrite length_map. rewrite length_zrange'.
     rewrite repeat_length. lia.
     rewrite map_id. reflexivity.
 Qed.    
@@ -981,7 +981,7 @@ Proof.
   repeat rewrite map_cons.
 
   pose proof (result_has_shape_length _ _ _ H).
-  rewrite app_length in H1.
+  rewrite length_app in H1.
   rewrite repeat_length in H1.
 
   cases (Z.to_nat (eval_Zexpr_Z_total $0 m)).
@@ -1082,7 +1082,7 @@ Proof.
   repeat rewrite map_cons.
 
   pose proof (result_has_shape_length _ _ _ H).
-  rewrite app_length in H1.
+  rewrite length_app in H1.
   rewrite repeat_length in H1.
 
   cases (Z.to_nat (eval_Zexpr_Z_total $0 m)).

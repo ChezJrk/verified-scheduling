@@ -1,7 +1,7 @@
 From ATL Require Import Sets Map Var Invariant ModelCheck.
-Require Import Eqdep String NArith Arith Lia Program Relations Bool.
+From Stdlib Require Import Eqdep String NArith Arith Lia Program Relations Bool.
 Export Ascii String Arith Sets Relations Map Var Invariant Bool ModelCheck.
-Require Import List.
+From Stdlib Require Import List.
 Export List ListNotations.
 Open Scope string_scope.
 Open Scope list_scope.
@@ -389,7 +389,7 @@ Ltac simplify_map :=
                                            replace (@add A B m k v) with m' by maps_equal)
   end.
 
-Require Import Classical.
+From Stdlib Require Import Classical.
 Ltac excluded_middle P := destruct (classic P).
 
 Lemma join_idempotent: forall (A B : Type) (m : fmap A B), (m $++ m) = m.

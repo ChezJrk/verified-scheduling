@@ -86,7 +86,7 @@ Ltac ttt e :=
           (assert (0 <= I)%Z as t by (auto + lia); clear t)
         |
         (destruct (0 <=? I)%Z eqn:t;
-         [ apply Zle_bool_imp_le in t | apply Z.leb_gt in t])
+         [ apply Zbool.Zle_bool_imp_le in t | apply Z.leb_gt in t])
         ];
       first [
           (assert (I < V)%Z as t' by (auto + lia); clear t')
@@ -100,7 +100,7 @@ Ltac ttt e :=
           (assert (0 <= I)%Z as t by (auto + lia); clear t)
         |
         (destruct (0 <=? I)%Z eqn:t;
-         [ apply Zle_bool_imp_le in t | apply Z.leb_gt in t])
+         [ apply Zbool.Zle_bool_imp_le in t | apply Z.leb_gt in t])
         ];
       first [
           (assert (I < Z.of_nat (length V))%Z as t' by (auto + lia); clear t')

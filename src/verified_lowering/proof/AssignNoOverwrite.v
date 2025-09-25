@@ -9,7 +9,7 @@ From Stdlib Require Import ZArith.Znat.
 From Stdlib Require Import Strings.String.
 From Stdlib Require Import Lists.List.
 From Stdlib Require Import micromega.Lia.
-Require Import Coq.Logic.FunctionalExtensionality.
+From Stdlib Require Import Logic.FunctionalExtensionality.
 
 Set Warnings "-deprecate-hint-without-locality,-deprecated".
 Import ListNotations.
@@ -32,7 +32,7 @@ Hint Resolve no_dup_var_generation no_dup_mesh_grid
      not_var_generation_in_dom2 not_var_generation_in_index2
      not_var_generation_in_index not_var_generation_in_dom : reindexers.
 Hint Extern 3 (Datatypes.length _ = Datatypes.length _) =>
-       rewrite map_length; rewrite length_nat_range_rec;
+       rewrite length_map; rewrite length_nat_range_rec;
        eapply length_mesh_grid_indices; eassumption : reindexers.
 Arguments flatten : simpl nomatch.
 

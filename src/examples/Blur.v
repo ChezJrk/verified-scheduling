@@ -6,6 +6,7 @@ From Stdlib Require Import Reals.Reals.
 Require Coq.derive.Derive.
 
 Import ListNotations.
+Import Znat.
 
 From ATL Require Import ATL Common Reshape Tactics LetLifting Div GenPushout
      CommonTactics.

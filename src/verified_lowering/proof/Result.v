@@ -6,7 +6,7 @@ From Stdlib Require Import ZArith.Int.
 From Stdlib Require Import ZArith.Znat.
 From Stdlib Require Import Lists.List.
 From Stdlib Require Import micromega.Lia.
-Require Import Coq.Logic.FunctionalExtensionality.
+From Stdlib Require Import Logic.FunctionalExtensionality.
 From Stdlib Require Import Reals.Reals. Import Rdefinitions. Import RIneq.
 
 Import ListNotations.
@@ -289,7 +289,7 @@ Proof.
   - subst. econstructor. eauto. invert H0. eauto. invert H0. eauto.
   - subst. rewrite app_nil_r.
     econstructor. eauto. invert H. eauto. invert H. eauto.
-  - subst. econstructor. rewrite app_length. simpl. lia.
+  - subst. econstructor. rewrite length_app. simpl. lia.
     invert H. auto.
     eapply Forall_app. split; auto. invert H. auto.
 Qed.
@@ -592,19 +592,19 @@ Proof.
     rewrite app_comm_cons.
     erewrite map_nat_range_extensionality.
     2: { intros. rewrite skipn_app. rewrite firstn_app.
-         rewrite skipn_length. rewrite skipn_repeat.
+         rewrite length_skipn. rewrite skipn_repeat.
          rewrite firstn_repeat. simpl length.
          reflexivity. }
     eapply forall_result_has_shape.
-    2: { rewrite map_length. unfold nat_range.
+    2: { rewrite length_map. unfold nat_range.
          rewrite length_nat_range_rec. reflexivity. }
 
     eapply Forall_forall. intros.
     eapply in_map_iff in H0. invs.
     eapply In_nat_range in H2.
     eapply forall_result_has_shape.
-    2: { rewrite app_length. rewrite firstn_length. 
-         rewrite skipn_length. rewrite repeat_length.
+    2: { rewrite length_app. rewrite length_firstn. 
+         rewrite length_skipn. rewrite repeat_length.
          simpl length.
          cases (Datatypes.S (Datatypes.length l) mod k).
          - rewrite sub_0_r. rewrite Div0.mod_same by lia. rewrite sub_0_l.
@@ -994,7 +994,7 @@ Proof.
   - invert H. simpl. eauto.
   - invert H0. rewrite app_nil_r. rewrite add_0_r. eauto.
   - simpl. invert H. invert H0. simpl.
-    econstructor. rewrite app_length. simpl. auto. auto.
+    econstructor. rewrite length_app. simpl. auto. auto.
     eapply Forall_app. auto.
 Qed.
 
@@ -1045,7 +1045,7 @@ Proof.
   induct l1; intros.
   - subst. simpl in *. rewrite sub_0_r. auto.
   - simpl in *. invert H0.
-    rewrite app_length.
+    rewrite length_app.
     replace (Datatypes.S (Datatypes.length l1 + Datatypes.length l2) -
                Datatypes.S (Datatypes.length l1)) with (length l2) by lia.
     eapply Forall_app in H7. invs.
@@ -1061,7 +1061,7 @@ Proof.
   - subst. simpl in *. erewrite result_has_shape_length by eauto.
     rewrite sub_diag. econstructor.
   - simpl in *. invert H0.
-    rewrite app_length.
+    rewrite length_app.
     replace (Datatypes.S (Datatypes.length l1 + Datatypes.length l2) -
                (Datatypes.length l2)) with (Datatypes.S (length l1)) by lia.
     eapply Forall_app in H7. invs.
@@ -1132,7 +1132,7 @@ Proof.
   2 : { discriminate. }
   pose proof Heq.
   eapply nth_error_Some in Heq.
-  rewrite app_length in *.
+  rewrite length_app in *.
   rewrite repeat_length in *.
   assert (Z.pos p < Z.of_nat (length x) \/
             Z.pos p >= Z.of_nat (length x))%Z by lia.
@@ -1701,7 +1701,7 @@ Proof.
   - invert H. cases a. invert H6.
     simpl. rewrite rev_app_distr. rewrite firstn_app.
     pose proof H6. eapply result_has_shape_length in H.
-    repeat rewrite rev_length.
+    repeat rewrite length_rev.
     erewrite result_has_shape_length.
     2: { eapply result_has_shape_flatten. eapply forall_result_has_shape.
          eauto. reflexivity. }
@@ -1714,8 +1714,8 @@ Proof.
       cases (k - length l).
       * simpl. econstructor.
       * simpl. rewrite firstn_all2.
-        2: { rewrite rev_length. eapply Nat.le_add_r. }
-        rewrite rev_length in *. rewrite Heq in *. simpl in *. invert H2.
+        2: { rewrite length_rev. eapply Nat.le_add_r. }
+        rewrite length_rev in *. rewrite Heq in *. simpl in *. invert H2.
         invert H3. rewrite rev_repeat. eapply Forall_repeat. eauto.
 Qed.
 
@@ -1828,7 +1828,7 @@ Proof.
       2: lia.
       rewrite firstn_all2.
       reflexivity.
-      rewrite rev_length.
+      rewrite length_rev.
       erewrite result_has_shape_length.
       2: { eapply result_has_shape_transpose_result_list.
            2: econstructor; eauto. lia. }
@@ -1841,7 +1841,7 @@ Proof.
         reflexivity. 2: econstructor; eauto. lia. }
       rewrite <- (rev_involutive (transpose_result_list _ _)).
       rewrite skipn_rev.
-      rewrite rev_involutive. rewrite rev_length. rewrite H.
+      rewrite rev_involutive. rewrite length_rev. rewrite H.
       erewrite IHm0.
       2: econstructor; eauto.
       2: lia.
@@ -1886,8 +1886,8 @@ Proof.
     + simpl in *.
       eapply forall_eq_gen_pad in H4. simpl in *.
       rewrite firstn_all2 in H4.
-      2: { rewrite rev_length. lia. }
-      rewrite rev_length in *.
+      2: { rewrite length_rev. lia. }
+      rewrite length_rev in *.
       rewrite <- rev_repeat in H4.
       assert (rev (rev v) =
                 rev (rev (repeat (gen_pad sh) (Datatypes.length v)))).
@@ -1902,8 +1902,8 @@ Proof.
       rewrite repeat_length in *. lia.
       eapply nth_error_None in Heq0. lia.
     + rewrite nth_error_app2.
-      2: { rewrite firstn_length. lia. }
-      rewrite firstn_length. rewrite H3.
+      2: { rewrite length_firstn. lia. }
+      rewrite length_firstn. rewrite H3.
       replace (min (Datatypes.S n0) m) with (Datatypes.S n0) by lia.
       eapply forall_eq_gen_pad in H4.
       rewrite firstn_rev in H4.
@@ -1911,7 +1911,7 @@ Proof.
       rewrite <- Heq. rewrite H3 in *.
       rewrite H4.
       simpl gen_pad_list. rewrite rev_repeat.
-      rewrite rev_length. rewrite skipn_length.
+      rewrite length_rev. rewrite length_skipn.
       rewrite H3.
       replace (m - (m-n)) with n by lia.
       rewrite nth_error_repeat.
@@ -1950,8 +1950,8 @@ Proof.
         simpl in Heq.
         rewrite map_cons. simpl.
         cases (nth_error (rev v ++ [r]) i).
-        2: { eapply nth_error_None in Heq0. rewrite app_length in *.
-             rewrite rev_length in *. simpl in *.
+        2: { eapply nth_error_None in Heq0. rewrite length_app in *.
+             rewrite length_rev in *. simpl in *.
              pose proof H6. eapply result_has_shape_length in H1.
              simpl in H1. subst. lia. }
         f_equal.
@@ -1963,8 +1963,8 @@ Proof.
          pose proof H6. eapply result_has_shape_length in H. subst.
          simpl in *. rewrite sub_0_r in *.
          rewrite nth_error_app2.
-         2: { rewrite rev_length. lia. }
-         rewrite rev_length.
+         2: { rewrite length_rev. lia. }
+         rewrite length_rev.
          erewrite <- IHl.
          2: eapply forall_result_has_shape; eauto.
          2: lia.
@@ -2005,7 +2005,7 @@ Proof.
       erewrite get_col_empty.
       reflexivity.
       eapply forall_result_has_shape. eapply forall_firstn.
-      econstructor; eauto. rewrite firstn_length.
+      econstructor; eauto. rewrite length_firstn.
       simpl. reflexivity. eapply result_has_shape_length in H5. lia.
 Qed.
 
@@ -2047,7 +2047,7 @@ Proof.
       erewrite get_col_empty.
       reflexivity.
       eapply forall_result_has_shape. eapply forall_skipn.
-      econstructor; eauto. rewrite skipn_length.
+      econstructor; eauto. rewrite length_skipn.
       simpl. reflexivity. eapply result_has_shape_length in H5. lia.
 Qed.
 
@@ -2071,10 +2071,10 @@ Proof.
     eapply result_has_shape_length in H3.
     rewrite <- (firstn_skipn n v).
     rewrite nth_error_app1.
-    2: { rewrite firstn_length. lia. }
+    2: { rewrite length_firstn. lia. }
     eapply forall_eq_gen_pad in H4. rewrite H4. simpl.
     rewrite nth_error_repeat.
-    2: { rewrite firstn_length. lia. }
+    2: { rewrite length_firstn. lia. }
     f_equal. erewrite IHl. reflexivity.
     eauto.
     2: eapply forall_result_has_shape; eauto.
@@ -2104,10 +2104,10 @@ Proof.
   - simpl. eauto.
   - simpl. invert H.
     cases a.
-    + econstructor. rewrite map_length. reflexivity. eauto.
+    + econstructor. rewrite length_map. reflexivity. eauto.
       eapply result_has_shape_forall. eapply IHl.
       eapply forall_result_has_shape. eauto. reflexivity.
-    + econstructor. rewrite map_length. reflexivity.
+    + econstructor. rewrite length_map. reflexivity.
       eapply result_has_shape_rev. eauto.
       eapply result_has_shape_forall. eapply IHl.
       eapply forall_result_has_shape. eauto. reflexivity.
@@ -2230,7 +2230,7 @@ Proof.
          invert H0. lia. auto. }
     2: { invert H7.  lia. econstructor. eauto. eauto. }
     rewrite rev_app_distr. rewrite firstn_app.
-    erewrite rev_length. erewrite result_has_shape_length.
+    erewrite length_rev. erewrite result_has_shape_length.
     2: { simpl. cases a. invert H7. rewrite app_nil_r. eauto. }
     simpl. cases a. invert H7. rewrite app_nil_r.
     rewrite Forall_app. invert H. split. eauto.
@@ -2262,7 +2262,7 @@ Proof.
           simpl. intros. invert H0. lia. eauto. }
     2: { econstructor. invert H8. lia. eauto. eauto. }
     rewrite rev_app_distr. rewrite skipn_app. rewrite firstn_app.
-    rewrite skipn_length. repeat rewrite rev_length.
+    rewrite length_skipn. repeat rewrite length_rev.
     simpl length. cases a. invert H8. simpl. rewrite app_nil_r.
     erewrite result_has_shape_length by eauto.
     pose proof (Nat.sub_0_le b m). inversion H0. erewrite H4 by lia.
@@ -2288,7 +2288,7 @@ Proof.
   - simpl in *. invert H0. cases a. invert H8. invert H.
     rewrite skipn_app. rewrite firstn_app. rewrite Forall_app.
     split. auto.
-    rewrite skipn_length. erewrite result_has_shape_length by eauto.
+    rewrite length_skipn. erewrite result_has_shape_length by eauto.
     pose proof (Nat.sub_0_le a0 m). inversion H. erewrite H3 by lia.
     replace (l1 - (m - a0)) with 0 by lia.
     econstructor.
@@ -2356,9 +2356,9 @@ Proof.
     rewrite min_0_r. simpl repeat at 1. rewrite app_nil_r.
     f_equal.
     erewrite <- IHn with (sh:=sh) (c:=c+1).
-    rewrite skipn_length. simpl length.
+    rewrite length_skipn. simpl length.
     2: lia.
-    2: { simpl in *. rewrite skipn_length. simpl length in *. lia. }
+    2: { simpl in *. rewrite length_skipn. simpl length in *. lia. }
     2: { eapply forall_result_has_shape. eapply forall_skipn.
          invert H1. econstructor. eauto. eauto. reflexivity. }
     f_equal. eapply map_nat_range_rec_extensionality.
@@ -2460,7 +2460,7 @@ Proof.
     assert (n0 = (length (r::l)) / k) by lia. subst.
     rewrite app_comm_cons. rewrite skipn_app. rewrite firstn_app.
     rewrite skipn_repeat. rewrite firstn_repeat.
-    rewrite skipn_length. repeat rewrite app_assoc. f_equal.
+    rewrite length_skipn. repeat rewrite app_assoc. f_equal.
     2: { f_equal. simpl length in *.
          replace (k * (Datatypes.S (length l) / k) -
                     Datatypes.S (length l)) with 0.
@@ -2491,7 +2491,7 @@ Proof.
     erewrite map_nat_range_rec_extensionality.
     2: { intros. rewrite skipn_app. rewrite firstn_app.
          rewrite skipn_repeat. rewrite firstn_repeat.
-         rewrite skipn_length.
+         rewrite length_skipn.
          rewrite (Nat.div_mod_eq (Datatypes.length (r::l)) k) at 2.
          rewrite sub_add_distr.
          rewrite <- mul_sub_distr_l.
@@ -2509,7 +2509,7 @@ Proof.
     rewrite H2. 2: lia.
     2: { pose proof (Div0.mul_div_le (length (r::l)) k). lia. }
     rewrite firstn_all2 with (n:=k).
-    2: { rewrite skipn_length. rewrite <- Div0.mod_eq by lia.
+    2: { rewrite length_skipn. rewrite <- Div0.mod_eq by lia.
          pose proof (Nat.mod_upper_bound (length (r::l)) k). lia. }
     symmetry.
     rewrite <- firstn_skipn with (n:=(Datatypes.length (r :: l) / k * k))
@@ -2614,7 +2614,7 @@ Proof.
       rewrite app_comm_cons. rewrite skipn_app.
       simpl length.
       rewrite nth_error_app1.
-      2: { rewrite skipn_length. simpl length in *.
+      2: { rewrite length_skipn. simpl length in *.
            eapply Nat.add_lt_mono_l with (p:=k * (x / k)).
            rewrite <- div_mod by lia.
            rewrite Nat.add_comm. 

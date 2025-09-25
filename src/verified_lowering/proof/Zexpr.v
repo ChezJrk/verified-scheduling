@@ -7,7 +7,7 @@ From Stdlib Require Import ZArith.Znat.
 From Stdlib Require Import Lists.List.
 From Stdlib Require Import micromega.Lia.
   
-Require Import Coq.Logic.FunctionalExtensionality.
+From Stdlib Require Import Logic.FunctionalExtensionality.
 
 Set Warnings "-deprecate-hint-without-locality,-deprecated".
 Import ListNotations.

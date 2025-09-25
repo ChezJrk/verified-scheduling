@@ -13,6 +13,7 @@ From Stdlib Require Import Setoids.Setoid.
 From Stdlib Require Import Logic.FunctionalExtensionality.
 From Stdlib Require Import Classes.Morphisms.
 Import ListNotations.
+Import Zorder.
 From ATL Require Import ATL Tactics Common CommonTactics Div GenPushout
      LetLifting.
 
