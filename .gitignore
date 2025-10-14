@@ -5,4 +5,4 @@ src/clib/*
 *.v.d
 *.aux
 .lia.cache
-Makefile.coq
+**Makefile*coq*
