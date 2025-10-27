@@ -1,11 +1,11 @@
-From Coq Require Import Arith.Arith.
-From Coq Require Import Bool.Bool.
-From Coq Require Import micromega.Lia.
-From Coq Require Import micromega.Zify.
-From Coq Require Import Lists.List.
-From Coq Require Import Reals.Reals. Import Rdefinitions. Import RIneq.
-From Coq Require Import ZArith.Int. Import Znat BinInt.Z.
-From Coq Require Import Setoids.Setoid.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import micromega.Lia.
+From Stdlib Require Import micromega.Zify.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Reals.Reals. Import Rdefinitions. Import RIneq.
+From Stdlib Require Import ZArith.Int. Import Znat BinInt.Z.
+From Stdlib Require Import Setoids.Setoid.
 Import ListNotations.
 
 From ATL Require Import ATL.
@@ -52,7 +52,7 @@ Ltac unbool_hyp :=
          | [ H : (false = _) |- _ ] => symmetry in H
          | [ H : (_ =? _ = true)   |- _ ] => apply eqb_eq in H
          | [ H : (_ =? _ = false)  |- _ ] => apply eqb_neq in H
-         | [ H : (_ <=? _ = true)  |- _ ] => apply Zle_is_le_bool in H
+         | [ H : (_ <=? _ = true)  |- _ ] => apply Zbool.Zle_bool_imp_le in H
          | [ H : (_ <=? _ = false) |- _ ] => apply leb_gt in H
          | [ H : (_ <? _ = true)   |- _ ] => apply ltb_lt in H
          | [ H : (_ <? _ = false)   |- _ ] => apply ltb_ge in H
@@ -99,7 +99,7 @@ Ltac contra_crush := try (simpl in *;
          | [ H : ~ ?A |- _] =>
            (assert A by (try assumption; try lia; try ring)); contradiction
 		 | [ H : 0 <= Z.neg ?A |- _ ] => 
-				 specialize (Zlt_neg_0 A); intros; contradiction
+				 specialize (Zorder.Zlt_neg_0 A); intros; contradiction
 		 | [ H : 0 < Z.neg _ |- _ ] => now inversion H
 		 | [ H : Z.pos _ < Z.neg _ |- _ ] => now inversion H
          end).

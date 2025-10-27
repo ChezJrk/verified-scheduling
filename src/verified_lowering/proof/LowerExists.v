@@ -1,15 +1,15 @@
-From Coq Require Import Arith.Arith.
-From Coq Require Import Arith.EqNat.
-From Coq Require Import Arith.PeanoNat. Import Nat.
-From Coq Require Import Bool.Bool.
-From Coq Require Import Reals.Reals. Import Rdefinitions. Import RIneq.
-From Coq Require Import ZArith.Zdiv.
-From Coq Require Import ZArith.Int.
-From Coq Require Import ZArith.Znat.
-From Coq Require Import Strings.String.
-From Coq Require Import Lists.List.
-From Coq Require Import micromega.Lia.
-Require Import Coq.Logic.FunctionalExtensionality.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Arith.EqNat.
+From Stdlib Require Import Arith.PeanoNat. Import Nat.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Reals.Reals. Import Rdefinitions. Import RIneq.
+From Stdlib Require Import ZArith.Zdiv.
+From Stdlib Require Import ZArith.Int.
+From Stdlib Require Import ZArith.Znat.
+From Stdlib Require Import Strings.String.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import micromega.Lia.
+From Stdlib Require Import Logic.FunctionalExtensionality.
 
 Set Warnings "-deprecate-hint-without-locality,-deprecated".
 Import ListNotations.
@@ -31,7 +31,7 @@ Hint Resolve no_dup_var_generation no_dup_mesh_grid
      not_var_generation_in_dom2 not_var_generation_in_index2
      not_var_generation_in_index not_var_generation_in_dom : reindexers.
 Hint Extern 3 (Datatypes.length _ = Datatypes.length _) =>
-       rewrite map_length; rewrite length_nat_range_rec;
+       rewrite length_map; rewrite length_nat_range_rec;
        eapply length_mesh_grid_indices; eassumption : reindexers.
 Arguments flatten : simpl nomatch.
 
@@ -2159,7 +2159,7 @@ sets.
     eapply forall_eq_gen_pad in H8. rewrite H8.
     simpl gen_pad_list. rewrite rev_repeat.
     
-    rewrite firstn_length. rewrite rev_length.
+    rewrite length_firstn. rewrite length_rev.
     erewrite result_has_shape_length.
     2: { eapply constant_nonneg_bounds_size_of_eval_expr_result_has_shape
       in H2; eauto. }
@@ -2206,10 +2206,10 @@ sets.
     eapply well_formed_reindexer_truncr.
     rewrite rev_app_distr.
     rewrite truncl_list_app.
-    2: { rewrite rev_length. simpl. rewrite repeat_length. lia. }
+    2: { rewrite length_rev. simpl. rewrite repeat_length. lia. }
     rewrite truncl_list_skipn.
     rewrite skipn_all2.
-    2: { rewrite rev_length. simpl. rewrite repeat_length. lia. }
+    2: { rewrite length_rev. simpl. rewrite repeat_length. lia. }
     replace (Z.to_nat (eval_Zexpr_Z_total $0 m)) with (length l).
     2: { erewrite result_has_shape_length by eauto. reflexivity. }
     rewrite <- skipn_rev. simpl.
@@ -2218,7 +2218,7 @@ sets.
     eapply Forall_app. split.
     eapply forall_firstn. eapply result_has_shape_forall. eauto.
     simpl. eapply Forall_repeat. eapply result_has_shape_gen_pad.
-    rewrite app_length. simpl. rewrite firstn_length.
+    rewrite length_app. simpl. rewrite length_firstn.
     rewrite repeat_length. erewrite result_has_shape_length by eauto.
     rewrite min_l by lia. rewrite sub_add. reflexivity. lia.
     apply Henv. eauto. lia. lia.
@@ -2234,7 +2234,7 @@ sets.
     eapply forall_eq_gen_pad in H8. rewrite H8.
     simpl gen_pad_list. rewrite rev_repeat.
     
-    rewrite firstn_length. rewrite rev_length.
+    rewrite length_firstn. rewrite length_rev.
     erewrite result_has_shape_length.
     2: { eapply constant_nonneg_bounds_size_of_eval_expr_result_has_shape
       in H2; eauto. }
@@ -2243,10 +2243,10 @@ sets.
     eapply well_formed_allocation_truncr.
     rewrite rev_app_distr.
     rewrite truncl_list_app.
-    2: { rewrite rev_length. simpl. rewrite repeat_length. lia. }
+    2: { rewrite length_rev. simpl. rewrite repeat_length. lia. }
     rewrite truncl_list_skipn.
     rewrite skipn_all2.
-    2: { rewrite rev_length. simpl. rewrite repeat_length. lia. }
+    2: { rewrite length_rev. simpl. rewrite repeat_length. lia. }
     replace (Z.to_nat (eval_Zexpr_Z_total $0 m)) with (length l).
     2: { erewrite result_has_shape_length by eauto. reflexivity. }
     simpl.
@@ -2256,7 +2256,7 @@ sets.
     eapply Forall_app. split.
     eapply forall_firstn. eapply result_has_shape_forall. eauto.
     simpl. eapply Forall_repeat. eapply result_has_shape_gen_pad.
-    rewrite app_length. simpl. rewrite firstn_length.
+    rewrite length_app. simpl. rewrite length_firstn.
     rewrite repeat_length. erewrite result_has_shape_length by eauto.
     rewrite min_l by lia. rewrite sub_add. reflexivity. lia. lia.
     apply Hrdx. eauto. apply Henv. apply Hrdx. apply Hrdx.
@@ -2288,7 +2288,7 @@ sets.
     eapply forall_eq_gen_pad in H10. rewrite H10.
     simpl gen_pad_list.
     
-    rewrite firstn_length. 
+    rewrite length_firstn. 
     erewrite result_has_shape_length.
     2: { eauto. } 
 
@@ -2340,9 +2340,9 @@ sets.
     eapply Forall_app. split.
     simpl. eapply Forall_repeat. eapply result_has_shape_gen_pad.
     eapply forall_skipn. eapply result_has_shape_forall. eauto.
-    rewrite app_length. simpl. rewrite skipn_length.
+    rewrite length_app. simpl. rewrite length_skipn.
     rewrite repeat_length. erewrite result_has_shape_length by eauto.
-    rewrite le_plus_minus_r. reflexivity. lia.
+    instantiate (1 := m). lia.
     apply Henv. eauto. lia. lia. eauto.
     lia. apply Hrdx. 
 
@@ -2353,7 +2353,7 @@ sets.
     eapply forall_eq_gen_pad in H10. rewrite H10.
     simpl gen_pad_list.
 
-    rewrite firstn_length.
+    rewrite length_firstn.
     erewrite result_has_shape_length by eauto.
 
     rewrite min_l by lia.    
@@ -2363,9 +2363,9 @@ sets.
     eapply Forall_app. split.
     simpl. eapply Forall_repeat. eapply result_has_shape_gen_pad.
     eapply forall_skipn. eapply result_has_shape_forall. eauto.
-    rewrite app_length. simpl. rewrite skipn_length.
+    rewrite length_app. simpl. rewrite length_skipn.
     rewrite repeat_length. erewrite result_has_shape_length by eauto.
-    rewrite le_plus_minus_r. reflexivity. lia. lia.
+    instantiate (1 := m). lia. lia.
     apply Hrdx. eauto. eauto. apply Henv. apply Hrdx. apply Hrdx.
 
       - invert Hsize. eq_size_of. invert H4. invert Hconst. invs. pose proof H4.

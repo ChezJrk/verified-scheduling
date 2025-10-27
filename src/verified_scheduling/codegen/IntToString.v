@@ -1,9 +1,9 @@
-From Coq Require Import Ascii String.
-From Coq Require Import ZArith.Zdiv.
-From Coq Require Import ZArith.Int.
-From Coq Require Import ZArith.Znat.
+From Stdlib Require Import Ascii String.
+From Stdlib Require Import ZArith.Zdiv.
+From Stdlib Require Import ZArith.Int.
+From Stdlib Require Import ZArith.Znat.
 
-Require Import Coq.Strings.String.
+From Stdlib Require Import Strings.String.
 
 Open Scope Z_scope.
 
@@ -22,7 +22,7 @@ Definition int_to_ascii (n : Z) : ascii :=
   end.
 
 Fixpoint int_to_string' (time: nat) (n : Z) (acc : string) : string :=
-  let acc' := String (int_to_ascii (Coq.ZArith.BinIntDef.Z.modulo n 10)) acc in
+  let acc' := String (int_to_ascii (Stdlib.ZArith.BinIntDef.Z.modulo n 10)) acc in
   match time with
   | 0%nat => acc'
   | S time' =>

@@ -1,9 +1,9 @@
-From Coq Require Import ZArith.Zdiv.
-From Coq Require Import ZArith.Int.
-From Coq Require Import ZArith.Znat.
-Require Import String.
-From Coq Require Import Lists.List.
-From Coq Require Import micromega.Lia.
+From Stdlib Require Import ZArith.Zdiv.
+From Stdlib Require Import ZArith.Int.
+From Stdlib Require Import ZArith.Znat.
+From Stdlib Require Import String.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import micromega.Lia.
 
 Import ListNotations.
 

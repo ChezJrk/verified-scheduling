@@ -1,15 +1,15 @@
-From Coq Require Import Arith.Arith.
-From Coq Require Import Arith.EqNat.
-From Coq Require Import Arith.PeanoNat. Import Nat.
-From Coq Require Import ZArith.Zdiv.
-From Coq Require Import ZArith.Int.
-From Coq Require Import ZArith.Znat.
-From Coq Require Import Lists.List.
-From Coq Require Import micromega.Lia.
-From Coq Require Import Reals.Rpower.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Arith.EqNat.
+From Stdlib Require Import Arith.PeanoNat. Import Nat.
+From Stdlib Require Import ZArith.Zdiv.
+From Stdlib Require Import ZArith.Int.
+From Stdlib Require Import ZArith.Znat.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import micromega.Lia.
+From Stdlib Require Import Reals.Rpower.
 
-Require Import Coq.Logic.FunctionalExtensionality.
-From Coq Require Import Reals.Reals. Import Rdefinitions. Import RIneq.
+From Stdlib Require Import Logic.FunctionalExtensionality.
+From Stdlib Require Import Reals.Reals. Import Rdefinitions. Import RIneq.
 
 Set Warnings "-deprecate-hint-without-locality,-deprecated".
 Import ListNotations.

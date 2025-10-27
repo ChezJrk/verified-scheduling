@@ -1,5 +1,4 @@
-Require Import String.
-From Coq Require Import Lists.List.
+From Stdlib Require Import String Lists.List.
 Import ListNotations.
 
 Notation var := string.

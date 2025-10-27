@@ -1,16 +1,17 @@
-From Coq Require Import Arith.Arith.
-From Coq Require Import Arith.EqNat.
-From Coq Require Import Arith.PeanoNat. Import Nat.
-From Coq Require Import micromega.Lia.
-From Coq Require Import Lists.List.
-From Coq Require Import Bool.Bool.
-From Coq Require Import Reals.Reals. Import Rdefinitions. Import RIneq.
-From Coq Require Import ZArith.Zdiv.
-From Coq Require Import ZArith.Int.
-From Coq Require Import ZArith.Znat.
-From Coq Require Import Setoids.Setoid.
-From Coq Require Import Logic.FunctionalExtensionality.
-From Coq Require Import Classes.Morphisms.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Arith.EqNat.
+From Stdlib Require Import Arith.PeanoNat. Import Nat.
+From Stdlib Require Import micromega.Lia.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Reals.Reals. Import Rdefinitions. Import RIneq.
+From Stdlib Require Import ZArith.Zdiv.
+From Stdlib Require Import ZArith.Int.
+From Stdlib Require Import ZArith.Znat.
+From Stdlib Require Import Setoids.Setoid.
+From Stdlib Require Import Logic.FunctionalExtensionality.
+From Stdlib Require Import Classes.Morphisms.
+Import Zorder.
 
 From ATL Require Import Tactics FrapWithoutSets.
 
@@ -71,14 +72,8 @@ Proof.
   {
     apply Z.mul_le_mono_nonneg_r. lia. lia.
   }
-  assert ((n-1)*m + j < (n-1)*m + m).
-  {
-    apply Zplus_lt_compat_l. auto.
-  }
-  assert (i*m + j <= (n-1)*m + j).
-  {
-    apply Zplus_le_compat_r. auto.
-  }
+  assert ((n-1)*m + j < (n-1)*m + m) by lia.
+  assert (i*m + j <= (n-1)*m + j) by lia.
   eapply Z.le_lt_trans.
   apply H5.
   rewrite Zmult_succ_l_reverse in H4.
@@ -180,8 +175,7 @@ Proof.
   - simpl in *. lia.
   - rewrite <- e in *.
     apply Z2Nat.inj_lt in H; auto.
-    subst.
-    apply Zle_0_pos.
+    subst. lia.
   - simpl in *. lia.
 Qed.
 
@@ -332,9 +326,9 @@ Hint Resolve Z.div_pos : crunch.
 
 Lemma expand_Zmod : forall i m,
     (0 < m)%Z ->
-    (i - i / m * m = Coq.ZArith.BinIntDef.Z.modulo i m)%Z.
+    (i - i / m * m = Stdlib.ZArith.BinIntDef.Z.modulo i m)%Z.
 Proof.
-  intros. unfold Coq.ZArith.BinIntDef.Z.modulo.
+  intros. unfold Stdlib.ZArith.BinIntDef.Z.modulo.
   pose proof (Z_div_mod i m).
   assert (m > 0)%Z by lia.
   apply H0 in H1.

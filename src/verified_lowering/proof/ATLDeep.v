@@ -1,15 +1,15 @@
-From Coq Require Import Arith.Arith.
-From Coq Require Import Arith.EqNat.
-From Coq Require Import Arith.PeanoNat. Import Nat.
-From Coq Require Import Bool.Bool.
-From Coq Require Import Reals.Reals. Import Rdefinitions. Import RIneq.
-From Coq Require Import ZArith.Zdiv.
-From Coq Require Import ZArith.Int.
-From Coq Require Import ZArith.Znat.
-From Coq Require Import Strings.String.
-From Coq Require Import Lists.List.
-From Coq Require Import micromega.Lia.
-Require Import Coq.Logic.FunctionalExtensionality.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Arith.EqNat.
+From Stdlib Require Import Arith.PeanoNat. Import Nat.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Reals.Reals. Import Rdefinitions. Import RIneq.
+From Stdlib Require Import ZArith.Zdiv.
+From Stdlib Require Import ZArith.Int.
+From Stdlib Require Import ZArith.Znat.
+From Stdlib Require Import Strings.String.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import micromega.Lia.
+From Stdlib Require Import Logic.FunctionalExtensionality.
 
 Set Warnings "-deprecate-hint-without-locality,-deprecated".
 Import ListNotations.
@@ -636,7 +636,7 @@ Hint Resolve no_dup_var_generation no_dup_mesh_grid
      not_var_generation_in_dom2 not_var_generation_in_index2
      not_var_generation_in_index not_var_generation_in_dom : reindexers.
 Hint Extern 3 (Datatypes.length _ = Datatypes.length _) =>
-       rewrite map_length; rewrite length_nat_range_rec;
+       rewrite length_map; rewrite length_nat_range_rec;
        eapply length_mesh_grid_indices; eassumption : reindexers.
 
 Lemma result_shape_gen_length : forall i lo hi body c v sh l,
@@ -660,8 +660,8 @@ Proof.
 Qed.
 
 Hint Extern 3 (Datatypes.length (map _ _) = Datatypes.length _) =>
-       rewrite map_length; rewrite length_nat_range_rec;
-rewrite map_length; eapply length_mesh_grid_indices; eassumption : reindexers.
+       rewrite length_map; rewrite length_nat_range_rec;
+rewrite length_map; eapply length_mesh_grid_indices; eassumption : reindexers.
 
 Lemma eq_eval_stmt_for :
   forall v st h st' h' body1 body2 hi lo i,

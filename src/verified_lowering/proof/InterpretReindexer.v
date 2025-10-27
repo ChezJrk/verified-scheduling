@@ -1,15 +1,15 @@
-From Coq Require Import Arith.Arith.
-From Coq Require Import Arith.EqNat.
-From Coq Require Import Arith.PeanoNat. Import Nat.
-From Coq Require Import Bool.Bool.
-From Coq Require Import Reals.Reals. Import Rdefinitions. Import RIneq.
-From Coq Require Import ZArith.Zdiv.
-From Coq Require Import ZArith.Int.
-From Coq Require Import ZArith.Znat.
-From Coq Require Import Strings.String.
-From Coq Require Import Lists.List.
-From Coq Require Import micromega.Lia.
-Require Import Coq.Logic.FunctionalExtensionality.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Arith.EqNat.
+From Stdlib Require Import Arith.PeanoNat. Import Nat.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Reals.Reals. Import Rdefinitions. Import RIneq.
+From Stdlib Require Import ZArith.Zdiv.
+From Stdlib Require Import ZArith.Int.
+From Stdlib Require Import ZArith.Znat.
+From Stdlib Require Import Strings.String.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import micromega.Lia.
+From Stdlib Require Import Logic.FunctionalExtensionality.
 
 Set Warnings "-deprecate-hint-without-locality,-deprecated".
 Import ListNotations.
@@ -32,7 +32,7 @@ Hint Resolve no_dup_var_generation no_dup_mesh_grid
      not_var_generation_in_dom2 not_var_generation_in_index2
      not_var_generation_in_index not_var_generation_in_dom : reindexers.
 Hint Extern 3 (Datatypes.length _ = Datatypes.length _) =>
-       rewrite map_length; rewrite length_nat_range_rec;
+       rewrite length_map; rewrite length_nat_range_rec;
        eapply length_mesh_grid_indices; eassumption : reindexers.
 
 Lemma flatten_index_to_function_alt : forall sh args,
@@ -50,21 +50,21 @@ Proof.
   simpl.
   erewrite eval_Zexpr_Z_flatten_index_flatten.
   2: { econstructor. eauto. rewrite map_snd_combine
-      by (repeat rewrite map_length; simpl; try lia).
+      by (repeat rewrite length_map; simpl; try lia).
        eapply eval_Zexprlist_map_ZLit. }
   2: { econstructor. eauto. rewrite map_fst_combine
-      by (repeat rewrite map_length; simpl; try lia).
+      by (repeat rewrite length_map; simpl; try lia).
        eapply eval_Zexprlist_map_ZLit. }
   rewrite map_snd_combine
-    by (repeat rewrite map_length; simpl; try lia).
+    by (repeat rewrite length_map; simpl; try lia).
   erewrite eval_Zexpr_Z_fold_left_ZTimes.
   2: eapply eval_Zexprlist_map_ZLit.
   2: eauto.
   unfold flatten_index. simpl.
   rewrite map_snd_combine
-    by (repeat rewrite map_length; simpl; try lia).
+    by (repeat rewrite length_map; simpl; try lia).
   rewrite map_fst_combine
-    by (repeat rewrite map_length; simpl; try lia).
+    by (repeat rewrite length_map; simpl; try lia).
   erewrite eval_Zexpr_Z_flatten_index_flatten.
   2: { econstructor. eauto. eapply eval_Zexprlist_map_ZLit. }
   2: { econstructor. eauto. eapply eval_Zexprlist_map_ZLit. }
@@ -111,7 +111,7 @@ Proof.
     rewrite flatten_index_to_function_alt.
     reflexivity.
     eapply length_mesh_grid_indices_Z. auto.
-    rewrite map_length. rewrite length_nat_range_rec.
+    rewrite length_map. rewrite length_nat_range_rec.
     eapply length_mesh_grid_indices_Z in H. simpl in *. lia.
     eapply no_dup_var_generation.
     eauto with reindexers.
@@ -346,11 +346,11 @@ Proof.
     reflexivity.
     erewrite <- in_mesh_grid_cons__. propositional.
 
-    rewrite map_length. rewrite length_nat_range_rec.    
+    rewrite length_map. rewrite length_nat_range_rec.    
     eapply length_mesh_grid_indices_Z. auto.
     eapply no_dup_var_generation.
     eauto with reindexers.
-    rewrite map_length. rewrite length_nat_range_rec.
+    rewrite length_map. rewrite length_nat_range_rec.
     eapply length_mesh_grid_indices_Z. auto.
 Qed.
 
@@ -416,7 +416,7 @@ Lemma partial_interpret_reindexer_vars_None :
 Proof.
   unfold partial_interpret_reindexer. unfold index_to_partial_function.
   intros. unfold shape_to_vars.
-  rewrite map_length. unfold nat_range. rewrite length_nat_range_rec.  
+  rewrite length_map. unfold nat_range. rewrite length_nat_range_rec.  
   eapply Nat.eqb_neq in H. rewrite H. auto.
 Qed.
 
@@ -430,7 +430,7 @@ Proof.
   cases (Datatypes.length (shape_to_vars sh) =? Datatypes.length args)%nat.
   - eapply Nat.eqb_eq in Heq.
     unfold shape_to_vars in *.
-    rewrite map_length in *. unfold nat_range in *.
+    rewrite length_map in *. unfold nat_range in *.
     rewrite length_nat_range_rec in *. auto.
   - discriminate.
 Qed.

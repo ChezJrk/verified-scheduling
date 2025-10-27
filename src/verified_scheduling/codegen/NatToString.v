@@ -1,5 +1,5 @@
-From Coq Require Import Ascii String Arith.
-Require Import Coq.Strings.String.
+From Stdlib Require Import Ascii String Arith.
+From Stdlib Require Import Strings.String.
 
 Definition nat_to_ascii (n : nat) : ascii :=
   match n with

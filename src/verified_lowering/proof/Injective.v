@@ -1,10 +1,10 @@
-From Coq Require Import ZArith.Zdiv.
-From Coq Require Import ZArith.Int.
-From Coq Require Import ZArith.Znat.
-Require Import String.
-From Coq Require Import Lists.List.
-From Coq Require Import micromega.Lia.
-Require Import Coq.Logic.FunctionalExtensionality.
+From Stdlib Require Import ZArith.Zdiv.
+From Stdlib Require Import ZArith.Int.
+From Stdlib Require Import ZArith.Znat.
+From Stdlib Require Import String.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import micromega.Lia.
+From Stdlib Require Import Logic.FunctionalExtensionality.
 
 Import ListNotations.
 
@@ -210,7 +210,7 @@ partial_interpret_reindexer
                 ( Z.to_nat ((eval_Zexpr_Z_total $0 n) // (eval_Zexpr_Z_total $0 k))
                             :: Z.to_nat (eval_Zexpr_Z_total $0 k) ::map Z.to_nat
                             (map (eval_Zexpr_Z_total $0) l0)) 0)) v 
-        ((z0 / eval_Zexpr_Z_total $0 k)%Z :: (Coq.ZArith.BinIntDef.Z.modulo z0 (eval_Zexpr_Z_total $0 k)) :: args1).
+        ((z0 / eval_Zexpr_Z_total $0 k)%Z :: (Stdlib.ZArith.BinIntDef.Z.modulo z0 (eval_Zexpr_Z_total $0 k)) :: args1).
 Proof.
   intros ? ? ? ? ? ? ? Heqk Hvar HeqZlistwrap Hvarsub Hmap
          Hvarrdx Hmnonneg Hknonneg Harg Hle.
@@ -242,19 +242,19 @@ Proof.
   2: { unfold eq_zexpr in *. invs. rewrite H2. sets. }
   erewrite index_to_partial_function_subst_vars.
   2: { eauto with reindexers. }
-  2: { rewrite map_length. rewrite map_length. 
+  2: { rewrite length_map. rewrite length_map. 
        rewrite length_nat_range_rec.
        rewrite <- mesh_grid_filter_until in Harg.
        eapply length_mesh_grid_indices_Z in Harg.
-       rewrite map_length in Harg. lia. }
+       rewrite length_map in Harg. lia. }
   symmetry.
   erewrite index_to_partial_function_subst_vars.
   2: { eauto with reindexers. }
-  2: { rewrite map_length. rewrite map_length. 
+  2: { rewrite length_map. rewrite length_map. 
        rewrite length_nat_range_rec.
        rewrite <- mesh_grid_filter_until in Harg.
        eapply length_mesh_grid_indices_Z in Harg.
-       rewrite map_length in Harg. lia. }
+       rewrite length_map in Harg. lia. }
   symmetry.
   rewrite map_fold_left_subst_var_in_Z_tup_reindexer.
   2: { eauto. }
@@ -273,19 +273,19 @@ Proof.
   2: { simpl. invert Heqk. rewrite H0. sets. }
   2: { simpl. invert Heqk. rewrite H0. sets. }
   rewrite map_fold_left_subst_var_in_Z_tup_shape_to_index.
-  2: { rewrite map_length. rewrite map_length. 
+  2: { rewrite length_map. rewrite length_map. 
        rewrite length_nat_range_rec.
        rewrite <- mesh_grid_filter_until in Harg.
        eapply length_mesh_grid_indices_Z in Harg.
-       rewrite map_length in Harg. lia. }
+       rewrite length_map in Harg. lia. }
   2: { eauto with reindexers. }
   symmetry.
   rewrite map_fold_left_subst_var_in_Z_tup_combine.
-  2: { rewrite map_length. rewrite map_length. 
+  2: { rewrite length_map. rewrite length_map. 
        rewrite length_nat_range_rec.
        rewrite <- mesh_grid_filter_until in Harg.
        eapply length_mesh_grid_indices_Z in Harg.
-       rewrite map_length in Harg. lia. }
+       rewrite length_map in Harg. lia. }
   2: { eauto with reindexers. }
   erewrite eq_index_to_partial_function. reflexivity.
   eapply eq_Z_tuple_index_list_partially_eval_Z_tup.
@@ -1027,11 +1027,11 @@ Proof.
   
   erewrite index_to_partial_function_subst_vars;
     unfold nat_range; eauto with reindexers.
-  2: rewrite map_length; rewrite length_nat_range_rec; lia.
+  2: rewrite length_map; rewrite length_nat_range_rec; lia.
   symmetry.
   erewrite index_to_partial_function_subst_vars;
     unfold nat_range; eauto with reindexers.  
-  2: rewrite map_length; rewrite length_nat_range_rec; lia.
+  2: rewrite length_map; rewrite length_nat_range_rec; lia.
   symmetry.
   rewrite map_fold_left_subst_var_in_Z_tup_reindexer;
     eauto with reindexers.
@@ -1042,10 +1042,10 @@ Proof.
   simpl.
   repeat rewrite map_fold_left_subst_var_in_Z_tup_combine;
     eauto with reindexers.
-  2: rewrite map_length; rewrite length_nat_range_rec; lia.
+  2: rewrite length_map; rewrite length_nat_range_rec; lia.
   rewrite fold_left_subst_var_in_Z_tup_ZLit.
   rewrite map_fold_left_subst_var_in_Z_tup_shape_to_index.
-  2: unfold shape_to_vars; unfold nat_range; rewrite map_length;
+  2: unfold shape_to_vars; unfold nat_range; rewrite length_map;
   rewrite length_nat_range_rec; lia.  
   rewrite fold_left_subst_var_in_Z_tup_id.
   2: { simpl. invert Hlo. rewrite H0. sets. }
@@ -1665,14 +1665,14 @@ Proof.
   
   erewrite index_to_partial_function_subst_vars.
   2: { eapply forall_shape_to_vars_not_in_dom; eauto. }
-  2: { rewrite map_length. unfold nat_range. rewrite length_nat_range_rec.
-       rewrite map_length. eapply length_mesh_grid_indices.
+  2: { rewrite length_map. unfold nat_range. rewrite length_nat_range_rec.
+       rewrite length_map. eapply length_mesh_grid_indices.
        repeat decomp_goal_index. eauto. }
   symmetry.
   erewrite index_to_partial_function_subst_vars.
   2: { eapply forall_map_not_in_dom; eauto. } 
-  2: { rewrite map_length. unfold nat_range. rewrite length_nat_range_rec.
-       rewrite map_length. eapply length_mesh_grid_indices.
+  2: { rewrite length_map. unfold nat_range. rewrite length_nat_range_rec.
+       rewrite length_map. eapply length_mesh_grid_indices.
        repeat decomp_goal_index. eauto. }
   rewrite map_fold_left_subst_var_in_Z_tup_reindexer; eauto with reindexers.
   symmetry.
@@ -1682,13 +1682,13 @@ Proof.
   simpl.
   repeat rewrite fold_left_subst_var_in_Z_tup_ZLit.
   rewrite map_fold_left_subst_var_in_Z_tup_combine.
-  2: { rewrite map_length. rewrite length_nat_range_rec. rewrite map_length.
+  2: { rewrite length_map. rewrite length_nat_range_rec. rewrite length_map.
        eapply length_mesh_grid_indices.
        decomp_goal_index. auto. }
   symmetry.
   rewrite map_fold_left_subst_var_in_Z_tup_combine.
-  2: { rewrite map_length. unfold nat_range.
-       rewrite length_nat_range_rec. rewrite map_length.
+  2: { rewrite length_map. unfold nat_range.
+       rewrite length_nat_range_rec. rewrite length_map.
        eapply length_mesh_grid_indices.
        decomp_goal_index. auto. }
   symmetry.
@@ -1785,13 +1785,13 @@ Proof.
   symmetry in H2.
   repeat rewrite map_partially_eval_Z_tup_ZLit in H2.
   eapply injective_index_to_partial_function_ZLit in H2; propositional.
-  rewrite map_length. rewrite length_nat_range_rec.
+  rewrite length_map. rewrite length_nat_range_rec.
   eapply length_mesh_grid_indices_Z. eauto.
-  rewrite map_length. rewrite length_nat_range_rec.
+  rewrite length_map. rewrite length_nat_range_rec.
   eapply length_mesh_grid_indices_Z. eauto.
-  rewrite map_length. rewrite length_nat_range_rec.
+  rewrite length_map. rewrite length_nat_range_rec.
   eapply length_mesh_grid_indices_Z. eauto.
-  rewrite map_length. rewrite length_nat_range_rec.
+  rewrite length_map. rewrite length_nat_range_rec.
   eapply length_mesh_grid_indices_Z. eauto.
 Qed.
 
@@ -2526,12 +2526,12 @@ Proof.
   repeat rewrite map_subst_var_in_Z_tup_combine_not_in; eauto with reindexers.
   unfold subst_var_in_Z_tup. simpl.
   rewrite index_to_partial_function_subst_vars; eauto with reindexers.
-  2: { rewrite map_length. rewrite length_nat_range_rec. rewrite map_length.
+  2: { rewrite length_map. rewrite length_nat_range_rec. rewrite length_map.
        eapply length_mesh_grid_indices.
        repeat decomp_goal_index. auto. }
   symmetry.
   rewrite index_to_partial_function_subst_vars; eauto with reindexers.
-  2: { rewrite map_length. rewrite length_nat_range_rec. rewrite map_length.
+  2: { rewrite length_map. rewrite length_nat_range_rec. rewrite length_map.
        eapply length_mesh_grid_indices.
        repeat decomp_goal_index. auto. }
   symmetry.
@@ -2541,11 +2541,11 @@ Proof.
   symmetry.
   simpl.
   rewrite map_fold_left_subst_var_in_Z_tup_combine; eauto with reindexers.
-  2: { rewrite map_length. rewrite length_nat_range_rec. rewrite map_length.
+  2: { rewrite length_map. rewrite length_nat_range_rec. rewrite length_map.
        eapply length_mesh_grid_indices.
        repeat decomp_goal_index. auto. }
   rewrite map_fold_left_subst_var_in_Z_tup_combine; eauto with reindexers.
-  2: { rewrite map_length. rewrite length_nat_range_rec. rewrite map_length.
+  2: { rewrite length_map. rewrite length_nat_range_rec. rewrite length_map.
        eapply length_mesh_grid_indices.
        repeat decomp_goal_index. auto. }
   rewrite fold_left_subst_var_in_Z_tup_id.

@@ -1,12 +1,12 @@
-From Coq Require Import Arith.Arith.
-From Coq Require Import Bool.Bool.
-From Coq Require Import Arith.PeanoNat.
-From Coq Require Import micromega.Lia.
-From Coq Require Import Lists.List.
-From Coq Require Import Reals.Reals. Import Rdefinitions. Import RIneq.
-From Coq Require Import ZArith.Int. Import Znat.
-From Coq Require Import Setoids.Setoid.
-From Coq Require Import Logic.FunctionalExtensionality.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Arith.PeanoNat.
+From Stdlib Require Import micromega.Lia.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Reals.Reals. Import Rdefinitions. Import RIneq.
+From Stdlib Require Import ZArith.Int. Import Znat.
+From Stdlib Require Import Setoids.Setoid.
+From Stdlib Require Import Logic.FunctionalExtensionality.
 Require Coq.derive.Derive.
 Import ListNotations.
 

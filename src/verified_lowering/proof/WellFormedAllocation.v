@@ -1,15 +1,15 @@
-From Coq Require Import Arith.Arith.
-From Coq Require Import Arith.EqNat.
-From Coq Require Import Arith.PeanoNat. Import Nat.
-From Coq Require Import Bool.Bool.
-From Coq Require Import Reals.Reals. Import Rdefinitions. Import RIneq.
-From Coq Require Import ZArith.Zdiv.
-From Coq Require Import ZArith.Int.
-From Coq Require Import ZArith.Znat.
-From Coq Require Import Strings.String.
-From Coq Require Import Lists.List.
-From Coq Require Import micromega.Lia.
-Require Import Coq.Logic.FunctionalExtensionality.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Arith.EqNat.
+From Stdlib Require Import Arith.PeanoNat. Import Nat.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Reals.Reals. Import Rdefinitions. Import RIneq.
+From Stdlib Require Import ZArith.Zdiv.
+From Stdlib Require Import ZArith.Int.
+From Stdlib Require Import ZArith.Znat.
+From Stdlib Require Import Strings.String.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import micromega.Lia.
+From Stdlib Require Import Logic.FunctionalExtensionality.
 
 Set Warnings "-deprecate-hint-without-locality,-deprecated".
 Import ListNotations.
@@ -979,17 +979,17 @@ Proof.
     eapply eq_zexpr_mul_literal.
     eapply eq_zexpr_id. f_equal. lia.
     eapply eq_Z_tuple_index_list_id.
-    rewrite map_length. rewrite length_nat_range_rec.
-    rewrite map_length. eapply length_mesh_grid_indices.
+    rewrite length_map. rewrite length_nat_range_rec.
+    rewrite length_map. eapply length_mesh_grid_indices.
     erewrite <- in_mesh_grid_cons_filter_until_0. auto.
-    rewrite map_length. rewrite length_nat_range_rec.
-    rewrite map_length. eapply length_mesh_grid_indices.
+    rewrite length_map. rewrite length_nat_range_rec.
+    rewrite length_map. eapply length_mesh_grid_indices.
     erewrite <- in_mesh_grid_cons_filter_until_0. auto.
     assert (-1 * z1 <= z0* Z.of_nat (Datatypes.S m))%Z by lia.
     assert (-1 * Z.of_nat (Datatypes.S m) < -1 * z1)%Z by lia.
     assert (-1 * Z.of_nat (Datatypes.S m) < z0* Z.of_nat (Datatypes.S m))%Z
       by lia.
-    eapply Zmult_gt_0_lt_reg_r in H12.
+    eapply Zorder.Zmult_gt_0_lt_reg_r in H12.
     erewrite <- in_mesh_grid_cons_filter_until_0. simpl map.
     erewrite <- in_mesh_grid_cons__. propositional.
     lia. 
@@ -1050,11 +1050,11 @@ Proof.
     eapply eq_zexpr_mul_literal.
     eapply eq_zexpr_id. f_equal. lia.
     eapply eq_Z_tuple_index_list_id.
-    rewrite map_length. rewrite length_nat_range_rec.
-    rewrite map_length. eapply length_mesh_grid_indices.
+    rewrite length_map. rewrite length_nat_range_rec.
+    rewrite length_map. eapply length_mesh_grid_indices.
     erewrite <- in_mesh_grid_cons_filter_until_0. auto.
-    rewrite map_length. rewrite length_nat_range_rec.
-    rewrite map_length. eapply length_mesh_grid_indices.
+    rewrite length_map. rewrite length_nat_range_rec.
+    rewrite length_map. eapply length_mesh_grid_indices.
     erewrite <- in_mesh_grid_cons_filter_until_0. auto.
     simpl map. cases n. simpl in *. lia.
     simpl map. posnats.
@@ -2462,4 +2462,3 @@ Proof.
     eauto. lia. eassumption. lia. rewrite Z2Nat.id by lia. eauto.
     eauto. eauto. eauto. eauto. eauto. eauto. lia. lia. eauto. lia.
 Qed.
-

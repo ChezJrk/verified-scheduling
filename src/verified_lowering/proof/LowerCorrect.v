@@ -1,15 +1,15 @@
-From Coq Require Import Arith.Arith.
-From Coq Require Import Arith.EqNat.
-From Coq Require Import Arith.PeanoNat. Import Nat.
-From Coq Require Import Bool.Bool.
-From Coq Require Import Reals.Reals. Import Rdefinitions. Import RIneq.
-From Coq Require Import ZArith.Zdiv.
-From Coq Require Import ZArith.Int.
-From Coq Require Import ZArith.Znat.
-From Coq Require Import Strings.String.
-From Coq Require Import Lists.List.
-From Coq Require Import micromega.Lia.
-Require Import Coq.Logic.FunctionalExtensionality.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Arith.EqNat.
+From Stdlib Require Import Arith.PeanoNat. Import Nat.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import Reals.Reals. Import Rdefinitions. Import RIneq.
+From Stdlib Require Import ZArith.Zdiv.
+From Stdlib Require Import ZArith.Int.
+From Stdlib Require Import ZArith.Znat.
+From Stdlib Require Import Strings.String.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import micromega.Lia.
+From Stdlib Require Import Logic.FunctionalExtensionality.
 
 Set Warnings "-deprecate-hint-without-locality,-deprecated".
 Import ListNotations.
@@ -32,7 +32,7 @@ Hint Resolve no_dup_var_generation no_dup_mesh_grid
      not_var_generation_in_dom2 not_var_generation_in_index2
      not_var_generation_in_index not_var_generation_in_dom : reindexers.
 Hint Extern 3 (Datatypes.length _ = Datatypes.length _) =>
-       rewrite map_length; rewrite length_nat_range_rec;
+       rewrite length_map; rewrite length_nat_range_rec;
        eapply length_mesh_grid_indices; eassumption : reindexers.
 Arguments flatten : simpl nomatch.
             
@@ -2771,7 +2771,7 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
          assert (-1 * Z.of_nat (Z.to_nat (eval_Zexpr_Z_total $0 m)) <
                    z0 * Z.of_nat (Z.to_nat (eval_Zexpr_Z_total $0 m)))%Z
            by lia.
-         eapply Zmult_lt_reg_r in H17.
+         apply Zorder.Zmult_lt_reg_r in H17.
          lia. lia.
          rewrite Nat2Z.inj_mul in H16.
          rewrite
@@ -2781,7 +2781,7 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
          assert (-1 * Z.of_nat (Z.to_nat (eval_Zexpr_Z_total $0 m)) <
                    z0 * Z.of_nat (Z.to_nat (eval_Zexpr_Z_total $0 m)))%Z
            by lia.
-         eapply Zmult_lt_reg_r in H17.
+         eapply Zorder.Zmult_lt_reg_r in H17.
          lia. lia.
          lia.
          repeat decomp_goal_index. propositional.
@@ -2791,7 +2791,7 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
          assert (-1 * Z.of_nat (Z.to_nat (eval_Zexpr_Z_total $0 m)) <
                    z0 * Z.of_nat (Z.to_nat (eval_Zexpr_Z_total $0 m)))%Z
            by lia.
-         eapply Zmult_lt_reg_r in H17.
+         eapply Zorder.Zmult_lt_reg_r in H17.
          lia. lia.
          rewrite Nat2Z.inj_mul in H16.
          rewrite
@@ -2801,7 +2801,7 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
          assert (-1 * Z.of_nat (Z.to_nat (eval_Zexpr_Z_total $0 m)) <
                    z0 * Z.of_nat (Z.to_nat (eval_Zexpr_Z_total $0 m)))%Z
            by lia.
-         eapply Zmult_lt_reg_r in H17.
+         eapply Zorder.Zmult_lt_reg_r in H17.
          lia. lia.
          eauto. eauto.
          lia. lia.
@@ -2871,7 +2871,7 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
      { pose proof (truncl_list_length_empty
                      (Z.to_nat (eval_Zexpr_Z_total $0 k))
                      (rev l)).
-       erewrite rev_length in H6.
+       erewrite length_rev in H6.
        erewrite result_has_shape_length in H6.
        2: { simpl map in *. eauto. }
        assert (Z.to_nat (eval_Zexpr_Z_total $0 m) <=
@@ -2889,7 +2889,7 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
        2: { eauto. }
        simpl in H12. invs.
        rewrite firstn_all2 in H12.
-       2: { erewrite rev_length. erewrite result_has_shape_length.
+       2: { erewrite length_rev. erewrite result_has_shape_length.
             2: simpl in *; eauto. lia. }
        clear H9. clear H14. clear H6. eapply Forall_rev in H12.
        rewrite rev_involutive in *.
@@ -3108,7 +3108,7 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
                cases (reindexer (let (v0, d) := p0 in (v0, (d - k)%z) :: l2)).
                { unfold result_shape_Z, shape_to_index, shape_to_vars in Heq.
                  simpl in *. invert Heq.
-                 rewrite map_length in *.
+                 rewrite length_map in *.
                  cases l.
                  - simpl in *. invert H13.
                    eapply reindexer_not_empty_vars_in_index in Heq0.
@@ -3140,7 +3140,7 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
           cases (reindexer (let (v, d) := p0 in (v, (d - k)%z) :: l2)).
           { unfold result_shape_Z, shape_to_index, shape_to_vars in Heq.
             simpl in *. invert Heq.
-            rewrite map_length in *.
+            rewrite length_map in *.
             cases l.
             - simpl in *. invert H8.
               eapply reindexer_not_empty_vars_in_index in Heq0.
@@ -3183,7 +3183,7 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
                  simpl in *. eauto. }
             unfold result_shape_Z, shape_to_index, shape_to_vars in Heq1.
             simpl in *. 
-            rewrite map_length in *.
+            rewrite length_map in *.
             cases (Z.to_nat (eval_Zexpr_Z_total $0 m) -
                              Z.to_nat (eval_Zexpr_Z_total $0 k)).
             - simpl in *. 
@@ -3254,8 +3254,8 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
        eapply forall_eq_gen_pad in H11.
        simpl in H11.
        rewrite H11.
-       rewrite rev_repeat. rewrite firstn_length.
-       rewrite rev_length.
+       rewrite rev_repeat. rewrite length_firstn.
+       rewrite length_rev.
        erewrite result_has_shape_length by eauto. f_equal. lia. }
 
      invs. 
@@ -3708,7 +3708,7 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
                                  ((v0 - k)%z, (d - k)%z) :: l2)).
                { unfold shape_to_index,result_shape_Z,shape_to_vars in Heq.
                  simpl in Heq. invert Heq.
-                 repeat rewrite map_length in *.
+                 repeat rewrite length_map in *.
                  cases l.
                  - simpl in *. invert H12.
                    eapply reindexer_not_empty_vars_in_index in Heq0.
@@ -3747,7 +3747,7 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
           cases (reindexer (let (v, d) := p0 in ((v - k)%z, (d - k)%z) :: l2)).
           { unfold shape_to_index,result_shape_Z,shape_to_vars in Heq.
             simpl in Heq0. invert Heq.
-            repeat rewrite map_length in *.
+            repeat rewrite length_map in *.
             cases l.
             - simpl in *. invert H9.
               eapply reindexer_not_empty_vars_in_index in Heq0.
@@ -3847,7 +3847,7 @@ eapply H6 with (st:=st) (st':=st') (asn:=asm).
             eapply forall_eq_gen_pad in H6.
             simpl in H6.
             rewrite H6.
-            rewrite firstn_length.
+            rewrite length_firstn.
             erewrite result_has_shape_length by eauto. f_equal. lia. }
           invs.     
 

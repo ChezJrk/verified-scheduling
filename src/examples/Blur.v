@@ -1,11 +1,12 @@
-From Coq Require Import Arith.Arith.
-From Coq Require Import Bool.Bool.
-From Coq Require Import micromega.Lia.
-From Coq Require Import Lists.List.
-From Coq Require Import Reals.Reals.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Bool.Bool.
+From Stdlib Require Import micromega.Lia.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Reals.Reals.
 Require Coq.derive.Derive.
 
 Import ListNotations.
+Import Znat.
 
 From ATL Require Import ATL Common Reshape Tactics LetLifting Div GenPushout
      CommonTactics.

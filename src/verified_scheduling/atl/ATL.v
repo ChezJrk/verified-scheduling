@@ -1,12 +1,13 @@
-From Coq Require Import Arith.Arith.
-From Coq Require Import Arith.PeanoNat. Import Nat.
-From Coq Require Import micromega.Lia.
-From Coq Require Import micromega.Zify.
-From Coq Require Import Lists.List.
-From Coq Require Import Reals.Reals. Import RIneq. Import Rdefinitions.
-From Coq Require Import ZArith.Int.
-From Coq Require Import ZArith.Znat.
-From Coq Require Import Logic.FunctionalExtensionality.
+From Stdlib Require Import Arith.Arith.
+From Stdlib Require Import Arith.PeanoNat. Import Nat.
+From Stdlib Require Import micromega.Lia.
+From Stdlib Require Import micromega.Zify.
+From Stdlib Require Import Lists.List.
+From Stdlib Require Import Reals.Reals. Import RIneq. Import Rdefinitions.
+From Stdlib Require Import ZArith.Int.
+From Stdlib Require Import ZArith.Znat.
+From Stdlib Require Import Logic.FunctionalExtensionality.
+Import BinNatDef.
 
 Import ListNotations.
 
@@ -405,9 +406,8 @@ Proof.
   - simpl. 
     destruct i; try reflexivity.
     simpl. rewrite Z.add_0_r. reflexivity.
-    apply lt_S_n in H0.
-    apply (IHn _ m ((fun x => e0 (x+1)%Z))) in H0. simpl.
-    rewrite H0. rewrite <- Z.add_assoc.
+    specialize (IHn i m (fun x => e0 (x+1)%Z) ltac:(lia)).
+    simpl. rewrite IHn. rewrite <- Z.add_assoc.
     rewrite Zpos_P_of_succ_nat. 
     reflexivity.
 Qed.
@@ -555,7 +555,7 @@ Proof.
         apply IHn.
         eapply tensor_consistent_step. eauto.
         eapply tensor_consistent_step. eauto.
-        rewrite map_length. simpl in *. lia.
+        rewrite length_map. simpl in *. lia.
   }
 
   {
@@ -637,7 +637,7 @@ Proof.
         simpl. constructor. auto.
         auto.
         simpl in *.
-        rewrite map_length in *. lia.
+        rewrite length_map in *. lia.
   }
 
   {
@@ -706,18 +706,18 @@ Proof.
       rewrite tensor_add_empty_r.
       f_equal.
     - simpl. unfold tensor_add.
-      simpl length. rewrite map_length.
+      simpl length. rewrite length_map.
       unfold gen, genr. erewrite map_gen_helper.
       repeat rewrite Z.sub_0_r. repeat rewrite Nat2Z.id.
       simpl. erewrite mul_bin_distr.
-      f_equal. rewrite map_length.
+      f_equal. rewrite length_map.
       eapply gen_helper_eq_bound. intros. rewrite Z.add_0_r.
       rewrite mul_bin_distr.
       repeat rewrite <- map_cons.
       assert (i < length a0 \/ length a0 <= i) by lia. inversion H2; clear H2.
       + erewrite get_cons by lia. simpl.
         erewrite (get_cons _ (map _ a0)).
-        2: lia. 2: rewrite map_length; lia. f_equal.
+        2: lia. 2: rewrite length_map; lia. f_equal.
         * unfold get.
           destruct a0.
           -- simpl in *. lia.
@@ -738,11 +738,11 @@ Proof.
       + erewrite get_znlt_null by (simpl in *; lia).
         simpl. symmetry.
         erewrite get_znlt_null.
-        2: { simpl. rewrite map_length. lia. }
+        2: { simpl. rewrite length_map. lia. }
         unfold iverson. f_equal.
         eapply scalar_mul_comm.
         erewrite get_cons. 2: lia.
-        2: { rewrite map_length. lia. }
+        2: { rewrite length_map. lia. }
         erewrite get_cons by lia.
         unfold get.
         destruct b.
@@ -776,7 +776,7 @@ Proof.
     intros.
     induction e.
     - simpl. reflexivity.
-    - unfold tensor_add. rewrite map_length.
+    - unfold tensor_add. rewrite length_map.
       rewrite max_id. symmetry. erewrite <- (get_gen_id (a::e)) at 1.
       2: reflexivity.
       eapply gen_eq_bound; intros.
