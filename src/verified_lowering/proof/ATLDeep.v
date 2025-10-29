@@ -242,12 +242,11 @@ Fixpoint lower
   end.
 
 Inductive size_of : ATLexpr -> list nat -> Prop :=
-| SizeOfGen : forall i lo loz hi hiz body sh d,
+| SizeOfGen : forall i lo loz hi hiz body sh,
     size_of body sh ->
     eval_Zexpr $0 lo loz ->
     eval_Zexpr $0 hi hiz ->
-    d = Z.to_nat (hiz - loz) ->
-    size_of (Gen i lo hi body) (d :: sh)
+    size_of (Gen i lo hi body) (Z.to_nat (hiz - loz) :: sh)
 | SizeOfSum : forall i lo loz hi hiz body sh,
     eval_Zexpr $0 lo loz ->
     eval_Zexpr $0 hi hiz ->
@@ -259,47 +258,41 @@ Inductive size_of : ATLexpr -> list nat -> Prop :=
 | SizeOfLBind : forall e1 e2 x sh2,
     size_of e2 sh2 ->
     size_of (Lbind x e1 e2) sh2
-| SizeOfConcat : forall e1 e2 sh n m d,
-    size_of e1 (n::sh) ->
-    size_of e2 (m::sh) ->
-    d = n + m ->
-    size_of (Concat e1 e2) (d::sh)
+| SizeOfConcat : forall e1 e2 sh1 sh2 n m,
+    size_of e1 (n::sh1) ->
+    size_of e2 (m::sh2) ->
+    sh1 = sh2 ->
+    size_of (Concat e1 e2) (n + m :: sh1)
 | SizeOfFlatten : forall e n m sh d,
     size_of e (n :: m :: sh) ->
     d = n * m ->
     size_of (Flatten e) (d :: sh)
-| SizeOfSplit : forall e n sh k kz d1 d2,
+| SizeOfSplit : forall e n sh k kz,
     size_of e (n::sh) ->
     eval_Zexpr $0 k kz ->
-    d1 = n //n (Z.to_nat kz) ->
-    d2 = Z.to_nat kz ->
     (0 < kz)%Z ->
-    size_of (Split k e) (d1 :: d2 :: sh)
+    size_of (Split k e) (n //n (Z.to_nat kz) :: Z.to_nat kz :: sh)
 | SizeOfTranspose : forall e n m sh,
     size_of e (n::m::sh) ->
     size_of (Transpose e) (m::n::sh)
-| SizeOfTruncr : forall k kz e m sh d,
+| SizeOfTruncr : forall k kz e m sh,
     size_of e (m::sh) ->
     eval_Zexpr $0 k kz ->
     (Z.to_nat kz <= m) ->
-    d = m - Z.to_nat kz ->
-    size_of (Truncr k e) (d :: sh)
-| SizeOfTruncl : forall k kz e m sh d,
+    size_of (Truncr k e) (m - Z.to_nat kz :: sh)
+| SizeOfTruncl : forall k kz e m sh,
     size_of e (m :: sh) ->
     eval_Zexpr $0 k kz ->
     (Z.to_nat kz <= m) ->
-    d = m - Z.to_nat kz ->
-    size_of (Truncl k e) (d :: sh)
-| SizeOfPadr : forall k kz e m sh d,
+    size_of (Truncl k e) (m - Z.to_nat kz :: sh)
+| SizeOfPadr : forall k kz e m sh,
     size_of e (m :: sh) ->
     eval_Zexpr $0 k kz ->
-    d = m + Z.to_nat kz ->
-    size_of (Padr k e) (d :: sh)
-| SizeOfPadl : forall k kz e m sh d,
+    size_of (Padr k e) (m + Z.to_nat kz :: sh)
+| SizeOfPadl : forall k kz e m sh,
     size_of e (m :: sh) ->
     eval_Zexpr $0 k kz ->
-    d = m + Z.to_nat kz ->
-    size_of (Padl k e) (d :: sh)
+    size_of (Padl k e) (m + Z.to_nat kz :: sh)
 | SizeOfScalar : forall s,
     size_of (Scalar s) [].
 Local Hint Constructors eval_Zexpr eval_Bexpr eval_Sexpr size_of.
@@ -549,9 +542,9 @@ Proof.
   - invert H. invert H0. specialize (IHe _ _ H3 H2). invert IHe.
     eapply eval_Zexpr_deterministic in H4; eauto. subst. reflexivity.
   - invert H. invert H0. specialize (IHe _ _ H3 H2). invert IHe.
-    eapply eval_Zexpr_deterministic in H4; eauto. subst. reflexivity.
+    eapply eval_Zexpr_deterministic in H5; eauto. subst. reflexivity.
   - invert H. invert H0. specialize (IHe _ _ H3 H2). invert IHe.
-    eapply eval_Zexpr_deterministic in H4; eauto. subst. reflexivity.
+    eapply eval_Zexpr_deterministic in H5; eauto. subst. reflexivity.
   - invert H. invert H0. reflexivity.
 Qed.
 

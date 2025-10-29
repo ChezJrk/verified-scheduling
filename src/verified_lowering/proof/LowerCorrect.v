@@ -281,7 +281,7 @@ Proof.
    - (* STEPPING GEN *)
      simpl in Heval.
      unfold lookup_total in *.
-     invert Hsize. rename H10 into Hsize.
+     invert Hsize. rename H11 into Hsize.
      rename H12 into Hlo. rename H13 into Hhi.
      pose proof Hlo as Hlo'. pose proof Hhi as Hhi'.
      eapply eval_Zexpr_includes_valuation in Hlo', Hhi'; try apply empty_includes.
@@ -370,7 +370,6 @@ Proof.
             -- econstructor. eauto.
                apply eval_Zexpr_Z_eval_Zexpr. simpl. rewrite Hlo. reflexivity.
                apply eval_Zexpr_Z_eval_Zexpr. simpl. rewrite Hhi. reflexivity.
-               reflexivity.
             -- clear IHeval_expr2.
             invs'.
             unfold shift_top_dim_reindexer.
@@ -511,7 +510,6 @@ Proof.
          -- econstructor. eauto.
             apply eval_Zexpr_Z_eval_Zexpr. simpl. rewrite Hlo. reflexivity.
             apply eval_Zexpr_Z_eval_Zexpr. simpl. rewrite Hhi. reflexivity.
-            reflexivity.
          -- clear IHeval_expr2.
             invs'.
             unfold shift_top_dim_reindexer.
@@ -649,7 +647,6 @@ Proof.
          -- econstructor. eauto.
             apply eval_Zexpr_Z_eval_Zexpr. simpl. rewrite Hlo. reflexivity.
             apply eval_Zexpr_Z_eval_Zexpr. simpl. rewrite Hhi. reflexivity.
-            reflexivity.
          -- clear IHeval_expr2.
             invs'.
             unfold shift_top_dim_reindexer.
@@ -786,7 +783,6 @@ Proof.
          -- econstructor. eauto.
             apply eval_Zexpr_Z_eval_Zexpr. simpl. rewrite Hlo. reflexivity.
             apply eval_Zexpr_Z_eval_Zexpr. simpl. rewrite Hhi. reflexivity.
-            reflexivity.
          -- clear IHeval_expr2.
             invs'.
             unfold shift_top_dim_reindexer.
@@ -1430,8 +1426,7 @@ Proof.
        apply Hrdx. unfold result_shape_Z. simpl.
        cases l1; cases l2; simpl; inversion 1. }
      unfold lookup_total in *.
-     invert Hsize. pose proof H5 as Hsize1. pose proof H6 as Hsize2.
-     clear H6. clear H5.
+     invert Hsize. rename H5 into Hsize1. rename H7 into Hsize2.
      assert (result_has_shape (V l1) (n::sh0)) as Hsh1.
      { eapply size_of_eval_expr_result_has_shape; eauto. }
      assert (result_has_shape (V l2) (m::sh0)) as Hsh2.
@@ -2310,12 +2305,12 @@ Proof.
      
      assert (m = Z.to_nat kz \/ Z.to_nat kz < m) as HHcase by lia.
      inversion HHcase as [ HHcase1 | HHcase2]; clear HHcase.
-     { pose proof (truncl_list_length_empty (Z.to_nat kz) (rev l)) as H7.
-       erewrite length_rev in H7.
-       erewrite result_has_shape_length in H7.
+     { pose proof (truncl_list_length_empty (Z.to_nat kz) (rev l)) as H6.
+       erewrite length_rev in H6.
+       erewrite result_has_shape_length in H6.
        2: { simpl map in *. eauto. }
        assert (H8: m <= Z.to_nat kz) by lia.
-       eapply H7 in H8.
+       eapply H6 in H8.
        rewrite H8 in *. clear H6. simpl rev.
        invert Hpad.
        cbv [eval_Zexpr_Z_total] in *. rewrite Hk in *.
@@ -2870,7 +2865,7 @@ Proof.
             unfold tensor_to_array_delta_by_indices.
             simpl. rewrite dom_empty. split; intros. sets.
             invs'.
-            eapply lookup_Some_dom in H7. sets. apply Hrdx. }
+            eapply lookup_Some_dom in H6. sets. apply Hrdx. }
        2: { simpl. rewrite <- gen_pad_cons.
             eapply well_formed_allocation_gen_pad.
             Check well_formed_allocation_truncl.
@@ -3221,7 +3216,7 @@ Proof.
           invs'. f_equal. lia.
    - (* PADR *) simpl in *. invert Hsize. eq_size_of. invs'.
 
-        rename H6 into Hk. pose proof Hk as Hk'.
+        rename H7 into Hk. pose proof Hk as Hk'.
         eapply eval_Zexpr_includes_valuation in Hk'; try apply empty_includes.
         apply eval_Zexpr_Z_eval_Zexpr in Hk'.
         rewrite Hk' in *. invs'. apply eval_Zexpr_Z_eval_Zexpr in Hk.
@@ -3415,7 +3410,7 @@ Proof.
         + apply Hrdx.
    - (* PADL *) simpl in *. invert Hsize. eq_size_of. invs'.
 
-        rename H6 into Hk. pose proof Hk as Hk'.
+        rename H7 into Hk. pose proof Hk as Hk'.
         eapply eval_Zexpr_includes_valuation in Hk'; try apply empty_includes.
         apply eval_Zexpr_Z_eval_Zexpr in Hk'.
         rewrite Hk' in *. invs'. apply eval_Zexpr_Z_eval_Zexpr in Hk.

@@ -1464,15 +1464,15 @@ Proof.
     eapply IHe; eauto.
   - invs. invert H0.
     eq_size_of. invert H.
-    eapply eval_Zexpr_includes_valuation in H4; try apply empty_includes.
-    eapply eval_Zexpr_Z_eval_Zexpr in H4. rewrite H2 in H4. invs.
+    eapply eval_Zexpr_includes_valuation in H5; try apply empty_includes.
+    eapply eval_Zexpr_Z_eval_Zexpr in H5. rewrite H2 in H5. invs.
     eapply result_has_shape_concat.
     eapply IHe; eauto.
     eapply result_has_shape_repeat_gen_pad.
   - invs. invert H0.
     eq_size_of. invert H.
-    eapply eval_Zexpr_includes_valuation in H4; try apply empty_includes.
-    eapply eval_Zexpr_Z_eval_Zexpr in H4. rewrite H2 in H4. invs.
+    eapply eval_Zexpr_includes_valuation in H5; try apply empty_includes.
+    eapply eval_Zexpr_Z_eval_Zexpr in H5. rewrite H2 in H5. invs.
     rewrite Nat.add_comm.
     eapply result_has_shape_concat.
     eapply result_has_shape_repeat_gen_pad.
