@@ -54,11 +54,11 @@ Ltac stringify_nat n :=
   | (?x - ?y)%nat =>
       let xstr := stringify_nat x in 
       let ystr := stringify_nat y in
-      constr:((xstr++" - "++ystr)%string)
+      constr:(xstr ++ " - (" ++ ystr ++ ")")
   | (?x * ?y)%nat =>
       let xstr := stringify_nat x in 
       let ystr := stringify_nat y in
-      constr:((xstr++" * "++ystr)%string)
+      constr:("("++xstr ++ ") * (" ++ ystr ++")")
   | (?x //n ?y)%nat =>
       let xstr := stringify_nat x in 
       let ystr := stringify_nat y in
