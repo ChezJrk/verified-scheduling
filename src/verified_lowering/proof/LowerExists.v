@@ -1258,7 +1258,7 @@ Proof.
     eauto.
   - simpl in *. invs. repeat erewrite size_of_sizeof in * by eauto. simpl.
     invert Hpad. eq_size_of. invs'.
-    rename H3 into Hsize1. rename H5 into Hsize2.
+    rename H3 into Hsize1. rename H4 into Hsize2.
     pose proof Hsize1 as Hsize1'. pose proof Hsize2 as Hsize2'.
     eapply size_of_eval_expr_result_has_shape in Hsize1'; eauto.
     eapply size_of_eval_expr_result_has_shape in Hsize2'; eauto.

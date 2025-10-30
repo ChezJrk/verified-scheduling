@@ -1426,10 +1426,10 @@ Proof.
        apply Hrdx. unfold result_shape_Z. simpl.
        cases l1; cases l2; simpl; inversion 1. }
      unfold lookup_total in *.
-     invert Hsize. rename H5 into Hsize1. rename H7 into Hsize2.
-     assert (result_has_shape (V l1) (n::sh0)) as Hsh1.
+     invert Hsize. rename H5 into Hsize1. rename H6 into Hsize2.
+     assert (result_has_shape (V l1) (n::sh2)) as Hsh1.
      { eapply size_of_eval_expr_result_has_shape; eauto. }
-     assert (result_has_shape (V l2) (m::sh0)) as Hsh2.
+     assert (result_has_shape (V l2) (m::sh2)) as Hsh2.
      { eapply size_of_eval_expr_result_has_shape; eauto. }
      pose proof (result_has_shape_length _ _ _ Hsh1).
      pose proof (result_has_shape_length _ _ _ Hsh2). subst.
