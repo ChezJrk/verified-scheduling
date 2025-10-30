@@ -332,7 +332,11 @@ end with infer_truncr left right offset :=
   end with infer_concat left right :=
     match goal with
     | |- has_pad _ _ _ (Concat _ _) _ =>
-        first [ (*solve [ eapply HasPadConcat with
+        first [
+            (*Uncommenting the folllowing code will cause blur_tiles_guarded pad inference
+              to take a very very long time.  idk if it goes into an infinite loop, but i
+              let it run for 30 minutes and nothing happened.*)
+            (*solve [ eapply HasPadConcat with
                     (x:=0) (y:=0) (a:=0) (b:=0)
                     (l1:=0) (r1:=0) (r2:=0);
         [ infer_size_of |
