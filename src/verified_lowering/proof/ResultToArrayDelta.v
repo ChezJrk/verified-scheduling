@@ -1390,32 +1390,34 @@ Proof.
   intros e. induct e; intros; simpl in *.
   - (* GEN *) invs. invert H0.
     + (* EMPTY GEN *)
-      eapply eval_Zexpr_includes_valuation in H7, H8; try apply empty_includes.
-      eapply eval_Zexpr_Z_eval_Zexpr in H8,H7.
-      rewrite H7, H8 in *. invs.
+      rename H6 into Hlo. rename H7 into Hhi.
+      eapply eval_Zexpr_includes_valuation in Hlo, Hhi; try apply empty_includes.
+      eapply eval_Zexpr_Z_eval_Zexpr in Hhi,Hlo.
+      rewrite Hlo, Hhi in *. invs.
       replace (Z.to_nat (hiz0 - loz0)) with 0 by lia. constructor.
     + (* STEP GEN *)
-      eapply eval_Zexpr_includes_valuation in H7, H8; try apply empty_includes.
-      eapply eval_Zexpr_Z_eval_Zexpr in H8,H7.
-      rewrite H7, H8 in *. invs.
+      rename H6 into Hlo. rename H7 into Hhi.
+      eapply eval_Zexpr_includes_valuation in Hlo, Hhi; try apply empty_includes.
+      eapply eval_Zexpr_Z_eval_Zexpr in Hhi,Hlo.
+      rewrite Hlo, Hhi in *. invs.
       simpl. cases (Z.to_nat (hiz0-loz0)%Z). lia.
       econstructor. erewrite length_eval_expr_gen.
       2: { eassumption. }
-      2: { simpl. rewrite H7,H8. eauto. }
+      2: { simpl. rewrite Hlo,Hhi. eauto. }
       lia.
       clear Heq. clear n.
       eapply IHe. eauto. eassumption.
       pose proof (eval_expr_for_gen_result_has_shape
                     n sh v ec i (lo+|1|)%z hi (loz0+1) hiz0 e l).
       assert (eval_Zexpr_Z v (lo + | 1 |)%z = Some (loz0+1)%Z).
-      simpl. eapply eval_Zexpr_Z_eval_Zexpr in H8. rewrite H7. eauto.
+      simpl. eapply eval_Zexpr_Z_eval_Zexpr in Hhi. rewrite Hlo. eauto.
       assert ((hiz0 - (loz0 + 1))%Z = Z.of_nat n). lia.
       specialize (H ltac:(assumption) ltac:(assumption) ltac:(assumption) ltac:(assumption)).
       eapply Forall_forall. intros.
       eapply In_nth with (d:= S (SS 0)) in H2. invs.
       eapply IHe. eauto.
       eapply H. eapply length_eval_expr_gen in H16; eauto.
-      2: { simpl. rewrite H7,H8. reflexivity. }
+      2: { simpl. rewrite Hlo,Hhi. reflexivity. }
       lia.
   - (* SUM *)
     invert H. invert H0.
@@ -1440,7 +1442,7 @@ Proof.
   - invs. invert H0. eauto using result_has_shape_concat.
   - invs. invert H0. eauto using result_has_shape_flatten.
   - invs. invert H0.
-    apply eval_Zexpr_Z_eval_Zexpr in H4. rewrite H4 in *. invs.
+    apply eval_Zexpr_Z_eval_Zexpr in H3. rewrite H3 in *. invs.
     eapply result_has_shape_split_result. lia. eauto.
   - invs. invert H0.
     simpl.
@@ -1450,33 +1452,32 @@ Proof.
     eapply IHe; eauto.
   - invs. invert H0.
     eapply result_has_shape_rev.
-    eapply eval_Zexpr_includes_valuation in H4; try apply empty_includes.
-    eapply eval_Zexpr_Z_eval_Zexpr in H4. rewrite H2 in H4. invs.
+    eapply eval_Zexpr_includes_valuation in H3; try apply empty_includes.
+    eapply eval_Zexpr_Z_eval_Zexpr in H3. rewrite H2 in H3. invs.
     eapply result_has_shape_truncl_list.
     eapply result_has_shape_rev.
     erewrite <- result_has_shape_filter_until_0.
     eapply IHe; eauto.
   - invs. invert H0.
-    eapply eval_Zexpr_includes_valuation in H4; try apply empty_includes.
-    eapply eval_Zexpr_Z_eval_Zexpr in H4. rewrite H2 in H4. invs.
+    eapply eval_Zexpr_includes_valuation in H3; try apply empty_includes.
+    eapply eval_Zexpr_Z_eval_Zexpr in H3. rewrite H2 in H3. invs.
     eapply result_has_shape_truncl_list.
     erewrite <- result_has_shape_filter_until_0.
     eapply IHe; eauto.
   - invs. invert H0.
     eq_size_of. invert H.
-    eapply eval_Zexpr_includes_valuation in H5; try apply empty_includes.
-    eapply eval_Zexpr_Z_eval_Zexpr in H5. rewrite H2 in H5. invs.
+    eapply eval_Zexpr_includes_valuation in H3; try apply empty_includes.
+    eapply eval_Zexpr_Z_eval_Zexpr in H3. rewrite H2 in H3. invs.
     eapply result_has_shape_concat.
     eapply IHe; eauto.
     eapply result_has_shape_repeat_gen_pad.
   - invs. invert H0.
     eq_size_of. invert H.
-    eapply eval_Zexpr_includes_valuation in H5; try apply empty_includes.
-    eapply eval_Zexpr_Z_eval_Zexpr in H5. rewrite H2 in H5. invs.
+    eapply eval_Zexpr_includes_valuation in H3; try apply empty_includes.
+    eapply eval_Zexpr_Z_eval_Zexpr in H3. rewrite H2 in H3. invs.
     rewrite Nat.add_comm.
     eapply result_has_shape_concat.
     eapply result_has_shape_repeat_gen_pad.
     eapply IHe; eauto.
   - invs. invert H0. econstructor.
 Qed.
-

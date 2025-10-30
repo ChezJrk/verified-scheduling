@@ -1609,7 +1609,7 @@ Lemma partial_injective_id_reindexer :
 Proof.
   unfold partial_injective. set (fun l : list (Zexpr * Z) => l).
   unfold partial_interpret_reindexer.
-  propositional. 
+  propositional.
   unfold shape_to_vars in *. unfold nat_range in *.
   repeat decomp_index.
   rewrite index_to_partial_function_subst_vars in H2.
@@ -1850,8 +1850,6 @@ Proof.
   rewrite map_subst_var_in_Z_tup_combine_not_in; eauto with reindexers.
   unfold subst_var_in_Z_tup.
   simpl.
-  (* rewrite subst_var_in_Zexpr_id. *)
-  (* 2: { invert Hx2. rewrite H4. sets. } *)
   erewrite eq_index_to_partial_function.
   reflexivity.
   eapply eq_Z_tuple_index_list_partially_eval_Z_tup.

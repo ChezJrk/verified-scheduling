@@ -417,8 +417,6 @@ Proof.
       auto.
 Qed.
 
-(* Lemma in_mesh_grid_flatten_in_range_nat *)
-
 Lemma in_mesh_grid_flatten_in_range : forall sh x0,
     (Forall (fun x => 0 <= x)%Z sh) ->
     In x0 (mesh_grid sh) ->
@@ -979,9 +977,6 @@ Proof.
     rewrite Z.add_comm.
     rewrite mesh_grid_app by lia.
     rewrite filter_app.
-    (* replace m with *)
-    (*   (k + m - k) *)
-    (*   by lia. *)
     rewrite filter_pad_r_empty.
     simpl map. cases x. simpl. auto. simpl map. simpl length. posnats.
     rewrite app_nil_r.

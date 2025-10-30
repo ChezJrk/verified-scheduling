@@ -228,7 +228,7 @@ Proof.
   intros.
   let s := Llibfunc constr:("concattest1")
                              constr:($0 $+ ("l",[Z.to_nat n; Z.to_nat m]))
-  in idtac_list s.  
+  in idtac_list s.
 Abort.
 
 Goal forall n m (l : list (list R)),

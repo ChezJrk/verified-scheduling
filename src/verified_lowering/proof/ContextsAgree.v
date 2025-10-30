@@ -170,7 +170,6 @@ Proof.
       eapply eval_get_In_meshgrid in H; eauto.
       erewrite result_has_shape_result_shape_Z in H; eauto.
       repeat decomp_index.
-      (* rewrite mesh_grid_map_Nat2Z_id in *. *)
       cases rs.
       { invert H3. cases x1. simpl in *. contradiction.
         invert H6. rewrite map_cons in *. 
