@@ -204,4 +204,3 @@ Ltac posnats :=
     | H : context [Pos.succ (Pos.of_succ_nat _)] |- _ =>
         rewrite <- SuccNat2Pos.inj_succ in H
     end.
-

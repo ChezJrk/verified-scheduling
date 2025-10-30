@@ -19,10 +19,10 @@ From Lower Require Import Zexpr Bexpr Array Range Sexpr Result ListMisc Meshgrid
      Constant.
 
 Definition shift_top_dim_reindexer
-           (reindexer : list (Zexpr * Zexpr) -> list (Zexpr * Zexpr)) :=
+           (reindexer : list (Zexpr * Z) -> list (Zexpr * Z)) :=
   fun l => match l with
            | (var,dim)::xs => reindexer
-                                ((var + | 1 |,dim + | 1 |)%z :: xs)
+                                ((var + | 1 |, (dim +  1)%Z )%z :: xs)
            | _ => reindexer l
            end.
 
@@ -38,7 +38,7 @@ Hint Extern 3 (Datatypes.length _ = Datatypes.length _) =>
 Lemma flatten_index_to_function_alt : forall sh args,
     length sh = length args ->
     flatten sh args =
-      index_to_function_alt (combine (map ZLit args) (map ZLit sh)) [] [].
+      index_to_function_alt (combine (map ZLit args) sh) [] [].
 Proof.
   induction sh; intros; cases args; auto.
   simpl. unfold flatten. cases sh; auto.
@@ -49,16 +49,11 @@ Proof.
   unfold index_to_function_rec_alt.
   simpl.
   erewrite eval_Zexpr_Z_flatten_index_flatten.
-  2: { econstructor. eauto. rewrite map_snd_combine
-      by (repeat rewrite length_map; simpl; try lia).
-       eapply eval_Zexprlist_map_ZLit. }
   2: { econstructor. eauto. rewrite map_fst_combine
       by (repeat rewrite length_map; simpl; try lia).
        eapply eval_Zexprlist_map_ZLit. }
   rewrite map_snd_combine
     by (repeat rewrite length_map; simpl; try lia).
-  erewrite eval_Zexpr_Z_fold_left_ZTimes.
-  2: eapply eval_Zexprlist_map_ZLit.
   2: eauto.
   unfold flatten_index. simpl.
   rewrite map_snd_combine
@@ -67,13 +62,11 @@ Proof.
     by (repeat rewrite length_map; simpl; try lia).
   erewrite eval_Zexpr_Z_flatten_index_flatten.
   2: { econstructor. eauto. eapply eval_Zexprlist_map_ZLit. }
-  2: { econstructor. eauto. eapply eval_Zexprlist_map_ZLit. }
   reflexivity.
-  simpl in *. lia.
 Qed.
 
 Definition interpret_reindexer
-           (reindexer : list (Zexpr * Zexpr) -> list (Zexpr * Zexpr))
+           (reindexer : list (Zexpr * Z) -> list (Zexpr * Z))
            (sh : list Z) (v : valuation) : list Z -> Z :=
   let vars := shape_to_vars sh in
   let result_index := shape_to_index sh vars in
@@ -84,7 +77,7 @@ Definition interpret_reindexer
 Lemma interpret_reindexer_id_flatten : forall sh x v,
     In x (mesh_grid sh) ->
     (forall var : var, contains_substring "?" var -> ~ var \in dom v) ->
-    (interpret_reindexer (fun l : list (Zexpr * Zexpr) => l) sh v) x =
+    (interpret_reindexer (fun l : list (Zexpr * Z) => l) sh v) x =
       flatten sh x.
 Proof.
   induct sh; intros.
@@ -108,9 +101,10 @@ Proof.
     rewrite map_fold_left_subst_var_in_Z_tup_shape_to_index.
     simpl.
     rewrite map_partially_eval_Z_tup_ZLit. simpl.
-    rewrite flatten_index_to_function_alt.
+    epose proof flatten_index_to_function_alt (_ :: _) as H'.
+    cbn [map] in H'. rewrite H'.
     reflexivity.
-    eapply length_mesh_grid_indices_Z. auto.
+    apply length_mesh_grid_indices_Z. auto.
     rewrite length_map. rewrite length_nat_range_rec.
     eapply length_mesh_grid_indices_Z in H. simpl in *. lia.
     eapply no_dup_var_generation.
@@ -182,7 +176,7 @@ Proof.
 Qed.
     
 Lemma vars_of_shift_top_dim_reindexer : forall reindexer l,
-    ((forall l : list (Zexpr * Zexpr),
+    ((forall l : list (Zexpr * Z),
          vars_of_reindexer (reindexer l) =
            vars_of_reindexer (reindexer []) \cup vars_of_reindexer l)) ->
     vars_of_reindexer (shift_top_dim_reindexer reindexer l) =
@@ -197,14 +191,14 @@ Proof.
 Qed.
 
 Definition index_to_partial_function
-           (index : list (Zexpr * Zexpr)) vars (args : list Z) : option Z
+           (index : list (Zexpr * Z)) vars (args : list Z) : option Z
   :=
   if (length vars =? length args)%nat
   then let evaled_list_index :=
          map (eval_Zexpr_Z_tup_total $0)
              (map (fun tup =>
                      (fold_left
-                        (fun (z : Zexpr * Zexpr) (tup : string * Z) =>
+                        (fun (z : Zexpr * Z) (tup : string * Z) =>
                            subst_var_in_Z_tup (fst tup) (snd tup) z)
                         (combine vars args) tup)) index) in
        Some (flatten
@@ -219,7 +213,7 @@ Definition index_to_partial_function
   else None.
 
 Definition partial_interpret_reindexer
-           (reindexer : list (Zexpr * Zexpr) -> list (Zexpr * Zexpr))
+           (reindexer : list (Zexpr * Z) -> list (Zexpr * Z))
            (sh : list Z) (v : valuation) : list Z -> option Z :=
   let vars := shape_to_vars sh in
   let result_index := shape_to_index sh vars in
@@ -230,7 +224,7 @@ Definition partial_interpret_reindexer
 Lemma flatten_index_to_partial_function : forall sh args,
     In args (mesh_grid sh) ->
     Some (flatten sh args) =
-      index_to_partial_function (combine (map ZLit args) (map ZLit sh)) [] [].
+      index_to_partial_function (combine (map ZLit args) sh) [] [].
 Proof.
   induction sh; intros; cases args; auto.
   simpl. unfold flatten. cases sh; auto.
@@ -262,7 +256,7 @@ Ltac eq_if_discriminee :=
 
 Lemma index_to_partial_function_vars_cons :
   forall var vars k x
-         (reindexer : list (Zexpr * Zexpr) -> list (Zexpr * Zexpr)) v l,
+         (reindexer : list (Zexpr * Z) -> list (Zexpr * Z)) v l,
     ~ var \in dom v ->
               index_to_partial_function
       (map (partially_eval_Z_tup v)
@@ -294,7 +288,7 @@ Proof.
 Qed.
 
 Lemma index_to_partial_function_subst_vars :
-  forall vars x (rdxr : list (Zexpr * Zexpr) -> list (Zexpr * Zexpr)) l v,
+  forall vars x (rdxr : list (Zexpr * Z) -> list (Zexpr * Z)) l v,
     (Forall (fun var =>  ~ var \in dom v) vars) ->
     length vars = length x ->
     index_to_partial_function
@@ -318,7 +312,7 @@ Qed.
 Lemma partial_interpret_reindexer_id_flatten : forall sh x v,
     In x (mesh_grid sh) ->
     (forall var : var, contains_substring "?" var -> ~ var \in dom v) ->
-    (partial_interpret_reindexer (fun l : list (Zexpr * Zexpr) => l) sh v) x =
+    (partial_interpret_reindexer (fun l : list (Zexpr * Z) => l) sh v) x =
       Some (flatten sh x).
 Proof.
   induct sh; intros.
