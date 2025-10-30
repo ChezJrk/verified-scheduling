@@ -3280,7 +3280,7 @@ Proof.
         eapply Forall_app. propositional.
         cases (c - (Datatypes.length l + 1)). simpl in *. econstructor.
         simpl. rewrite firstn_nil. econstructor. 2: eauto.
-        eapply relate_pads_gen_pad. Check relate_pads_gen_pad.
+        eapply relate_pads_gen_pad.
         eapply IHeval_expr1.
         eapply H22. lia. lia. eauto.
         eauto. eauto. 
@@ -4189,7 +4189,7 @@ Proof.
       2: { eapply forall_firstn_ge.
            eapply Forall_impl. 2:eassumption.
            simpl. intros. cases a0. propositional. invs.
-           eassumption. Search l0.
+           eassumption.
            lia. }
       rewrite length_firstn. rewrite length_skipn.
       remember (Init.Nat.min (Datatypes.S (Datatypes.length l) - x - r - y)

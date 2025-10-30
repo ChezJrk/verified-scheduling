@@ -139,7 +139,6 @@ Proof.
   - intros. erewrite result_has_shape_result_shape_Z in * by eauto.
     erewrite result_has_shape_result_shape_Z in * by eauto.
     repeat decomp_index.
-    About eq_partial_interpret_reindexer_split.
     erewrite <- eq_partial_interpret_reindexer_split;
       try apply Henv; try apply Hrdx; try lia; eauto.
   - erewrite result_has_shape_result_shape_Z in * by eauto.
@@ -465,32 +464,15 @@ Proof.
     eapply lookup_None_dom in H4. exfalso. apply H4.
     rewrite dom_alloc_array. erewrite <- In_iff_in.
     unfold flat_sizeof in *. erewrite size_of_sizeof in * by eauto.
-    (* simpl in Hflat. eapply eval_Zexpr_Z_eval_Zexpr in Hflat. *) simpl.
-    (* erewrite eval_Zexpr_Z_fold_left_ZTimes in Hflat; eauto. invert Hflat. *)
-    (* replace (fold_left Z.mul zs z0) with (fold_left Z.mul (z0::zs) 1%Z). *)
-    (* 2: { simpl. f_equal. lia. } *)
-    (* rewrite Z2Nat.id. *) erewrite result_has_shape_result_shape_Z by eauto.
-    (* pose proof Hconst. *)
-    (* eapply constant_nonneg_bounds_size_of_no_vars in H1. *)
-    (* 2: { eauto. } *)
-    (* 2: { eapply fold_left_mul_nonneg. 2: lia. *)
-    (*      eapply constant_nonneg_bounds_size_of_nonneg. eauto. *)
-    (*      eauto. econstructor; eauto. } *)
-    (* eapply forall_no_vars_eval_Zexpr_Z_total with (v:=v) in H1. *)
-    (* invert H1. eq_eval_Z. eq_eval_Zlist. *) repeat decomp_index.
+    erewrite result_has_shape_result_shape_Z by eauto.
+    repeat decomp_index.
     erewrite filter_until_0_id.
     2: { erewrite result_has_shape_result_shape_Z in H1 by eauto.
          decomp_index.
-         (* pose proof Hconst. *)
-         (* eapply constant_nonneg_bounds_size_of_nonneg in H5; eauto. *)
-         (* invert H5. *)
-         (* rewrite Z2Nat.id in * by lia. *)
-         (* rewrite Z2Natid_list in H1; eauto. *)
          eapply mesh_grid_shape_pos in H1.
          eapply Forall_impl. 2: apply Forall_map; eassumption.
          simpl. lia. }
     rewrite Z_of_nat_fold_left_mul.
-    Check in_mesh_grid_flatten_in_range.
     replace (fold_left Z.mul (map Z.of_nat sz1) (Z.of_nat z)) with
       (fold_left Z.mul (map Z.of_nat (z :: sz1)) 1%Z).
     2: { simpl. f_equal. lia. }
@@ -716,7 +698,6 @@ Proof.
          rewrite partial_dom_fold_left_array_add in *.
          2: { eauto. }
          2: { erewrite result_has_shape_result_shape_Z by eauto.
-              About partial_injective_concat_r.
               eapply partial_injective_concat_r. eauto.
               eauto. eauto. apply Henv.
               all: eauto. }

@@ -634,7 +634,7 @@ Proof.
     - replace (map Z.of_nat (filter_until (result_shape_nat r) 0))
         with (result_shape_Z r).
       2: { erewrite result_has_shape_result_shape_Z. reflexivity.
-           invert H0. eauto. } About partial_injective_cons_reindexer.
+           invert H0. eauto. }
       eapply partial_injective_cons_reindexer with (r0:=[]);
         try eapply H3; eauto.
       simpl in *. lia.

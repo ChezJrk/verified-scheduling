@@ -363,7 +363,6 @@ Proof.
   rewrite repeat_length in *.
   repeat decomp_index.
   repeat rewrite <- map_cons in H.
-  About eq_partial_interpret_reindexer_truncr.
   erewrite eq_partial_interpret_reindexer_truncr in H; eauto; try lia.
   eexists. rewrite <- H.
   split. reflexivity.
@@ -1136,7 +1135,7 @@ Proof.
     + clear Heq. invs.
       eexists. split. eassumption.
       eapply subseteq_transitivity.
-      2: eassumption. About constant_partial_reindexer_subseteq.
+      2: eassumption.
       eapply constant_partial_reindexer_subseteq; eauto.
       lia.
 Qed.

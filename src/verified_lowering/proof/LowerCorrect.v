@@ -1496,7 +1496,6 @@ Proof.
             clear Heq. clear Heq0. clear Heq2. clear H3.
             decomp_well_formed_reindexer.
             erewrite result_has_shape_result_shape_Z in Hinj by eauto.
-            About eq_partial_interpret_reindexer_padl.
             erewrite eq_partial_interpret_reindexer_padl in H5,H4;
               try assumption; try apply Henv; try lia.
             2: { erewrite size_of_sizeof by eauto. simpl. lia. }
@@ -2868,7 +2867,6 @@ Proof.
             eapply lookup_Some_dom in H6. sets. apply Hrdx. }
        2: { simpl. rewrite <- gen_pad_cons.
             eapply well_formed_allocation_gen_pad.
-            Check well_formed_allocation_truncl.
             eapply well_formed_allocation_truncl
               with (x:=[]).
             eauto.
