@@ -38,7 +38,7 @@ Definition nondestructivity (st : stack) h p reindexer r v asn :=
                 a = 0%R).
 
 Definition well_formed_reindexer
-           (c : list (Zexpr * Zexpr) -> list (Zexpr * Zexpr))
+           (c : list (Zexpr * Z) -> list (Zexpr * Z))
            (v : valuation)
            (r : result) st h o a
   :=
@@ -77,47 +77,43 @@ Lemma nondestructivity_split :
 partial_injective
            (partial_interpret_reindexer reindexer
               (result_shape_Z
-                 (V (split_result (Z.to_nat (eval_Zexpr_Z_total $0 k)) l))) v)
+                 (V (split_result (Z.to_nat k) l))) v)
            (filter
               (fun x : list Z =>
                negb
                  (is_None
                     (result_lookup_Z_option x
-                       (V (split_result (Z.to_nat (eval_Zexpr_Z_total $0 k)) l)))))
+                       (V (split_result (Z.to_nat k) l)))))
               (mesh_grid
                  (result_shape_Z
-                    (V (split_result (Z.to_nat (eval_Zexpr_Z_total $0 k)) l))))) ->
-(forall l1 l2 : list (Zexpr * Zexpr),
+                    (V (split_result (Z.to_nat k) l))))) ->
+(forall l1 l2 : list (Zexpr * Z),
              eq_Z_tuple_index_list l1 l2 ->
              eq_Z_tuple_index_list (reindexer l1) (reindexer l2)) ->
 vars_of_reindexer (reindexer []) \subseteq dom v ->
-(forall (var : var) (k : Z) (l : list (Zexpr * Zexpr)),
+(forall (var : var) (k : Z) (l : list (Zexpr * Z)),
          ~ var \in vars_of_reindexer (reindexer []) ->
          map (subst_var_in_Z_tup var k) (reindexer l) =
          reindexer (map (subst_var_in_Z_tup var k) l)) ->
-(forall l : list (Zexpr * Zexpr),
+(forall l : list (Zexpr * Z),
              vars_of_reindexer (reindexer l) =
              vars_of_reindexer (reindexer []) \cup vars_of_reindexer l) ->
     nondestructivity
       st h p reindexer
-      (V (split_result (Z.to_nat (eval_Zexpr_Z_total $0 k)) l)) v asm ->
-    vars_of_Zexpr k = [] ->
-    (0 < eval_Zexpr_Z_total $0 k)%Z ->
-    (0 <= eval_Zexpr_Z_total $0 n)%Z ->
-    result_has_shape (V l)
-                     (Z.to_nat (eval_Zexpr_Z_total $0 n)
-                               :: map Z.to_nat (map (eval_Zexpr_Z_total $0) l0)) ->
+      (V (split_result (Z.to_nat k) l)) v asm ->
+    (0 < k)%Z ->
+    result_has_shape (V l) (n :: l0) ->
     h $? p = Some x ->
   nondestructivity st h p
-    (fun l2 : list (Zexpr * Zexpr) =>
+    (fun l2 : list (Zexpr * Z) =>
      reindexer
        match l2 with
        | [] => l2
-       | (v0, d) :: xs => ((v0 / k)%z, (d // k)%z) :: ((ZMod v0 k)%z, k) :: xs
+       | (v0, d) :: xs => ((v0 / | k |)%z, (d // k)%Z) :: ((v0 % | k |)%z, k) :: xs
        end) (V l) v asm.
 Proof.
   intros ? ? ? ? ? ? ? ? ? ? ? Henv Hinj HeqZlist Hvarsub Hmap Hvarsarg
-    Hassign Hk Hkpos Hnnonneg Hsh Hheap.
+    Hassign Hkpos Hsh Hheap.
   unfold nondestructivity. split; intros.
   2: { eapply lookup_Some_dom in Hheap. sets. }
   assert (Some x = Some arr). rewrite <- H,<-Hheap. auto. invert H3.
@@ -125,31 +121,26 @@ Proof.
   unfold tensor_to_array_delta in *.
   pose proof Hsh as Hshsplit.
   eapply result_has_shape_split_result
-    with (k:= Z.to_nat (eval_Zexpr_Z_total $0 k)) in Hshsplit.
+    with (k:= Z.to_nat k) in Hshsplit.
   erewrite eq_tensor_to_array_delta_by_indices_shuffle
     with (shuffle:=
             fun l =>
               match l with
-              | x::xs => (x/eval_Zexpr_Z_total $0 k)%Z
-                          ::(Zmod x (eval_Zexpr_Z_total $0 k))%Z::xs
+              | x::xs => (x/ k)%Z ::(Zmod x k)%Z::xs
               | _ => l
               end). eassumption.
   - intros. cases x. propositional.
     erewrite result_has_shape_result_shape_Z in H0 by eauto.
     repeat decomp_index.
-    rewrite <- (Z2Nat.id (eval_Zexpr_Z_total $0 k)) at 1 by lia. 
-    rewrite <- (Z2Nat.id (eval_Zexpr_Z_total $0 k)) at 2 by lia.
+    rewrite <- (Z2Nat.id k) at 1 by lia. 
+    rewrite <- (Z2Nat.id k) at 2 by lia.
     erewrite result_lookup_Z_option_split. reflexivity.
-    repeat decomp_index. eauto. lia. apply H0. lia.
-    rewrite Nat2Z.id by lia. eauto.
+    repeat decomp_index. eauto. lia. apply H0. lia. eauto.
   - intros. erewrite result_has_shape_result_shape_Z in * by eauto.
     erewrite result_has_shape_result_shape_Z in * by eauto.
     repeat decomp_index.
-    rewrite <- Z2Nat_div_distr by lia.
     erewrite <- eq_partial_interpret_reindexer_split;
       try apply Henv; try apply Hrdx; try lia; eauto.
-    eapply vars_of_Zexpr_empty_eq_zexpr_eval_Zexpr_Z_total;
-      eauto.
   - erewrite result_has_shape_result_shape_Z in * by eauto.
     erewrite result_has_shape_result_shape_Z in * by eauto.
     intros. repeat decomp_index.
@@ -157,73 +148,65 @@ Proof.
     repeat decomp_goal_index.
     split. split.
     eapply Z.div_pos. lia. lia.
-    rewrite <- Z2Nat_div_distr by lia.
-    rewrite Z2Nat.id.
-    2: { eapply div_nonneg. lia. lia. }
+    rewrite <- of_nat_div_distr.
+    rewrite Z2Nat.id by lia.
     eapply floor_lt_ceil_mono_l; lia.
     decomp_goal_index. split.
     rewrite Z2Nat.id by lia. eapply Z.mod_pos_bound. lia.
     eauto.
     rewrite <- H4.
     f_equal. f_equal.
-    rewrite <- (Z2Nat.id (eval_Zexpr_Z_total $0 k)) at 1 by lia.
-    rewrite <- (Z2Nat.id (eval_Zexpr_Z_total $0 k)) at 2 by lia.
+    rewrite <- (Z2Nat.id k) at 1 by lia.
+    rewrite <- (Z2Nat.id k) at 2 by lia.
     erewrite result_lookup_Z_option_split. reflexivity.
-    eauto. lia. apply H0. lia. rewrite Z2Nat.id. eauto. lia.
+    eauto. lia. apply H0. lia. eauto.
   - erewrite result_has_shape_result_shape_Z in * by eauto.
     erewrite result_has_shape_result_shape_Z in * by eauto.
     intros. repeat decomp_index.
-    eexists ((z*(eval_Zexpr_Z_total $0 k) + z0)%Z::x).
+    eexists ((z*k + z0)%Z::x).
     rewrite Z.div_add_l by lia.
     rewrite Z.div_small by lia. rewrite Z.add_0_r.
     pose proof Z.add_mul_mod_distr_r.
-    specialize H5 with (b:=1%Z) (c:= eval_Zexpr_Z_total $0 k).
+    specialize H5 with (b:=1%Z) (c:= k).
     rewrite Z.mul_1_l in *.
     rewrite H5.
     rewrite Z.mod_1_r. split. auto.
     eapply filter_In. split.
     repeat decomp_goal_index. split.
-    split. lia. rewrite Z2Nat.id.
-    2: { lia. }
-    eapply result_lookup_Z_option_split_true. eauto.
-    rewrite <- Z2Nat_div_distr in *.
-    2: { lia. }
-    2: { lia. }
+    split. lia.
+    eapply result_lookup_Z_option_split_true; eauto.
+    rewrite <- of_nat_div_distr in *.
     rewrite Z2Nat.id in H0.
-    2: { eapply ceil_div_nonneg. lia. lia. }
-    lia. lia. lia. lia. lia. lia. lia. 
+    lia. lia. lia. lia.
     all: eauto.
+    rewrite Nat2Z.id. eauto.
     rewrite <- H4.
     erewrite <- result_lookup_Z_option_split
-            with (k:=Z.to_nat (eval_Zexpr_Z_total $0 k)); eauto.
+            with (k:=Z.to_nat k); eauto.
     2: { lia. }
     3: lia.
-    3: { lia. }
     all: try lia.
-    2: { rewrite <- Z2Nat_div_distr in H0.
-         2: { lia. }
-         2: { lia. } 
+    2: { rewrite <- of_nat_div_distr in *.
          rewrite Z2Nat.id in * by lia.
          eapply result_lookup_Z_option_split_true. eauto.
-         lia. lia. lia. eauto. eauto. }
+         lia. lia. lia. eauto. rewrite Nat2Z.id. eauto. }
     rewrite Z2Nat.id by lia.
     rewrite Z.div_add_l by lia. rewrite Z.div_small by lia.
     rewrite Z.add_0_r.
     pose proof Z.add_mul_mod_distr_r.
-    specialize H7 with (b:=1%Z) (c:= eval_Zexpr_Z_total $0 k).
+    specialize H7 with (b:=1%Z) (c:= k).
     rewrite Z.mul_1_l in *.
     rewrite H7.
     rewrite Z.mod_1_r. reflexivity. lia. lia. lia.
   - eapply partial_injective_split. eauto. eauto. apply Henv.
-    eapply vars_of_Zexpr_empty_eq_zexpr_eval_Zexpr_Z_total; eauto.
     all: eauto.
   - eauto.
   - unfold injective.
     erewrite result_has_shape_result_shape_Z by eauto.
     propositional. repeat decomp_index.
     invert H5.
-    rewrite (Z.div_mod z (eval_Zexpr_Z_total $0 k)).
-    rewrite (Z.div_mod z0 (eval_Zexpr_Z_total $0 k)).
+    rewrite (Z.div_mod z k).
+    rewrite (Z.div_mod z0 k).
     rewrite H10. rewrite H11. reflexivity. lia. lia.
   - eapply no_dup_filter. eauto with reindexers.
   - eapply no_dup_filter. eauto with reindexers.
@@ -232,7 +215,7 @@ Qed.
 
 Lemma nondestructivity_array_add_shift_top_dim_reindexer :
   forall i lo hi l st h v x p r reindexer asm,
-    (eval_Zexpr_Z_total $0 lo < eval_Zexpr_Z_total $0 hi)%Z ->
+    (lo < hi)%Z ->
     ~ i \in dom v ->
     ~ contains_substring "?" i ->
     (forall var : var, contains_substring "?" var -> ~ var \in dom v) ->
@@ -242,23 +225,21 @@ Lemma nondestructivity_array_add_shift_top_dim_reindexer :
               (fun x : list Z =>
                negb (is_None (result_lookup_Z_option x (V (r :: l)))))
               (mesh_grid (result_shape_Z (V (r :: l))))) ->
-(forall l1 l2 : list (Zexpr * Zexpr),
+(forall l1 l2 : list (Zexpr * Z),
              eq_Z_tuple_index_list l1 l2 ->
              eq_Z_tuple_index_list (reindexer l1) (reindexer l2)) ->
 vars_of_reindexer (reindexer []) \subseteq dom v ->
-(forall (var : var) (k : Z) (l : list (Zexpr * Zexpr)),
+(forall (var : var) (k : Z) (l : list (Zexpr * Z)),
          ~ var \in vars_of_reindexer (reindexer []) ->
          map (subst_var_in_Z_tup var k) (reindexer l) =
          reindexer (map (subst_var_in_Z_tup var k) l)) ->
-(forall l : list (Zexpr * Zexpr),
+(forall l : list (Zexpr * Z),
              vars_of_reindexer (reindexer l) =
              vars_of_reindexer (reindexer []) \cup vars_of_reindexer l) ->
-    eq_zexpr lo (| eval_Zexpr_Z_total $0 lo |)%z ->
-    eq_zexpr hi (| eval_Zexpr_Z_total $0 hi |)%z ->
     result_has_shape (V (r :: l)) (result_shape_nat (V (r :: l))) ->
     well_formed_allocation reindexer (V (r :: l)) st h p v ->
     length l =
-      Z.to_nat (eval_Zexpr_Z_total $0 hi - (eval_Zexpr_Z_total $0 lo + 1)) ->
+      Z.to_nat (hi - (lo + 1)) ->
     nondestructivity st h p reindexer (V (r :: l)) v asm ->
     h $? p = Some x ->
   nondestructivity st
@@ -266,13 +247,13 @@ vars_of_reindexer (reindexer []) \subseteq dom v ->
      array_add x
        (tensor_to_array_delta
           (partial_interpret_reindexer
-             (fun l5 : list (Zexpr * Zexpr) =>
-              reindexer (((! i ! - lo)%z, (hi - lo)%z) :: l5)) 
-             (result_shape_Z r) (v $+ (i, eval_Zexpr_Z_total $0 lo))) r))) p
+             (fun l5 : list (Zexpr * Z) =>
+              reindexer (((! i ! - | lo |)%z, (hi - lo)%Z) :: l5)) 
+             (result_shape_Z r) (v $+ (i, lo))) r))) p
     (shift_top_dim_reindexer reindexer) (V l) v asm.
 Proof.
   intros ? ? ? ? ? ? ? ? ? ? ? ? Hlohi Hidom Hsubstring Henv
-    Hinj HeqZlist Hvarsub Hmap Hvarsarg Hlo Hhi Hsh Halloc Hlen Hassign
+    Hinj HeqZlist Hvarsub Hmap Hvarsarg Hsh Halloc Hlen Hassign
     Hlookup.
   unfold nondestructivity. split; intros.
   2: { rewrite dom_add in H1. sets. }
@@ -346,19 +327,16 @@ Proof.
        rewrite H4 in H8. rewrite H in H8. discriminate. }
 
   eapply Hassign; eauto.
-  erewrite <- tensor_to_array_delta_cons.
-  2: { eapply Hlo. }
-  2: { eapply Hhi. }
+  erewrite <- tensor_to_array_delta_cons with (hi := hi) (lo := lo).
   all: eauto.
-  2: { lia. }
-  2: { unfold not. intros. eapply shape_to_vars_contains_substring in H.
-       sets. }       
   rewrite dom_array_add. sets.
+  lia.
+  unfold not. intros. eapply shape_to_vars_contains_substring in H. sets.
 Qed.
 
 Lemma nondestructivity_cons_0 :
   forall reindexer i lo hi v st h p r l x asm,
-    (eval_Zexpr_Z_total $0 lo < eval_Zexpr_Z_total $0 hi)%Z ->
+    (lo < hi)%Z ->
     ~ i \in dom v ->
     ~ contains_substring "?" i ->
     (forall var : var, contains_substring "?" var -> ~ var \in dom v) ->
@@ -368,44 +346,40 @@ Lemma nondestructivity_cons_0 :
               (fun x : list Z =>
                negb (is_None (result_lookup_Z_option x (V (r :: l)))))
               (mesh_grid (result_shape_Z (V (r :: l))))) ->
-(forall l1 l2 : list (Zexpr * Zexpr),
+(forall l1 l2 : list (Zexpr * Z),
              eq_Z_tuple_index_list l1 l2 ->
              eq_Z_tuple_index_list (reindexer l1) (reindexer l2)) ->
 vars_of_reindexer (reindexer []) \subseteq dom v ->
-(forall (var : var) (k : Z) (l : list (Zexpr * Zexpr)),
+(forall (var : var) (k : Z) (l : list (Zexpr * Z)),
          ~ var \in vars_of_reindexer (reindexer []) ->
          map (subst_var_in_Z_tup var k) (reindexer l) =
          reindexer (map (subst_var_in_Z_tup var k) l)) ->
-(forall l : list (Zexpr * Zexpr),
+(forall l : list (Zexpr * Z),
              vars_of_reindexer (reindexer l) =
                vars_of_reindexer (reindexer []) \cup vars_of_reindexer l) ->
-    eq_zexpr lo (| eval_Zexpr_Z_total $0 lo |)%z ->
-    eq_zexpr hi (| eval_Zexpr_Z_total $0 hi |)%z ->
     result_has_shape (V (r :: l)) (result_shape_nat (V (r :: l))) ->
     h $? p = Some x ->
     length l =
-      Z.to_nat (eval_Zexpr_Z_total $0 hi - (eval_Zexpr_Z_total $0 lo + 1)) ->
+      Z.to_nat (hi - (lo + 1)) ->
     nondestructivity st h p reindexer (V (r :: l)) v asm ->
   nondestructivity st h p
-    (fun l3 : list (Zexpr * Zexpr) =>
-     reindexer (((! i ! - lo)%z, (hi - lo)%z) :: l3)) r
-    (v $+ (i, eval_Zexpr_Z_total $0 lo)) asm.
+    (fun l3 : list (Zexpr * Z) =>
+     reindexer (((! i ! - | lo |)%z, (hi - lo)%Z) :: l3)) r
+    (v $+ (i, lo)) asm.
 Proof.
   intros ? ? ? ? ? ? ? ? ? ? ? ? Hlohi Hidom Hsubstring
-    Henv Hinj HeqZlist Hvarsub Hmap Hvarsarg Hlo Hhi Hsh
+    Henv Hinj HeqZlist Hvarsub Hmap Hvarsarg Hsh
     Hheap Hlen Hassign.
   unfold nondestructivity. split; intros.
   2: { eapply lookup_Some_dom in Hheap. sets. }
   assert (Some arr = Some x). rewrite <-H,<-Hheap. auto. invert H3.
   eapply Hassign; eauto.
-  erewrite <- tensor_to_array_delta_cons.
-  2: { eapply Hlo. }
-  2: { eapply Hhi. }
+  erewrite <- tensor_to_array_delta_cons with (lo := lo) (hi := hi).
   all: eauto.
-  2: { lia. }
-  2: { unfold not. intros. apply Hsubstring.
-       eapply shape_to_vars_contains_substring; eauto. }
   rewrite dom_array_add. sets.
+  lia.
+  unfold not. intros. apply Hsubstring.
+  eapply shape_to_vars_contains_substring; eauto.
 Qed.
 
 Lemma nondestructivity_reduce :
@@ -461,21 +435,15 @@ Proof.
 Qed.
 
 Lemma nondestructivity_alloc_heap :
-  forall e1 esh1 st'0 h p v x l2 asm z0 zs nz z reindexer l1,
-  constant_nonneg_bounds e1 ->
-  size_of e1 (z::esh1) ->
+  forall e1 sz1 st'0 h p v x l2 asm z reindexer l1,
+  size_of e1 (z::sz1) ->
   (forall var : var, contains_substring "?" var -> ~ var \in dom v) ->
   nondestructivity st'0 h p reindexer l2 v asm ->
-  eval_Zexpr v z z0 ->
-  eval_Zexprlist v esh1 zs ->
-  eval_Zexpr v (flat_sizeof e1) nz ->
-  result_has_shape (V l1)
-                   (map Z.to_nat (map (eval_Zexpr_Z_total $0) (z :: esh1))) ->
-  nondestructivity st'0 (alloc_array_in_heap [Z.to_nat nz] h x) x
-                      (fun l : list (Zexpr * Zexpr) => l) (V l1) v Assign.
+  result_has_shape (V l1) (z :: sz1) ->
+  nondestructivity st'0 (alloc_array_in_heap [flat_sizeof e1] h x) x
+                      (fun l : list (Zexpr * Z) => l) (V l1) v Assign.
 Proof.
-  intros ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? Hconst Hsize Henv Hassign Hz Hzs
-         Hflat Hsh.
+  intros ? ? ? ? ? ? ? ? ? ? ? ? Hsize Henv Hassign Hsh.
   unfold nondestructivity in *. invs.
   split; intros.
   - unfold alloc_array_in_heap in *. rewrite lookup_add_eq in * by auto.
@@ -491,49 +459,28 @@ Proof.
     invert H4. rewrite add_0_r.
     2: { decomp_index. eauto. }
     2: { apply Henv. }
-    pose proof (lookup_alloc_array (Z.to_nat nz)
-                                        (flatten (result_shape_Z (V l1)) x1)).
+    pose proof (lookup_alloc_array (flat_sizeof e1) (flatten (result_shape_Z (V l1)) x1)).
     invert H1. 2: auto.
     eapply lookup_None_dom in H4. exfalso. apply H4.
     rewrite dom_alloc_array. erewrite <- In_iff_in.
     unfold flat_sizeof in *. erewrite size_of_sizeof in * by eauto.
-    simpl in Hflat. eapply eval_Zexpr_Z_eval_Zexpr in Hflat.
-    erewrite eval_Zexpr_Z_fold_left_ZTimes in Hflat; eauto. invert Hflat.
-    replace (fold_left Z.mul zs z0) with (fold_left Z.mul (z0::zs) 1%Z).
-    2: { simpl. f_equal. lia. }
-    rewrite Z2Nat.id. erewrite result_has_shape_result_shape_Z by eauto.
-    pose proof Hconst.
-    eapply constant_nonneg_bounds_size_of_no_vars in H1.
-    2: { eauto. }
-    2: { eapply fold_left_mul_nonneg. 2: lia.
-         eapply constant_nonneg_bounds_size_of_nonneg. eauto.
-         eauto. econstructor; eauto. }
-    eapply forall_no_vars_eval_Zexpr_Z_total with (v:=v) in H1.
-    invert H1. eq_eval_Z. eq_eval_Zlist. repeat decomp_index.
+    erewrite result_has_shape_result_shape_Z by eauto.
+    repeat decomp_index.
     erewrite filter_until_0_id.
     2: { erewrite result_has_shape_result_shape_Z in H1 by eauto.
          decomp_index.
-         pose proof Hconst.
-         eapply constant_nonneg_bounds_size_of_nonneg in H5; eauto.
-         invert H5.
-         rewrite Z2Nat.id in * by lia.
-         rewrite Z2Natid_list in H1; eauto.
-         eapply mesh_grid_shape_pos in H1. rewrite map_cons.
-         eapply Forall_map. eapply Forall_impl.
-         2: apply H1. simpl. lia. }
-    rewrite <- map_cons.
-    rewrite Z2Natid_list.
-    2: { pose proof Hconst.
-         eapply constant_nonneg_bounds_size_of_nonneg in H5; eauto.
-         eapply forall_no_vars_eval_Zexpr_Z_total with (v:=v).
-         eapply constant_nonneg_bounds_size_of_no_vars. eauto. eauto. }
+         eapply mesh_grid_shape_pos in H1.
+         eapply Forall_impl. 2: apply Forall_map; eassumption.
+         simpl. lia. }
+    rewrite Z_of_nat_fold_left_mul.
+    replace (fold_left Z.mul (map Z.of_nat sz1) (Z.of_nat z)) with
+      (fold_left Z.mul (map Z.of_nat (z :: sz1)) 1%Z).
+    2: { simpl. f_equal. lia. }
     eapply in_mesh_grid_flatten_in_range.
-    eapply constant_nonneg_bounds_size_of_nonneg. eauto. eauto.
-    eapply forall_no_vars_eval_Zexpr_Z_total with (v:=v).
-    eapply constant_nonneg_bounds_size_of_no_vars. eapply Hconst. eauto.
+    apply Forall_map. apply Forall_forall. lia.
     erewrite result_has_shape_result_shape_Z in H1 by eauto.
-    repeat decomp_index. rewrite mesh_grid_map_Nat2Z_id in *.
-    simpl map. decomp_goal_index. propositional. lia.
+    repeat decomp_index.
+    simpl map. decomp_goal_index. propositional.
   - rewrite dom_alloc_array_in_heap in *. sets. inversion 1.
 Qed.
 
@@ -546,70 +493,52 @@ partial_injective
               (fun x : list Z =>
                negb (is_None (result_lookup_Z_option x (V (l1 ++ l2)))))
               (mesh_grid (result_shape_Z (V (l1 ++ l2))))) ->
-(forall l1 l2 : list (Zexpr * Zexpr),
+(forall l1 l2 : list (Zexpr * Z),
              eq_Z_tuple_index_list l1 l2 ->
              eq_Z_tuple_index_list (reindexer l1) (reindexer l2)) ->
 vars_of_reindexer (reindexer []) \subseteq dom v ->
-(forall (var : var) (k : Z) (l : list (Zexpr * Zexpr)),
+(forall (var : var) (k : Z) (l : list (Zexpr * Z)),
          ~ var \in vars_of_reindexer (reindexer []) ->
          map (subst_var_in_Z_tup var k) (reindexer l) =
          reindexer (map (subst_var_in_Z_tup var k) l)) ->
-(forall l : list (Zexpr * Zexpr),
+(forall l : list (Zexpr * Z),
              vars_of_reindexer (reindexer l) =
              vars_of_reindexer (reindexer []) \cup vars_of_reindexer l) ->
 nondestructivity st h p reindexer (V (l1 ++ l2)) v asm ->
 h $? p = Some x ->
 size_of e1 (dim1 :: rest1) ->
 size_of e2 (dim2 :: rest2) ->
-result_has_shape (V l2)
-           (Z.to_nat (eval_Zexpr_Z_total $0 dim2)
-            :: map Z.to_nat
-                 (map
-                    (eval_Zexpr_Z_total $0) rest1)) ->
-result_has_shape (V l1)
-           (Z.to_nat (eval_Zexpr_Z_total $0 dim1)
-            :: map Z.to_nat
-                 (map
-                    (eval_Zexpr_Z_total $0) rest1)) ->
-result_has_shape (V (l1 ++ l2))
-         (Z.to_nat (eval_Zexpr_Z_total $0 dim1) +
-          Z.to_nat (eval_Zexpr_Z_total $0 dim2)
-          :: map Z.to_nat
-               (map
-                  (eval_Zexpr_Z_total $0) rest1)) ->
-(0 <= eval_Zexpr_Z_total $0 dim1)%Z ->
-(0 <= eval_Zexpr_Z_total $0 dim2)%Z ->
-eq_zexpr dim1 (| eval_Zexpr_Z_total $0 dim1 |)%z ->
-eq_zexpr dim2 (| eval_Zexpr_Z_total $0 dim2 |)%z ->
+result_has_shape (V l2) (dim2 :: rest1) ->
+result_has_shape (V l1) (dim1 :: rest1) ->
+result_has_shape (V (l1 ++ l2)) (dim1 + dim2 :: rest1) ->
   nondestructivity st
     (h $+ (p,
      array_add x
        (tensor_to_array_delta
           (partial_interpret_reindexer
-             (fun l6 : list (Zexpr * Zexpr) =>
+             (fun l6 : list (Zexpr * Z) =>
               reindexer
                 match l6 with
                 | [] => l6
-                | (v0, d) :: xs => (v0, (d + dim2)%z) :: xs
+                | (v0, d) :: xs => (v0, (d + Z.of_nat dim2)%Z) :: xs
                 end) (result_shape_Z (V l1)) v) (V l1)))) p
-    (fun l6 : list (Zexpr * Zexpr) =>
+    (fun l6 : list (Zexpr * Z) =>
      reindexer
        match l6 with
        | [] => l6
        | (v0, d) :: xs =>
            ((v0 + match sizeof e1 with
                   | [] => | 0 |
-                  | n :: _ => n
+                  | n :: _ => | Z.of_nat n |
                   end)%z,
            (d + match sizeof e1 with
-                | [] => | 0 |
-                | n :: _ => n
-                end)%z) :: xs
+                | [] => 0
+                | n :: _ => Z.of_nat n
+                end)%Z) :: xs
        end) (V l2) v asm.
 Proof.
   intros ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? Henv Hinj HeqZlist Hvarsub Hmap
-    Hvarsarg Hassign Hheap Hsize1 Hsize2 Hsh2 Hsh1 Hsh Hdim1nonneg
-    Hdim2nonneg Heqdim1 Heqdim2.
+    Hvarsarg Hassign Hheap Hsize1 Hsize2 Hsh2 Hsh1 Hsh.
   unfold nondestructivity in *. invs.
   split; intros.
   - rewrite lookup_add_eq in * by auto. invert H1.
@@ -623,14 +552,14 @@ Proof.
          2: { eauto. }
          2: { erewrite result_has_shape_result_shape_Z by eauto.
               eapply partial_injective_concat_r. eauto.
+              cbn [eval_Zexpr_Z_total eval_Zexpr_Z] in *. rewrite Nat2Z.id in *.
               eauto. eauto. apply Henv.
-              all: eauto. }
+              all: eauto.
+              cbn [eval_Zexpr_Z_total eval_Zexpr_Z] in *. lia. }
          2: { erewrite result_has_shape_result_shape_Z by eauto.
               eapply partial_injective_concat_l.
               eauto. eauto. eauto. apply Henv.
-              all: eauto.
-              rewrite Z2Nat.id by lia.
-              eauto. }
+              all: eauto. }
          rewrite filter_idempotent in *.
          rewrite dom_empty in *. rewrite cup_empty_r in *.
          erewrite result_has_shape_result_shape_Z in * by eauto.
@@ -642,10 +571,11 @@ Proof.
          repeat decomp_index.
          erewrite eq_partial_interpret_reindexer_padr in H1, H4.
          erewrite eq_partial_interpret_reindexer_padl in H4.
-         rewrite (Nat.add_comm (Z.to_nat (eval_Zexpr_Z_total $0 dim2)))
+         rewrite (Nat.add_comm dim2)
            in H1,H4.
          (* pose proof H6 as Hinj; clear H6.
          erewrite result_has_shape_result_shape_Z in Hinj by eauto. *)
+         cbn [eval_Zexpr_Z_total eval_Zexpr_Z] in H4. rewrite Nat2Z.id in H4.
          pose proof H4.
          eapply Hinj in H4.
          invert H4. invert H11. lia.
@@ -653,7 +583,6 @@ Proof.
          rewrite H1 in H2. discriminate.
          eapply filter_In. split; eauto.
          repeat decomp_goal_index. split. lia. eauto. rewrite <- H7.
-         rewrite <- (Z2Nat.id (eval_Zexpr_Z_total $0 dim1)) by lia.
          erewrite <- result_lookup_Z_truncl. 2: lia.
          rewrite truncl_list_skipn. rewrite skipn_app.
          rewrite skipn_all2.
@@ -680,8 +609,10 @@ Proof.
     2: { erewrite result_has_shape_result_shape_Z by eauto.
          eapply partial_injective_concat_r with (l1:=l1).
          erewrite result_has_shape_result_shape_Z by eauto. eauto.
+         cbn [eval_Zexpr_Z_total eval_Zexpr_Z] in *. rewrite Nat2Z.id in *.
          eauto. eauto. apply Henv.
-         all: eauto. }
+         all: eauto.
+         cbn [eval_Zexpr_Z_total eval_Zexpr_Z]. lia. }
     2: { invs.
          erewrite result_has_shape_result_shape_Z in * by eauto.
          eauto. }
@@ -694,18 +625,17 @@ Proof.
     repeat decomp_index.
     erewrite eq_partial_interpret_reindexer_padl in H2; eauto;
       try apply Henv; try apply Hrdx; try lia.
+    cbn [eval_Zexpr_Z_total eval_Zexpr_Z] in H2. rewrite Nat2Z.id in H2.
     eexists. rewrite H2. split. auto. eapply filter_In.
     split. repeat decomp_goal_index.
     split. lia. eauto. rewrite <- H5.
-    rewrite <- (Z2Nat.id (eval_Zexpr_Z_total $0 dim1)) by lia.
     erewrite <- result_lookup_Z_truncl.
     rewrite truncl_list_skipn. rewrite skipn_app.
     rewrite skipn_all2.
     2: { erewrite result_has_shape_length by eauto. lia. }
     erewrite result_has_shape_length by eauto. rewrite sub_diag.
     simpl. reflexivity.
-    lia. invs.
-    erewrite result_has_shape_result_shape_Z in * by eauto. eauto.
+    lia. erewrite result_has_shape_result_shape_Z in * by eauto. eauto.
   - rewrite dom_add in *. sets.
 Qed.
 
@@ -718,56 +648,44 @@ partial_injective
               (fun x : list Z =>
                negb (is_None (result_lookup_Z_option x (V (l1 ++ l2)))))
               (mesh_grid (result_shape_Z (V (l1 ++ l2))))) ->
-(forall l1 l2 : list (Zexpr * Zexpr),
+(forall l1 l2 : list (Zexpr * Z),
              eq_Z_tuple_index_list l1 l2 ->
              eq_Z_tuple_index_list (reindexer l1) (reindexer l2)) ->
 vars_of_reindexer (reindexer []) \subseteq dom v ->
-(forall (var : var) (k : Z) (l : list (Zexpr * Zexpr)),
+(forall (var : var) (k : Z) (l : list (Zexpr * Z)),
          ~ var \in vars_of_reindexer (reindexer []) ->
          map (subst_var_in_Z_tup var k) (reindexer l) =
          reindexer (map (subst_var_in_Z_tup var k) l)) ->
-(forall l : list (Zexpr * Zexpr),
+(forall l : list (Zexpr * Z),
              vars_of_reindexer (reindexer l) =
              vars_of_reindexer (reindexer []) \cup vars_of_reindexer l) ->
 nondestructivity st h p reindexer (V (l1 ++ l2)) v asm ->
 h $? p = Some x ->
-result_has_shape (V l2)
-           (Z.to_nat (eval_Zexpr_Z_total $0 dim2)
-            :: map Z.to_nat
-                 (map
-                    (eval_Zexpr_Z_total $0) rest1)) ->
-result_has_shape (V l1)
-           (Z.to_nat (eval_Zexpr_Z_total $0 dim1)
-            :: map Z.to_nat
-                 (map
-                    (eval_Zexpr_Z_total $0) rest1)) ->
-(0 <= eval_Zexpr_Z_total $0 dim1)%Z ->
-(0 <= eval_Zexpr_Z_total $0 dim2)%Z ->
-eq_zexpr dim1 (| eval_Zexpr_Z_total $0 dim1 |)%z ->
-eq_zexpr dim2 (| eval_Zexpr_Z_total $0 dim2 |)%z ->
+result_has_shape (V l2) (dim2 :: rest1) ->
+result_has_shape (V l1) (Z.to_nat dim1 :: rest1) ->
+(0 <= dim1)%Z ->
   nondestructivity st
     (h $+ (p,
      array_add x
        (tensor_to_array_delta
           (partial_interpret_reindexer
-             (fun l6 : list (Zexpr * Zexpr) =>
+             (fun l6 : list (Zexpr * Z) =>
               reindexer
                 match l6 with
                 | [] => l6
-                | (v0, d) :: xs => (v0, (d + dim2)%z) :: xs
+                | (v0, d) :: xs => (v0, (d + Z.of_nat dim2)%Z) :: xs
                 end) (result_shape_Z (V l1)) v) (V l1)))) p
-    (fun l6 : list (Zexpr * Zexpr) =>
+    (fun l6 : list (Zexpr * Z) =>
      reindexer
        match l6 with
        | [] => l6
        | (v0, d) :: xs =>
-           ((v0 + dim1)%z,
-           (d + dim1)%z) :: xs
+           ((v0 + | dim1 |)%z,
+           (d + dim1)%Z) :: xs
        end) (V l2) v asm.
 Proof.
   intros ? ? ? ? ? ? ? ? ? ? ? ? Henv Hinj HeqZlist Hvarsub Hmap
-    Hvarsarg Hnondstr Hheap Hsh2 Hsh1 Hdim1nonneg
-    Hdim2nonneg Heqdim1 Heqdim2.
+    Hvarsarg Hnondstr Hheap Hsh2 Hsh1 Hdim1nonneg.
   unfold nondestructivity in *. invs.
   split; intros.
   - rewrite lookup_add_eq in * by auto. invert H1.
@@ -786,9 +704,7 @@ Proof.
          2: { erewrite result_has_shape_result_shape_Z by eauto.
               eapply partial_injective_concat_l.
               eauto. eauto. eauto. apply Henv.
-              all: eauto.
-              rewrite Z2Nat.id by lia.
-              eauto. }
+              all: eauto. }
          rewrite filter_idempotent in *.
          rewrite dom_empty in *. rewrite cup_empty_r in *.
          erewrite result_has_shape_result_shape_Z in * by eauto.
@@ -800,7 +716,7 @@ Proof.
          repeat decomp_index.
          erewrite eq_partial_interpret_reindexer_padr in H1, H4.
          erewrite eq_partial_interpret_reindexer_padl in H4.
-         rewrite (Nat.add_comm (Z.to_nat (eval_Zexpr_Z_total $0 dim2)))
+         rewrite (Nat.add_comm dim2)
            in H1,H4.
          (* pose proof H6 as Hinj; clear H6.
           by eauto. *)
@@ -813,7 +729,7 @@ Proof.
          rewrite H1 in H2. discriminate.
          eapply filter_In. split; eauto.
          repeat decomp_goal_index. split. lia. eauto. rewrite <- H7.
-         rewrite <- (Z2Nat.id (eval_Zexpr_Z_total $0 dim1)) by lia.
+         rewrite <- (Z2Nat.id dim1) by lia.
          erewrite <- result_lookup_Z_truncl. 2: lia.
          rewrite truncl_list_skipn. rewrite skipn_app.
          rewrite skipn_all2.
@@ -859,7 +775,7 @@ Proof.
     rewrite H2. split. auto. eapply filter_In.
     split. repeat decomp_goal_index.
     split. lia. eauto. rewrite <- H5.
-    rewrite <- (Z2Nat.id (eval_Zexpr_Z_total $0 dim1)) by lia.
+    rewrite <- (Z2Nat.id dim1) by lia.
     erewrite <- result_lookup_Z_truncl.
     rewrite truncl_list_skipn. rewrite skipn_app.
     rewrite skipn_all2.
@@ -878,44 +794,31 @@ partial_injective
               (fun x : list Z =>
                negb (is_None (result_lookup_Z_option x (V (l1 ++ l2)))))
               (mesh_grid (result_shape_Z (V (l1 ++ l2))))) ->
-(forall l1 l2 : list (Zexpr * Zexpr),
+(forall l1 l2 : list (Zexpr * Z),
              eq_Z_tuple_index_list l1 l2 ->
              eq_Z_tuple_index_list (reindexer l1) (reindexer l2)) ->
 vars_of_reindexer (reindexer []) \subseteq dom v ->
-(forall (var : var) (k : Z) (l : list (Zexpr * Zexpr)),
+(forall (var : var) (k : Z) (l : list (Zexpr * Z)),
          ~ var \in vars_of_reindexer (reindexer []) ->
          map (subst_var_in_Z_tup var k) (reindexer l) =
          reindexer (map (subst_var_in_Z_tup var k) l)) ->
-(forall l : list (Zexpr * Zexpr),
+(forall l : list (Zexpr * Z),
              vars_of_reindexer (reindexer l) =
              vars_of_reindexer (reindexer []) \cup vars_of_reindexer l) ->
 nondestructivity st h p reindexer (V (l1 ++ l2)) v asm ->
 h $? p = Some x ->
-result_has_shape (V l2)
-           (Z.to_nat (eval_Zexpr_Z_total $0 dim2)
-            :: map Z.to_nat
-                 (map
-                    (eval_Zexpr_Z_total $0) rest1)) ->
-result_has_shape (V l1)
-           (Z.to_nat (eval_Zexpr_Z_total $0 dim1)
-            :: map Z.to_nat
-                 (map
-                    (eval_Zexpr_Z_total $0) rest1)) ->
-(0 <= eval_Zexpr_Z_total $0 dim1)%Z ->
-(0 <= eval_Zexpr_Z_total $0 dim2)%Z ->
-eq_zexpr dim1 (| eval_Zexpr_Z_total $0 dim1 |)%z ->
-eq_zexpr dim2 (| eval_Zexpr_Z_total $0 dim2 |)%z ->
+result_has_shape (V l2) (dim2 :: rest1) ->
+result_has_shape (V l1) (dim1 :: rest1) ->
    nondestructivity st h p
-    (fun l0 : list (Zexpr * Zexpr) =>
+    (fun l0 : list (Zexpr * Z) =>
      reindexer
        match l0 with
        | [] => l0
-       | (v0, d) :: xs => (v0, (d + dim2)%z) :: xs
+       | (v0, d) :: xs => (v0, (d + Z.of_nat dim2)%Z) :: xs
        end) (V l1) v asm.
 Proof.
   intros ? ? ? ? ? ? ? ? ? ? ? ? Henv Hinj HeqZlist Hvarsub Hmap
-    Hvarsarg Hassign Hheap Hsh2 Hsh1 Hdim1nonneg
-    Hdim2nonneg Heqdim1 Heqdim2.
+    Hvarsarg Hassign Hheap Hsh2 Hsh1.
   unfold nondestructivity in *. invs.
   split; intros.
   - eapply H; eauto.
@@ -925,10 +828,7 @@ Proof.
     erewrite partial_dom_fold_left_array_add.
     erewrite partial_dom_fold_left_array_add in H4.
     2: { erewrite result_has_shape_result_shape_Z by eauto.
-         eapply partial_injective_concat_l; try apply Hrdx; eauto.
-         rewrite Z2Nat.id by lia.
-         eapply vars_of_Zexpr_empty_eq_zexpr_eval_Zexpr_Z_total.
-         eapply Heqdim2. }
+         eapply partial_injective_concat_l; try apply Hrdx; eauto. }
     2: { eauto. }
     rewrite @filter_idempotent in *. rewrite dom_empty in *.
     rewrite cup_empty_r in *.
@@ -941,7 +841,6 @@ Proof.
     2: { apply Hsh2. }
     2: { apply Henv. }
     all: eauto.
-    2: { rewrite Z2Nat.id by lia. eauto. }
     erewrite result_has_shape_result_shape_Z.
     2: { eapply result_has_shape_concat. eauto. eauto. }
     eexists x1.
@@ -968,50 +867,38 @@ Lemma nondestructivity_transpose :
            (partial_interpret_reindexer reindexer
               (result_shape_Z
                  (transpose_result l
-                    (Z.to_nat (eval_Zexpr_Z_total $0 m0)
-                     :: Z.to_nat (eval_Zexpr_Z_total $0 n0)
-                        :: map Z.to_nat (map (eval_Zexpr_Z_total $0) l0)))) v)
+                    (m0 :: n0 :: l0))) v)
            (filter
               (fun x : list Z =>
                negb
                  (is_None
                     (result_lookup_Z_option x
                        (transpose_result l
-                          (Z.to_nat (eval_Zexpr_Z_total $0 m0)
-                           :: Z.to_nat (eval_Zexpr_Z_total $0 n0)
-                              :: map Z.to_nat (map (eval_Zexpr_Z_total $0) l0))))))
+                          (m0 :: n0 :: l0)))))
               (mesh_grid
                  (result_shape_Z
                     (transpose_result l
-                       (Z.to_nat (eval_Zexpr_Z_total $0 m0)
-                        :: Z.to_nat (eval_Zexpr_Z_total $0 n0)
-                           :: map Z.to_nat (map (eval_Zexpr_Z_total $0) l0)))))) ->
-         (forall l1 l2 : list (Zexpr * Zexpr),
+                       (m0 :: n0 :: l0))))) ->
+         (forall l1 l2 : list (Zexpr * Z),
           eq_Z_tuple_index_list l1 l2 ->
           eq_Z_tuple_index_list (reindexer l1) (reindexer l2)) ->
          vars_of_reindexer (reindexer []) \subseteq dom v ->
-         (forall (var : var) (k : Z) (l : list (Zexpr * Zexpr)),
+         (forall (var : var) (k : Z) (l : list (Zexpr * Z)),
           ~ var \in vars_of_reindexer (reindexer []) ->
           map (subst_var_in_Z_tup var k) (reindexer l) =
           reindexer (map (subst_var_in_Z_tup var k) l)) ->
-         (forall l : list (Zexpr * Zexpr),
+         (forall l : list (Zexpr * Z),
           vars_of_reindexer (reindexer l) =
           vars_of_reindexer (reindexer []) \cup vars_of_reindexer l) ->
 
     nondestructivity st h p reindexer
                         (transpose_result l
-                                          (Z.to_nat (eval_Zexpr_Z_total $0 m0)
-                                                    :: Z.to_nat (eval_Zexpr_Z_total $0 n0)
-                                                    :: map Z.to_nat (map (eval_Zexpr_Z_total $0) l0))) v asm ->
+                                          (m0 :: n0 :: l0)) v asm ->
     h $? p = Some a ->
     result_has_shape (V l)
-                     (Z.to_nat (eval_Zexpr_Z_total $0 n0)
-                               :: Z.to_nat (eval_Zexpr_Z_total $0 m0)
-                               :: map Z.to_nat (map (eval_Zexpr_Z_total $0) l0)) ->
-    vars_of_Zexpr n0 = [] ->
-    vars_of_Zexpr m0 = [] ->
+                     (n0 :: m0 :: l0) ->
     nondestructivity st h p
-                        (fun l4 : list (Zexpr * Zexpr) =>
+                        (fun l4 : list (Zexpr * Z) =>
                            reindexer
                              match l4 with
                              | [] => l4
@@ -1020,7 +907,7 @@ Lemma nondestructivity_transpose :
                              end) (V l) v asm.
 Proof.
   intros ? ? ? ? ? ? ? ? ? ? ? Henv Hinj HeqZZlist
-    Hvarsub Hmap Hvarsarg Hassign Hheap Hsh Hvarn0 Hvarm0.
+    Hvarsub Hmap Hvarsarg Hassign Hheap Hsh.
   unfold nondestructivity in *. invs.
   split; intros.
   - eapply H; eauto. unfold tensor_to_array_delta in *.
@@ -1033,7 +920,6 @@ Proof.
       erewrite result_has_shape_result_shape_Z in H5.
       2: { eapply result_has_shape_transpose_result. simpl in Hsh. eauto. }
       repeat decomp_index.
-      rewrite mesh_grid_map_Nat2Z_id in *.
       erewrite result_lookup_Z_option_transpose.
       reflexivity. lia. lia. eauto.
     + intros.
@@ -1086,30 +972,27 @@ Lemma nondestructivity_flatten :
               (fun x : list Z =>
                negb (is_None (result_lookup_Z_option x (V (flatten_result l)))))
               (mesh_grid (result_shape_Z (V (flatten_result l))))) ->
-(forall l1 l2 : list (Zexpr * Zexpr),
+(forall l1 l2 : list (Zexpr * Z),
              eq_Z_tuple_index_list l1 l2 ->
              eq_Z_tuple_index_list (reindexer l1) (reindexer l2)) ->
 vars_of_reindexer (reindexer []) \subseteq dom v ->
-(forall (var : var) (k : Z) (l : list (Zexpr * Zexpr)),
+(forall (var : var) (k : Z) (l : list (Zexpr * Z)),
          ~ var \in vars_of_reindexer (reindexer []) ->
          map (subst_var_in_Z_tup var k) (reindexer l) =
          reindexer (map (subst_var_in_Z_tup var k) l)) ->
-(forall l : list (Zexpr * Zexpr),
+(forall l : list (Zexpr * Z),
              vars_of_reindexer (reindexer l) =
              vars_of_reindexer (reindexer []) \cup vars_of_reindexer l) ->
-    result_has_shape (V l)
-                     (Z.to_nat (eval_Zexpr_Z_total $0 n)
-                               :: Z.to_nat (eval_Zexpr_Z_total $0 m)
-                               :: map Z.to_nat (map (eval_Zexpr_Z_total $0) l0)) ->
+    result_has_shape (V l) (n :: m :: l0) ->
     h $? p = Some a ->
     nondestructivity st h p reindexer (V (flatten_result l)) v asm ->
     nondestructivity st h p
-                        (fun l5 : list (Zexpr * Zexpr) =>
+                        (fun l5 : list (Zexpr * Z) =>
                            reindexer
                              match l5 with
                              | [] => l5
                              | [(v0, d0)] => l5
-                             | (v0, d0) :: (vi, di) :: xs => ((v0 * di + vi)%z, (d0 * di)%z) :: xs
+                             | (v0, d0) :: (vi, di) :: xs => ((v0 * | di | + vi)%z, (d0 * di)%Z) :: xs
                              end) (V l) v asm.
 Proof.
   intros ? ? ? ? ? ? ? ? ? ? ? Henv Hinj HeqZlist
@@ -1122,8 +1005,7 @@ Proof.
                         match l with
                         | x::y::xs =>
                             (x*(Z.of_nat
-                                  (Z.to_nat
-                                     (eval_Zexpr_Z_total $0 m))) + y)%Z::xs
+                                  m) + y)%Z::xs
                         | _ => l
                         end). eassumption.
     + intros. erewrite result_has_shape_result_shape_Z in H5 by eauto.
@@ -1150,26 +1032,25 @@ Proof.
       2: { eapply result_has_shape_flatten. eauto. }
       repeat decomp_index.
       pose proof (Z_div_mod 
-                    z (Z.of_nat (Z.to_nat (eval_Zexpr_Z_total $0 m)))).
-      assert (Z.of_nat (Z.to_nat (eval_Zexpr_Z_total $0 m)) > 0)%Z by lia.
+                    z (Z.of_nat m)).
+      assert (Z.of_nat m > 0)%Z by lia.
       propositional.
-      cases (Z.div_eucl z (Z.of_nat (Z.to_nat (eval_Zexpr_Z_total $0 m)))).
+      cases (Z.div_eucl z (Z.of_nat m)).
       invert H2. eexists (z0::z1::x0). rewrite Z.mul_comm.
       split. auto. erewrite result_has_shape_result_shape_Z by eauto.
       eapply filter_In. propositional.
       repeat decomp_goal_index. propositional. 
-      assert (-1 * Z.of_nat (Z.to_nat (eval_Zexpr_Z_total $0 m)) <
-                z0 * Z.of_nat (Z.to_nat (eval_Zexpr_Z_total $0 m)))%Z
+      assert (-1 * Z.of_nat m <
+                z0 * Z.of_nat m)%Z
         by lia.
       eapply Zorder.Zmult_lt_reg_r in H11.
       lia. lia.
       rewrite Nat2Z.inj_mul in H10.
       rewrite
-        (Z.mul_comm (Z.of_nat (Z.to_nat (eval_Zexpr_Z_total $0 n)))) in H10.
+        (Z.mul_comm (Z.of_nat n)) in H10.
       eapply div_eucl_bound in H10.
       lia.
-      assert (-1 * Z.of_nat (Z.to_nat (eval_Zexpr_Z_total $0 m)) <
-                z0 * Z.of_nat (Z.to_nat (eval_Zexpr_Z_total $0 m)))%Z
+      assert (-1 * Z.of_nat m < z0 * Z.of_nat m)%Z
         by lia.
       eapply Zorder.Zmult_lt_reg_r in H11.
       lia. lia.
@@ -1178,18 +1059,16 @@ Proof.
       rewrite <- H7.
       erewrite <- result_lookup_Z_option_flatten.
       rewrite Z.mul_comm. reflexivity.
-      assert (-1 * Z.of_nat (Z.to_nat (eval_Zexpr_Z_total $0 m)) <
-                z0 * Z.of_nat (Z.to_nat (eval_Zexpr_Z_total $0 m)))%Z
+      assert (-1 * Z.of_nat m < z0 * Z.of_nat m)%Z
         by lia.
       eapply Zorder.Zmult_lt_reg_r in H11.
       lia. lia. 
       rewrite Nat2Z.inj_mul in H10.
       rewrite
-        (Z.mul_comm (Z.of_nat (Z.to_nat (eval_Zexpr_Z_total $0 n)))) in H10.
+        (Z.mul_comm (Z.of_nat n)) in H10.
       eapply div_eucl_bound in H10.
       apply H10.
-      assert (-1 * Z.of_nat (Z.to_nat (eval_Zexpr_Z_total $0 m)) <
-                z0 * Z.of_nat (Z.to_nat (eval_Zexpr_Z_total $0 m)))%Z
+      assert (-1 * Z.of_nat m < z0 * Z.of_nat m)%Z
         by lia.
       eapply Zorder.Zmult_lt_reg_r in H11.
       lia. lia.
@@ -1273,11 +1152,10 @@ partial_injective
               (result_shape_Z
                  (V
                     (rev
-                       (truncl_list (Z.to_nat (eval_Zexpr_Z_total $0 k))
+                       (truncl_list k
                           (repeat
-                             (gen_pad
-                                (map Z.to_nat (map (eval_Zexpr_Z_total $0) l0)))
-                             (Z.to_nat (eval_Zexpr_Z_total $0 k)) ++ 
+                             (gen_pad l0)
+                             k ++ 
                            rev x))))) v)
            (filter
               (fun x0 : list Z =>
@@ -1286,61 +1164,53 @@ partial_injective
                     (result_lookup_Z_option x0
                        (V
                           (rev
-                             (truncl_list (Z.to_nat (eval_Zexpr_Z_total $0 k))
+                             (truncl_list k
                                 (repeat
-                                   (gen_pad
-                                      (map Z.to_nat (map (eval_Zexpr_Z_total $0) l0)))
-                                   (Z.to_nat (eval_Zexpr_Z_total $0 k)) ++ 
+                                   (gen_pad l0)
+                                   k ++ 
                                  rev x)))))))
               (mesh_grid
                  (result_shape_Z
                     (V
                        (rev
-                          (truncl_list (Z.to_nat (eval_Zexpr_Z_total $0 k))
+                          (truncl_list k
                              (repeat
-                                (gen_pad
-                                   (map Z.to_nat (map (eval_Zexpr_Z_total $0) l0)))
-                                (Z.to_nat (eval_Zexpr_Z_total $0 k)) ++ 
+                                (gen_pad l0)
+                                k ++ 
                               rev x))))))) ->
-(forall l1 l2 : list (Zexpr * Zexpr),
+(forall l1 l2 : list (Zexpr * Z),
              eq_Z_tuple_index_list l1 l2 ->
              eq_Z_tuple_index_list (reindexer l1) (reindexer l2)) ->
  vars_of_reindexer (reindexer []) \subseteq dom v ->
-(forall (var : var) (k : Z) (l : list (Zexpr * Zexpr)),
+(forall (var : var) (k : Z) (l : list (Zexpr * Z)),
          ~ var \in vars_of_reindexer (reindexer []) ->
          map (subst_var_in_Z_tup var k) (reindexer l) =
          reindexer (map (subst_var_in_Z_tup var k) l)) ->
-(forall l : list (Zexpr * Zexpr),
+(forall l : list (Zexpr * Z),
              vars_of_reindexer (reindexer l) =
              vars_of_reindexer (reindexer []) \cup vars_of_reindexer l) ->
     result_has_shape
           (V
              (x ++
-              repeat (gen_pad (map Z.to_nat (map (eval_Zexpr_Z_total $0) l0)))
-                (Z.to_nat (eval_Zexpr_Z_total $0 k))))
-          (Z.to_nat (eval_Zexpr_Z_total $0 m)
-           :: map Z.to_nat (map (eval_Zexpr_Z_total $0) l0)) ->
-    vars_of_Zexpr k = [] ->
-    (0 <= eval_Zexpr_Z_total $0 k)%Z ->
-    vars_of_Zexpr m = [] ->
-    (eval_Zexpr_Z_total $0 k < eval_Zexpr_Z_total $0 m)%Z ->
+              repeat (gen_pad l0)
+                k))
+          (m :: l0) ->
+    (k < m) ->
     h $? p = Some x1 ->
     nondestructivity st h p reindexer (V x) v asm ->
     nondestructivity st h p
-                        (fun l1 : list (Zexpr * Zexpr) =>
+                        (fun l1 : list (Zexpr * Z) =>
                            reindexer match l1 with
                                      | [] => l1
-                                     | (v0, d) :: xs => (v0, (d - k)%z) :: xs
+                                     | (v0, d) :: xs => (v0, (d - Z.of_nat k)%Z) :: xs
                                      end)
                         (V
                            (x ++
-                              repeat (gen_pad
-                                        (map Z.to_nat
-                                             (map (eval_Zexpr_Z_total $0) l0)))
-                              (Z.to_nat (eval_Zexpr_Z_total $0 k)))) v asm.
+                              repeat (gen_pad l0)
+                              k)) v asm.
 Proof.
   intros ? ? ? ? ? ? ? ? ? ? ? Henv Hinj HeqZlist
-    Hvarsub Hmap Hvarsarg Hsh Hk Hknonneg Hm Hmknonneg Hheap Hassign.
+    Hvarsub Hmap Hvarsarg Hsh Hmknonneg Hheap Hassign.
   unfold nondestructivity in *. invs.
   split; intros.
   - eapply H; eauto. simpl in *. 
@@ -1363,16 +1233,14 @@ Proof.
       rewrite repeat_length in *.
       repeat decomp_index.
       erewrite result_has_shape_result_shape_Z by eauto.
-      repeat rewrite <- map_cons.
       rewrite eq_partial_interpret_reindexer_truncr;
         try apply Henv; try apply Hrdx.
       erewrite result_has_shape_result_shape_Z.
       2: { eapply result_has_shape_app_r in Hsh. eauto.
            rewrite repeat_length. reflexivity. }
       reflexivity.
-      eapply vars_of_Zexpr_empty_eq_zexpr_eval_Zexpr_Z_total; eauto.
       all: eauto.
-      lia. lia. 
+      lia. 
     + intros. erewrite result_has_shape_result_shape_Z in H5.
       2: { repeat rewrite map_cons in Hsh.
            eapply result_has_shape_app_r; eauto. }
@@ -1417,15 +1285,12 @@ Proof.
       repeat decomp_index. repeat rewrite <- map_cons in *.
       erewrite eq_partial_interpret_reindexer_truncr in H7;
         eauto; try apply Henv; try lia.
-      2: eapply vars_of_Zexpr_empty_eq_zexpr_eval_Zexpr_Z_total; auto.
       symmetry in H7.
       erewrite eq_partial_interpret_reindexer_truncr in H7; eauto;
         try apply Henv; try lia.
-      2: eapply vars_of_Zexpr_empty_eq_zexpr_eval_Zexpr_Z_total; auto.
       pose proof H7.
       erewrite eq_partial_interpret_reindexer_truncr; eauto; try apply Henv;
         try lia.
-      2: eapply vars_of_Zexpr_empty_eq_zexpr_eval_Zexpr_Z_total; eauto.
       eapply Hinj in H7.
       2: { eapply filter_In. split; eauto. repeat decomp_goal_index.
            split; eauto. simpl in H9.
@@ -1462,63 +1327,48 @@ partial_injective
            (partial_interpret_reindexer reindexer
               (result_shape_Z
                  (V
-                    (l ++
-                     repeat
-                       (gen_pad (map Z.to_nat (map (eval_Zexpr_Z_total $0) rest)))
-                       (Z.to_nat (eval_Zexpr_Z_total $0 k))))) v)
+                    (l ++ repeat (gen_pad rest) k)))
+              v)
            (filter
               (fun x : list Z =>
                negb
                  (is_None
                     (result_lookup_Z_option x
                        (V
-                          (l ++
-                           repeat
-                             (gen_pad
-                                (map Z.to_nat (map (eval_Zexpr_Z_total $0) rest)))
-                             (Z.to_nat (eval_Zexpr_Z_total $0 k)))))))
+                          (l ++ repeat (gen_pad rest) k)))))
               (mesh_grid
                  (result_shape_Z
                     (V
-                       (l ++
-                        repeat
-                          (gen_pad (map Z.to_nat (map (eval_Zexpr_Z_total $0) rest)))
-                          (Z.to_nat (eval_Zexpr_Z_total $0 k))))))) ->
-(forall l1 l2 : list (Zexpr * Zexpr),
+                       (l ++ repeat (gen_pad rest) k))))) ->
+(forall l1 l2 : list (Zexpr * Z),
              eq_Z_tuple_index_list l1 l2 ->
              eq_Z_tuple_index_list (reindexer l1) (reindexer l2)) ->
 vars_of_reindexer (reindexer []) \subseteq dom v ->
-(forall (var : var) (k : Z) (l : list (Zexpr * Zexpr)),
+(forall (var : var) (k : Z) (l : list (Zexpr * Z)),
          ~ var \in vars_of_reindexer (reindexer []) ->
          map (subst_var_in_Z_tup var k) (reindexer l) =
          reindexer (map (subst_var_in_Z_tup var k) l)) ->
-(forall l : list (Zexpr * Zexpr),
+(forall l : list (Zexpr * Z),
              vars_of_reindexer (reindexer l) =
              vars_of_reindexer (reindexer []) \cup vars_of_reindexer l) ->
     nondestructivity st h p reindexer
                         (V
                            (l ++
                               repeat
-                              (gen_pad
-                                 (map Z.to_nat
-                                      (map (eval_Zexpr_Z_total $0) rest)))
-                              (Z.to_nat (eval_Zexpr_Z_total $0 k)))) v asm ->
-    result_has_shape (V l)
-                     (map Z.to_nat (map (eval_Zexpr_Z_total $0) (dim::rest))) ->
-    (0 <= eval_Zexpr_Z_total $0 k)%Z ->
+                              (gen_pad rest)
+                              k)) v asm ->
+    result_has_shape (V l) (dim::rest) ->
     h $? p = Some a ->
-    eq_zexpr k (| eval_Zexpr_Z_total $0 k |)%z ->
-    eq_zexpr dim (| eval_Zexpr_Z_total $0 dim |)%z ->
-    (0 < eval_Zexpr_Z_total $0 dim)%Z ->
+    (0 < dim) ->
     nondestructivity st h p
-                        (fun l0 : list (Zexpr * Zexpr) =>
+                        (fun l0 : list (Zexpr * Z) =>
                            reindexer match l0 with
                                      | [] => l0
-                                     | (v0, d) :: xs => (v0, (d + k)%z) :: xs
+                                     | (v0, d) :: xs => (v0, (d + Z.of_nat k)%Z) :: xs
                                      end) (V l) v asm.
 Proof.
   intros ? ? ? ? ? ? ? ? ? ? ? Henv Hinj HeqZlist
-    Hvarsub Hmap Hvarsarg Hassign Hsh Hknonneg Hheap Hk Hdim Hdimpos.
+    Hvarsub Hmap Hvarsarg Hassign Hsh Hheap Hdimpos.
   unfold nondestructivity in *. invs.
   split; intros.
   - eapply H; eauto. unfold tensor_to_array_delta in *.
@@ -1536,8 +1386,7 @@ Proof.
       repeat rewrite map_cons.
       erewrite eq_partial_interpret_reindexer_concat_l
         with (l2:=repeat
-                    (gen_pad (map Z.to_nat (map (eval_Zexpr_Z_total $0) rest)))
-                    (Z.to_nat (eval_Zexpr_Z_total $0 k)));
+                    (gen_pad rest) k);
         try apply Hrdx; try apply Henv.
       erewrite result_has_shape_result_shape_Z.
       2: { eapply result_has_shape_app.
@@ -1555,7 +1404,6 @@ Proof.
       split. lia. eauto. eauto. eapply result_has_shape_repeat.
       eapply result_has_shape_gen_pad.
       all: eauto.
-      rewrite Z2Nat.id by lia. eauto.
     + intros. rewrite filter_fun_pad_r.
       erewrite result_has_shape_result_shape_Z in H5 by eauto.
       erewrite result_has_shape_result_shape_Z.
@@ -1598,7 +1446,6 @@ Proof.
       eapply partial_injective_concat_l; auto; try apply Henv.
       repeat rewrite map_cons in Hinj. eapply Hinj.
       eapply result_has_shape_repeat_gen_pad.               
-      rewrite Z2Nat.id by lia. auto.
     + eauto.
     + unfold injective. propositional.
     + eapply no_dup_filter. eapply no_dup_mesh_grid.
@@ -1613,9 +1460,8 @@ partial_injective
            (partial_interpret_reindexer reindexer
               (result_shape_Z
                  (V
-                    (repeat
-                       (gen_pad (map Z.to_nat (map (eval_Zexpr_Z_total $0) rest)))
-                       (Z.to_nat (eval_Zexpr_Z_total $0 k)) ++ l))) v)
+                    (repeat (gen_pad rest)
+                       (Z.to_nat k) ++ l))) v)
            (filter
               (fun x : list Z =>
                negb
@@ -1623,49 +1469,44 @@ partial_injective
                     (result_lookup_Z_option x
                        (V
                           (repeat
-                             (gen_pad
-                                (map Z.to_nat (map (eval_Zexpr_Z_total $0) rest)))
-                             (Z.to_nat (eval_Zexpr_Z_total $0 k)) ++ l)))))
+                             (gen_pad rest)
+                             (Z.to_nat k) ++ l)))))
               (mesh_grid
                  (result_shape_Z
                     (V
                        (repeat
-                          (gen_pad (map Z.to_nat (map (eval_Zexpr_Z_total $0) rest)))
-                          (Z.to_nat (eval_Zexpr_Z_total $0 k)) ++ l))))) ->
-(forall l1 l2 : list (Zexpr * Zexpr),
+                          (gen_pad rest)
+                          (Z.to_nat k) ++ l))))) ->
+(forall l1 l2 : list (Zexpr * Z),
              eq_Z_tuple_index_list l1 l2 ->
              eq_Z_tuple_index_list (reindexer l1) (reindexer l2)) ->
 vars_of_reindexer (reindexer []) \subseteq dom v ->
-(forall (var : var) (k : Z) (l : list (Zexpr * Zexpr)),
+(forall (var : var) (k : Z) (l : list (Zexpr * Z)),
          ~ var \in vars_of_reindexer (reindexer []) ->
          map (subst_var_in_Z_tup var k) (reindexer l) =
          reindexer (map (subst_var_in_Z_tup var k) l)) ->
-  (forall l : list (Zexpr * Zexpr),
+  (forall l : list (Zexpr * Z),
              vars_of_reindexer (reindexer l) =
              vars_of_reindexer (reindexer []) \cup vars_of_reindexer l) ->
-    result_has_shape (V l)
-                     (map Z.to_nat
-                          (map (eval_Zexpr_Z_total $0) (dim :: rest))) ->
-    vars_of_Zexpr dim = [] ->
-    vars_of_Zexpr k = [] ->
-    (0 <= eval_Zexpr_Z_total $0 k)%Z ->
+    result_has_shape (V l) (dim :: rest) ->
+    (0 <= k)%Z ->
     h $? p = Some a ->
-    (0 < eval_Zexpr_Z_total $0 dim)%Z ->
+    (0 < dim) ->
     nondestructivity
       st h p reindexer
       (V
-         (repeat (gen_pad (map Z.to_nat (map (eval_Zexpr_Z_total $0) rest)))
-                 (Z.to_nat (eval_Zexpr_Z_total $0 k)) ++ l)) v asm ->
+         (repeat (gen_pad rest)
+                 (Z.to_nat k) ++ l)) v asm ->
     nondestructivity st h p
-                        (fun l0 : list (Zexpr * Zexpr) =>
+                        (fun l0 : list (Zexpr * Z) =>
                            reindexer
                              match l0 with
                              | [] => l0
-                             | (v0, d) :: xs => ((v0 + k)%z, (d + k)%z) :: xs
+                             | (v0, d) :: xs => ((v0 + | k |)%z, (d + k)%Z) :: xs
                              end) (V l) v asm.
 Proof.
   intros ? ? ? ? ? ? ? ? ? ? ? Henv Hinj HeqZlist
-    Hvarsub Hmap Hvarsarg Hsh Hdim Hk Hknonneg Hheap Hdimpos Hassign.
+    Hvarsub Hmap Hvarsarg Hsh Hknonneg Hheap Hdimpos Hassign.
   unfold nondestructivity in *. invs.
   split; intros.
   2: { eapply lookup_Some_dom in Hheap. sets. }
@@ -1676,7 +1517,7 @@ Proof.
                      match l1 with
                      | [] => l1
                      | x1 :: xs =>
-                         (x1 + eval_Zexpr_Z_total $0 k)%Z :: xs
+                         (x1 + k)%Z :: xs
                      end). eassumption.
   - erewrite result_has_shape_result_shape_Z by eauto. intros.
     repeat decomp_index. pose proof result_lookup_Z_option_concat_l.
@@ -1688,80 +1529,45 @@ Proof.
     2: { eapply result_has_shape_concat.
          eapply result_has_shape_repeat.
          eapply result_has_shape_gen_pad. simpl in Hsh. eauto. }
-    auto. 
-    eapply vars_of_Zexpr_empty_eq_zexpr_eval_Zexpr_Z_total. eauto.    
+    auto.
   - erewrite result_has_shape_result_shape_Z by eauto. intros.
     repeat decomp_index.
     erewrite result_has_shape_result_shape_Z.
     2: { eapply result_has_shape_concat.
          eapply result_has_shape_repeat.
          eapply result_has_shape_gen_pad. simpl in Hsh. eauto. }
-    rewrite <- Z2Nat.inj_add by lia.
     repeat rewrite <- map_cons.
-    rewrite <- eval_Zexpr_Z_total_add_distr.
-    rewrite <- map_cons.
     pose proof filter_pad_l_mesh_grid. simpl gen_pad_list in H6.
     rewrite H6. clear H6.
     2: { repeat rewrite map_cons.
-         erewrite eval_Zexpr_Z_total_add_distr.
-         rewrite Z2Nat.inj_add by lia.
          eapply result_has_shape_concat.
          eapply result_has_shape_repeat.
-         eapply result_has_shape_gen_pad. simpl in Hsh. eauto. 
-         eapply vars_of_Zexpr_empty_eq_zexpr_eval_Zexpr_Z_total.
-         eauto.
-         eapply vars_of_Zexpr_empty_eq_zexpr_eval_Zexpr_Z_total.
-         eauto.
-    }
+         eapply result_has_shape_gen_pad. simpl in Hsh. eauto. }
     eapply in_map_iff. eexists (z::x0). split. reflexivity.
     eapply filter_In. split; eauto.
-    repeat decomp_goal_index. split.
-    erewrite eval_Zexpr_Z_total_add_distr. lia.
-    eapply vars_of_Zexpr_empty_eq_zexpr_eval_Zexpr_Z_total; eauto.
-    eapply vars_of_Zexpr_empty_eq_zexpr_eval_Zexpr_Z_total; eauto.
+    repeat decomp_goal_index. split. lia.
     eauto. lia.
-    eapply vars_of_Zexpr_empty_eq_zexpr_eval_Zexpr_Z_total; eauto.
-    eapply vars_of_Zexpr_empty_eq_zexpr_eval_Zexpr_Z_total; eauto.
   - intros. erewrite result_has_shape_result_shape_Z by eauto.
     erewrite result_has_shape_result_shape_Z in H5.
     2: { eapply result_has_shape_concat.
          eapply result_has_shape_repeat.
          eapply result_has_shape_gen_pad. simpl in Hsh. eauto. }
     pose proof filter_pad_l_mesh_grid. simpl gen_pad_list in H6.
-    erewrite <- Z2Nat.inj_add in H5 by lia.
-    erewrite <- eval_Zexpr_Z_total_add_distr in H5.
     repeat rewrite <- map_cons in H5.
     rewrite H6 in H5. clear H6.
     2: { repeat rewrite map_cons.
-         erewrite eval_Zexpr_Z_total_add_distr.
-         rewrite Z2Nat.inj_add by lia.
          eapply result_has_shape_concat.
          eapply result_has_shape_repeat.
-         eapply result_has_shape_gen_pad. simpl in Hsh. eauto. 
-         eapply vars_of_Zexpr_empty_eq_zexpr_eval_Zexpr_Z_total.
-         eauto.
-         eapply vars_of_Zexpr_empty_eq_zexpr_eval_Zexpr_Z_total.
-         eauto. }
+         eapply result_has_shape_gen_pad. simpl in Hsh. eauto. }
     2: lia.
-    2: eapply vars_of_Zexpr_empty_eq_zexpr_eval_Zexpr_Z_total; eauto.
-    2: eapply vars_of_Zexpr_empty_eq_zexpr_eval_Zexpr_Z_total; eauto.
     eapply in_map_iff in H5. invs.
     repeat decomp_index .
-    rewrite eval_Zexpr_Z_total_add_distr in H5.
-    2: eapply vars_of_Zexpr_empty_eq_zexpr_eval_Zexpr_Z_total; eauto.
-    2: eapply vars_of_Zexpr_empty_eq_zexpr_eval_Zexpr_Z_total; eauto.
     eexists (z::x1). split. reflexivity.
     eapply filter_In. split; eauto. repeat decomp_goal_index.
     split. lia. eauto.
   - erewrite result_has_shape_result_shape_Z by eauto.
     repeat rewrite map_cons.
-    assert (eval_Zexpr_Z_total $0 dim = 0 \/
-              eval_Zexpr_Z_total $0 dim <> 0)%Z by lia. invert H5.
-    { rewrite H6. simpl.
-      unfold partial_injective. propositional. invert H2. }
     eapply partial_injective_padl; eauto.
-    eapply vars_of_Zexpr_empty_eq_zexpr_eval_Zexpr_Z_total. eauto.
-    eapply vars_of_Zexpr_empty_eq_zexpr_eval_Zexpr_Z_total. eauto.
   - eauto.
   - unfold injective.
     erewrite result_has_shape_result_shape_Z by eauto.
@@ -1779,64 +1585,46 @@ partial_injective
               (fun x : list Z =>
                negb (is_None (result_lookup_Z_option x (V (l1 ++ l2)))))
               (mesh_grid (result_shape_Z (V (l1 ++ l2))))) ->
-(forall l1 l2 : list (Zexpr * Zexpr),
+(forall l1 l2 : list (Zexpr * Z),
              eq_Z_tuple_index_list l1 l2 ->
              eq_Z_tuple_index_list (reindexer l1) (reindexer l2)) ->
 vars_of_reindexer (reindexer []) \subseteq dom v ->
-(forall (var : var) (k : Z) (l : list (Zexpr * Zexpr)),
+(forall (var : var) (k : Z) (l : list (Zexpr * Z)),
          ~ var \in vars_of_reindexer (reindexer []) ->
          map (subst_var_in_Z_tup var k) (reindexer l) =
          reindexer (map (subst_var_in_Z_tup var k) l)) ->
-(forall l : list (Zexpr * Zexpr),
+(forall l : list (Zexpr * Z),
              vars_of_reindexer (reindexer l) =
              vars_of_reindexer (reindexer []) \cup vars_of_reindexer l) ->
 nondestructivity st h p reindexer (V (l1 ++ l2)) v asm ->
 h $? p = Some x ->
 size_of e1 (dim1 :: rest1) ->
 size_of e2 (dim2 :: rest2) ->
-result_has_shape (V l2)
-           (Z.to_nat (eval_Zexpr_Z_total $0 dim2)
-            :: map Z.to_nat
-                 (map
-                    (eval_Zexpr_Z_total $0) rest1)) ->
-result_has_shape (V l1)
-           (Z.to_nat (eval_Zexpr_Z_total $0 dim1)
-            :: map Z.to_nat
-                 (map
-                    (eval_Zexpr_Z_total $0) rest1)) ->
-result_has_shape (V (l1 ++ l2))
-         (Z.to_nat (eval_Zexpr_Z_total $0 dim1) +
-          Z.to_nat (eval_Zexpr_Z_total $0 dim2)
-          :: map Z.to_nat
-               (map
-                  (eval_Zexpr_Z_total $0) rest1)) ->
-(0 <= eval_Zexpr_Z_total $0 dim1)%Z ->
-(0 <= eval_Zexpr_Z_total $0 dim2)%Z ->
-eq_zexpr dim1 (| eval_Zexpr_Z_total $0 dim1 |)%z ->
-eq_zexpr dim2 (| eval_Zexpr_Z_total $0 dim2 |)%z ->
+result_has_shape (V l2) (dim2 :: rest1) ->
+result_has_shape (V l1) (dim1 :: rest1) ->
+result_has_shape (V (l1 ++ l2)) (dim1 + dim2 :: rest1) ->
   nondestructivity st
     (h $+ (p,
      array_add x
        (tensor_to_array_delta
           (partial_interpret_reindexer
-             (fun l6 : list (Zexpr * Zexpr) =>
+             (fun l6 : list (Zexpr * Z) =>
               reindexer
                 match l6 with
                 | [] => l6
-                | (v0, d) :: xs => (v0, (d + |eval_Zexpr_Z_total $0 dim2|)%z) :: xs
+                | (v0, d) :: xs => (v0, (d + Z.of_nat dim2)%Z) :: xs
                 end) (result_shape_Z (V l1)) v) (V l1)))) p
-    (fun l6 : list (Zexpr * Zexpr) =>
+    (fun l6 : list (Zexpr * Z) =>
      reindexer
        match l6 with
        | [] => l6
        | (v0, d) :: xs =>
-           ((v0 + dim1)%z,
-           (d + dim1)%z) :: xs
+           ((v0 + | Z.of_nat dim1 |)%z,
+           (d + Z.of_nat dim1)%Z) :: xs
        end) (V l2) v asm.
 Proof.
   intros ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? Henv Hinj HeqZlist
-    Hvarsub Hmap Hvarsarg Hassign Hheap
-    Hsize1 Hsize2 Hsh2 Hsh1 Hsh Hdim1nonneg Hdim2nonneg Heqdim1 Heqdim2.
+    Hvarsub Hmap Hvarsarg Hassign Hheap Hsize1 Hsize2 Hsh2 Hsh1 Hsh.
   unfold nondestructivity in *. invs.
   split; intros.
   - rewrite lookup_add_eq in * by auto. invert H1.
@@ -1848,12 +1636,13 @@ Proof.
          rewrite partial_dom_fold_left_array_add in *.
          2: { eauto. }
          2: { erewrite result_has_shape_result_shape_Z by eauto.
-              eapply partial_injective_concat_r. all: eauto. }
+              eapply partial_injective_concat_r. all: eauto.
+              all: cbn [eval_Zexpr_Z_total eval_Zexpr_Z].
+              rewrite Nat2Z.id. eauto.
+              lia. }
          2: { erewrite result_has_shape_result_shape_Z by eauto.
               eapply partial_injective_concat_l.
-              all: eauto. 
-              rewrite Z2Nat.id by lia.
-              eauto. }
+              all: eauto. }
          rewrite filter_idempotent in *.
          rewrite dom_empty in *. rewrite cup_empty_r in *.
          erewrite result_has_shape_result_shape_Z in * by eauto.
@@ -1865,8 +1654,9 @@ Proof.
          repeat decomp_index.
          erewrite eq_partial_interpret_reindexer_padr in H1, H4.
          erewrite eq_partial_interpret_reindexer_padl in H4.
-         rewrite (Nat.add_comm (Z.to_nat (eval_Zexpr_Z_total $0 dim2)))
+         rewrite (Nat.add_comm dim2)
            in H1,H4.
+         cbn [eval_Zexpr_Z_total eval_Zexpr_Z] in H4. rewrite Nat2Z.id in H4.
          pose proof H4.
          eapply Hinj in H4.
          invert H4. invert H11. lia.
@@ -1874,7 +1664,6 @@ Proof.
          rewrite H1 in H2. discriminate.
          eapply filter_In. split; eauto.
          repeat decomp_goal_index. split. lia. eauto. rewrite <- H7.
-         rewrite <- (Z2Nat.id (eval_Zexpr_Z_total $0 dim1)) by lia.
          erewrite <- result_lookup_Z_truncl. 2: lia.
          rewrite truncl_list_skipn. rewrite skipn_app.
          rewrite skipn_all2.
@@ -1899,7 +1688,10 @@ Proof.
     rewrite partial_dom_fold_left_array_add in *.
     2: { erewrite result_has_shape_result_shape_Z by eauto.
          eapply partial_injective_concat_r. all: eauto.
-         erewrite result_has_shape_result_shape_Z by eauto. eauto. }
+         erewrite result_has_shape_result_shape_Z by eauto. eauto.
+         all: cbn [eval_Zexpr_Z_total eval_Zexpr_Z].
+         rewrite Nat2Z.id. eauto.
+         lia. }
     2: { invs.
          erewrite result_has_shape_result_shape_Z in * by eauto.
          eauto. }
@@ -1912,10 +1704,10 @@ Proof.
     repeat decomp_index.
     erewrite eq_partial_interpret_reindexer_padl in H2; eauto;
       try apply Henv; try apply Hrdx; try lia.
+    cbn [eval_Zexpr_Z_total eval_Zexpr_Z] in H2. rewrite Nat2Z.id in H2.
     eexists. rewrite H2. split. auto. eapply filter_In.
     split. repeat decomp_goal_index.
     split. lia. eauto. rewrite <- H5.
-    rewrite <- (Z2Nat.id (eval_Zexpr_Z_total $0 dim1)) by lia.
     erewrite <- result_lookup_Z_truncl.
     rewrite truncl_list_skipn. rewrite skipn_app.
     rewrite skipn_all2.
@@ -1936,54 +1728,34 @@ partial_injective
               (fun x : list Z =>
                negb (is_None (result_lookup_Z_option x (V (l1 ++ l2)))))
               (mesh_grid (result_shape_Z (V (l1 ++ l2))))) ->
-(forall l1 l2 : list (Zexpr * Zexpr),
+(forall l1 l2 : list (Zexpr * Z),
              eq_Z_tuple_index_list l1 l2 ->
              eq_Z_tuple_index_list (reindexer l1) (reindexer l2)) ->
 vars_of_reindexer (reindexer []) \subseteq dom v ->
-(forall (var : var) (k : Z) (l : list (Zexpr * Zexpr)),
+(forall (var : var) (k : Z) (l : list (Zexpr * Z)),
          ~ var \in vars_of_reindexer (reindexer []) ->
          map (subst_var_in_Z_tup var k) (reindexer l) =
          reindexer (map (subst_var_in_Z_tup var k) l)) ->
-(forall l : list (Zexpr * Zexpr),
+(forall l : list (Zexpr * Z),
              vars_of_reindexer (reindexer l) =
              vars_of_reindexer (reindexer []) \cup vars_of_reindexer l) ->
 nondestructivity st h p reindexer (V (l1 ++ l2)) v asm ->
 h $? p = Some x ->
 size_of e1 (dim1 :: rest1) ->
 size_of e2 (dim2 :: rest2) ->
-result_has_shape (V l2)
-           (Z.to_nat (eval_Zexpr_Z_total $0 dim2)
-            :: map Z.to_nat
-                 (map
-                    (eval_Zexpr_Z_total $0) rest1)) ->
-result_has_shape (V l1)
-           (Z.to_nat (eval_Zexpr_Z_total $0 dim1)
-            :: map Z.to_nat
-                 (map
-                    (eval_Zexpr_Z_total $0) rest1)) ->
-result_has_shape (V (l1 ++ l2))
-         (Z.to_nat (eval_Zexpr_Z_total $0 dim1) +
-          Z.to_nat (eval_Zexpr_Z_total $0 dim2)
-          :: map Z.to_nat
-               (map
-                  (eval_Zexpr_Z_total $0) rest1)) ->
-(0 <= eval_Zexpr_Z_total $0 dim1)%Z ->
-(0 <= eval_Zexpr_Z_total $0 dim2)%Z ->
-eq_zexpr dim1 (| eval_Zexpr_Z_total $0 dim1 |)%z ->
-eq_zexpr dim2 (| eval_Zexpr_Z_total $0 dim2 |)%z ->
-vars_of_Zexpr dim2 = [] ->
+result_has_shape (V l2) (dim2 :: rest1) ->
+result_has_shape (V l1) (dim1 :: rest1) ->
+result_has_shape (V (l1 ++ l2)) (dim1 + dim2 :: rest1) ->
    nondestructivity st h p
-    (fun l0 : list (Zexpr * Zexpr) =>
+    (fun l0 : list (Zexpr * Z) =>
      reindexer
        match l0 with
        | [] => l0
-       | (v0, d) :: xs => (v0, (d + | eval_Zexpr_Z_total $0 dim2| )%z) :: xs
+       | (v0, d) :: xs => (v0, (d + Z.of_nat dim2)%Z) :: xs
        end) (V l1) v asm.
 Proof.
   intros ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? Henv Hinj HeqZlist
-    Hvarsub Hmap Hvarsarg Hassign Hheap
-    Hsize1 Hsize2 Hsh2 Hsh1 Hsh Hdim1nonneg Hdim2nonneg Heqdim1 Heqdim2
-    Hvardim2.
+    Hvarsub Hmap Hvarsarg Hassign Hheap Hsize1 Hsize2 Hsh2 Hsh1 Hsh.
   unfold nondestructivity in *. invs.
   split; intros.
   - eapply H; eauto.
@@ -1993,8 +1765,7 @@ Proof.
     erewrite partial_dom_fold_left_array_add.
     erewrite partial_dom_fold_left_array_add in H4.
     2: { erewrite result_has_shape_result_shape_Z by eauto.
-         eapply partial_injective_concat_l; try apply Hrdx; eauto.
-         rewrite Z2Nat.id by lia. eauto. }
+         eapply partial_injective_concat_l; try apply Hrdx; eauto. }
     2: { eauto. }
     rewrite @filter_idempotent in *. rewrite dom_empty in *.
     rewrite cup_empty_r in *.
@@ -2016,7 +1787,6 @@ Proof.
     simpl. rewrite nth_error_app1.
     2: { erewrite result_has_shape_length by eauto. lia. }
     reflexivity.
-    rewrite Z2Nat.id by lia. eauto.
   - eapply lookup_Some_dom in Hheap. sets.
 Qed.
 
@@ -2028,45 +1798,40 @@ partial_injective
            (filter
               (fun x0 : list Z => negb (is_None (result_lookup_Z_option x0 (V x))))
               (mesh_grid (result_shape_Z (V x)))) ->
-(forall l1 l2 : list (Zexpr * Zexpr),
+(forall l1 l2 : list (Zexpr * Z),
              eq_Z_tuple_index_list l1 l2 ->
              eq_Z_tuple_index_list (reindexer l1) (reindexer l2)) ->
 vars_of_reindexer (reindexer []) \subseteq dom v ->
-(forall (var : var) (k : Z) (l : list (Zexpr * Zexpr)),
+(forall (var : var) (k : Z) (l : list (Zexpr * Z)),
          ~ var \in vars_of_reindexer (reindexer []) ->
          map (subst_var_in_Z_tup var k) (reindexer l) =
          reindexer (map (subst_var_in_Z_tup var k) l)) ->
-(forall l : list (Zexpr * Zexpr),
+(forall l : list (Zexpr * Z),
              vars_of_reindexer (reindexer l) =
              vars_of_reindexer (reindexer []) \cup vars_of_reindexer l) ->
     nondestructivity st h p reindexer (V x) v asm ->
     result_has_shape
       (V
          (gen_pad_list
-          (Z.to_nat (eval_Zexpr_Z_total $0 k)
-                    :: map Z.to_nat (map (eval_Zexpr_Z_total $0) l0)) ++ x))
-      (map Z.to_nat (map (eval_Zexpr_Z_total $0) (m :: l0))) ->
-    vars_of_Zexpr k = [] ->
-    (0 <= eval_Zexpr_Z_total $0 k)%Z ->
-    (eval_Zexpr_Z_total $0 k < eval_Zexpr_Z_total $0 m)%Z ->
+          (Z.to_nat k :: l0) ++ x))
+      (m :: l0) ->
+    (0 <= k)%Z ->
+    (k < Z.of_nat m)%Z ->
     h $? p = Some x1 ->
     nondestructivity st h p
-                        (fun l1 : list (Zexpr * Zexpr) =>
+                        (fun l1 : list (Zexpr * Z) =>
                            reindexer
                              match l1 with
                              | [] => l1
-                             | (v0, d) :: xs => ((v0 - k)%z, (d - k)%z) :: xs
+                             | (v0, d) :: xs => ((v0 - | k |)%z, (d - k)%Z) :: xs
                              end)
                         (V
                            (gen_pad_list
-                              (Z.to_nat (eval_Zexpr_Z_total $0 k)
-                                        :: map Z.to_nat
-                                        (map (eval_Zexpr_Z_total $0) l0))
+                              (Z.to_nat k :: l0)
                               ++ x)) v asm.
 Proof.
   intros ? ? ? ? ? ? ? ? ? ? ? Henv Hinj HeqZlist
-    Hvarsub Hmap Hvarsarg Hassign Hsh Hk
-    Hknonneg Hkm Hheap.
+    Hvarsub Hmap Hvarsarg Hassign Hsh Hknonneg Hkm Hheap.
   unfold nondestructivity in *. invs. split; intros.
   - eapply H; eauto.
     unfold tensor_to_array_delta in *.
@@ -2074,7 +1839,7 @@ Proof.
       with (shuffle:=(fun l => match l with
                                | [] => l
                                | x::xs =>
-                                   (x+eval_Zexpr_Z_total $0 k)%Z::xs
+                                   (x+k)%Z::xs
                                end)) in H4. eassumption.
     + intros. erewrite result_has_shape_result_shape_Z in H5.
       2: { simpl in Hsh. eapply result_has_shape_app_l; eauto. }
@@ -2089,9 +1854,8 @@ Proof.
       erewrite result_has_shape_result_shape_Z.
       2: { simpl in Hsh. eapply result_has_shape_app_l; eauto. }
       rewrite repeat_length. reflexivity. 
-      eapply vars_of_Zexpr_empty_eq_zexpr_eval_Zexpr_Z_total. eauto.
       apply Henv. all: eauto.
-      lia. lia. 
+      lia. 
     + intros. erewrite result_has_shape_result_shape_Z in H5.
       2: { simpl in Hsh. eapply result_has_shape_app_l; eauto. }
       repeat decomp_index. rewrite repeat_length in *.
@@ -2102,7 +1866,7 @@ Proof.
       lia. lia.
     + intros. erewrite result_has_shape_result_shape_Z in H5.
       2: eauto. repeat decomp_index. 
-      eexists (z- eval_Zexpr_Z_total $0 k::x2)%Z. propositional.
+      eexists (z- k::x2)%Z. propositional.
       f_equal. lia. eapply filter_In. propositional.
       erewrite result_has_shape_result_shape_Z.
       2: { simpl in Hsh. eapply result_has_shape_app_l; eauto. }
@@ -2112,20 +1876,18 @@ Proof.
                            (z :: x2)
                            (V
                               (gen_pad_list
-                                 (Z.to_nat (eval_Zexpr_Z_total $0 k)
-                                           :: map Z.to_nat
-                                           (map (eval_Zexpr_Z_total $0) l0))
+                                 (Z.to_nat k :: l0)
                                  ++ x))).
                   2: discriminate.
                   simpl in Heq. cases z; try lia.
-                  cases ((Z.to_nat (eval_Zexpr_Z_total $0 k))).
+                  cases ((Z.to_nat k)).
                   -- simpl in *. lia.
                   -- simpl in *.
                      rewrite result_lookup_Z_option_gen_pad in Heq.
                      discriminate.
                   -- assert ((Z.to_nat (Z.pos p0)) <
-                                (Z.to_nat (eval_Zexpr_Z_total $0 k)) \/
-                                (Z.to_nat (eval_Zexpr_Z_total $0 k)) <=
+                                (Z.to_nat k) \/
+                                (Z.to_nat k) <=
                                   (Z.to_nat (Z.pos p0))) by lia.
                      invert H2. rewrite nth_error_app1 in Heq.
                      2: { rewrite repeat_length. lia. }
@@ -2134,19 +1896,19 @@ Proof.
                      rewrite result_lookup_Z_option_gen_pad in Heq.
                      discriminate.
       * rewrite <- H7. replace z with
-          (z - eval_Zexpr_Z_total $0 k + eval_Zexpr_Z_total $0 k)%Z
+          (z - k + k)%Z
           at 2 by lia.
         erewrite result_lookup_Z_option_concat_l. auto.
         2: lia.
         simpl in H7. cases z; try lia.
-        cases ((Z.to_nat (eval_Zexpr_Z_total $0 k))).
+        cases ((Z.to_nat k)).
         -- simpl in *. lia.
         -- simpl in *.
            rewrite result_lookup_Z_option_gen_pad in H7.
            discriminate.
         -- assert ((Z.to_nat (Z.pos p0)) <
-                     (Z.to_nat (eval_Zexpr_Z_total $0 k)) \/
-                     (Z.to_nat (eval_Zexpr_Z_total $0 k)) <=
+                     (Z.to_nat k) \/
+                     (Z.to_nat k) <=
                        (Z.to_nat (Z.pos p0))) by lia.
            invert H2. rewrite nth_error_app1 in H7.
            2: { rewrite repeat_length. lia. }
@@ -2162,26 +1924,20 @@ Proof.
       rewrite repeat_length in *.
       unfold partial_injective. intros.
       repeat decomp_index. repeat rewrite map_cons in *.
-      replace z with ((z - eval_Zexpr_Z_total $0 k)
-                      + eval_Zexpr_Z_total $0 k)%Z in H8 by lia.
-      replace z0 with ((z0 - eval_Zexpr_Z_total $0 k)
-                       + eval_Zexpr_Z_total $0 k)%Z in * by lia.
+      replace z with ((z - k)
+                      + k)%Z in H8 by lia.
+      replace z0 with ((z0 - k)
+                       + k)%Z in * by lia.
       erewrite eq_partial_interpret_reindexer_truncl in H8;
         eauto; try apply Henv.
-      2: { eapply vars_of_Zexpr_empty_eq_zexpr_eval_Zexpr_Z_total. eauto. }
-      2: { lia. }
       2: { lia. }
       symmetry in H8.
       erewrite eq_partial_interpret_reindexer_truncl in H8; eauto;
         try apply Henv.
-      2: { eapply vars_of_Zexpr_empty_eq_zexpr_eval_Zexpr_Z_total. eauto. }
-      2: { lia. }
       2: { lia. }
       symmetry in H8.
       repeat rewrite map_cons.
       erewrite eq_partial_interpret_reindexer_truncl; eauto; try apply Henv.
-      2: { eapply vars_of_Zexpr_empty_eq_zexpr_eval_Zexpr_Z_total. eauto. }
-      2: { lia. }
       2: { lia. }
       erewrite result_has_shape_result_shape_Z in Hinj.
       2: { simpl in Hsh. eapply result_has_shape_app_l; eauto. }
@@ -2190,14 +1946,14 @@ Proof.
            split.
            - clear Hinj. rewrite Z.sub_add in *. simpl in *.
              cases z0; try lia.
-             + cases (Z.to_nat (eval_Zexpr_Z_total $0 k)).
+             + cases (Z.to_nat k).
                * simpl in *. lia.
                * simpl in *.
                  rewrite result_lookup_Z_option_gen_pad in *.
                  simpl in *. discriminate.
              + assert ((Z.to_nat (Z.pos p0)) <
-                         (Z.to_nat (eval_Zexpr_Z_total $0 k)) \/
-                         (Z.to_nat (eval_Zexpr_Z_total $0 k)) <=
+                         (Z.to_nat k) \/
+                         (Z.to_nat k) <=
                            (Z.to_nat (Z.pos p0))) by lia.
                invert H9. rewrite nth_error_app1 in H11.
                2: { rewrite repeat_length. lia. }
@@ -2211,14 +1967,14 @@ Proof.
              reflexivity.
              simpl in *. rewrite Z.sub_add in *.
              cases z0; try lia.
-             + cases (Z.to_nat (eval_Zexpr_Z_total $0 k)).
+             + cases (Z.to_nat k).
                * simpl in *. lia.
                * simpl in *.
                  rewrite result_lookup_Z_option_gen_pad in *.
                  simpl in *. discriminate.
              + assert ((Z.to_nat (Z.pos p0)) <
-                         (Z.to_nat (eval_Zexpr_Z_total $0 k)) \/
-                         (Z.to_nat (eval_Zexpr_Z_total $0 k)) <=
+                         (Z.to_nat k) \/
+                         (Z.to_nat k) <=
                            (Z.to_nat (Z.pos p0))) by lia.
                invert H9. rewrite nth_error_app1 in H11.
                2: { rewrite repeat_length. lia. }
@@ -2231,14 +1987,14 @@ Proof.
            split.
            - clear Hinj. rewrite Z.sub_add in *. simpl in *.
              cases z; try lia.
-             + cases (Z.to_nat (eval_Zexpr_Z_total $0 k)).
+             + cases (Z.to_nat k).
                * simpl in *. lia.
                * simpl in *.
                  rewrite result_lookup_Z_option_gen_pad in *.
                  simpl in *. discriminate.
              + assert ((Z.to_nat (Z.pos p0)) <
-                         (Z.to_nat (eval_Zexpr_Z_total $0 k)) \/
-                         (Z.to_nat (eval_Zexpr_Z_total $0 k)) <=
+                         (Z.to_nat k) \/
+                         (Z.to_nat k) <=
                            (Z.to_nat (Z.pos p0))) by lia.
                invert H9. rewrite nth_error_app1 in H10.
                2: { rewrite repeat_length. lia. }
@@ -2248,21 +2004,21 @@ Proof.
                discriminate.
            - auto.
            - rewrite <- H10.
-             replace z with (z - eval_Zexpr_Z_total $0 k +
-                               eval_Zexpr_Z_total $0 k)%Z
+             replace z with (z - k +
+                               k)%Z
                             at 2 by lia.
              erewrite result_lookup_Z_option_concat_l.
              reflexivity.
              simpl in *. rewrite Z.sub_add in *.
              cases z; try lia.
-             + cases (Z.to_nat (eval_Zexpr_Z_total $0 k)).
+             + cases (Z.to_nat k).
                * simpl in *. lia.
                * simpl in *.
                  rewrite result_lookup_Z_option_gen_pad in *.
                  simpl in *. discriminate.
              + assert ((Z.to_nat (Z.pos p0)) <
-                         (Z.to_nat (eval_Zexpr_Z_total $0 k)) \/
-                         (Z.to_nat (eval_Zexpr_Z_total $0 k)) <=
+                         (Z.to_nat k) \/
+                         (Z.to_nat k) <=
                            (Z.to_nat (Z.pos p0))) by lia.
                invert H9. rewrite nth_error_app1 in H10.
                2: { rewrite repeat_length. lia. }
@@ -2287,32 +2043,26 @@ Lemma well_formed_reindexer_truncl :
     well_formed_reindexer reindexer v (V x) st h o asn ->
     result_has_shape
       (V (gen_pad_list
-            (Z.to_nat (eval_Zexpr_Z_total $0 k)
-                      :: map Z.to_nat (map (eval_Zexpr_Z_total $0) l0)) ++ x))
-      (map Z.to_nat (map (eval_Zexpr_Z_total $0) (m :: l0))) ->
+            (Z.to_nat k :: l0) ++ x))
+      (m :: l0) ->
     (forall var : var, contains_substring "?" var -> ~ var \in dom v) ->
-    eq_zexpr k (| eval_Zexpr_Z_total $0 k |)%z ->
-    (0 <= eval_Zexpr_Z_total $0 m)%Z ->
-    (0 <= eval_Zexpr_Z_total $0 k)%Z ->
+    (0 <= k)%Z ->
     h $? o = Some arr ->
-    (eval_Zexpr_Z_total $0 k < eval_Zexpr_Z_total $0 m)%Z ->
+    (k < Z.of_nat m)%Z ->
     well_formed_reindexer
-      (fun l : list (Zexpr * Zexpr) =>
+      (fun l : list (Zexpr * Z) =>
          reindexer
            match l with
            | [] => l
-           | (v0, d) :: xs => ((v0 - k)%z, (d - k)%z) :: xs
+           | (v0, d) :: xs => ((v0 - | k |)%z, (d - k)%Z) :: xs
            end) v
       (V (gen_pad_list
-            (Z.to_nat (eval_Zexpr_Z_total $0 k)
-                      :: map Z.to_nat
-                      (map (eval_Zexpr_Z_total $0) l0)) ++ x)) st h o asn.
+            (Z.to_nat k :: l0) ++ x)) st h o asn.
 Proof.
-  intros ? ? ? ? ? ? ? ? ? ? ? H Hsh Hvar Hk Hmnonneg Hknonneg Hheap Hkm.
+  intros ? ? ? ? ? ? ? ? ? ? ? H Hsh Hvar Hknonneg Hheap Hkm.
   decomp_well_formed_reindexer.
   propositional.
-  - assert (0 < eval_Zexpr_Z_total $0 m - eval_Zexpr_Z_total $0 k \/
-              eval_Zexpr_Z_total $0 m - eval_Zexpr_Z_total $0 k <= 0)%Z
+  - assert (0 < Z.of_nat m - k \/ Z.of_nat m - k <= 0)%Z
       by lia.
     invert H.
     + erewrite result_has_shape_result_shape_Z; eauto.
@@ -2321,35 +2071,30 @@ Proof.
       eauto.
       eassumption.
       auto. eauto.
-      auto. auto. auto. auto. lia. lia. lia.
+      auto. auto. auto. auto. lia.
     + erewrite result_has_shape_result_shape_Z; eauto.
       rewrite filter_pad_l_mesh_grid; eauto.
-      replace (Z.to_nat (eval_Zexpr_Z_total $0 m) -
-                 Z.to_nat (eval_Zexpr_Z_total $0 k)) with 0 by lia.
+      replace (m - Z.to_nat k) with 0 by lia.
       simpl filter.
       unfold partial_injective.
       propositional. invert H1.
   - eapply HeqZlist.
     cases l1; cases l2. eauto.
-    invert H. simpl in *. lia.
-    invert H. simpl in *. lia.
+    invert H. invert H0.
+    invert H. invert H0.
     erewrite <- eq_Z_tuple_index_list_cons in H. propositional.
     cases p. cases p0. 
     erewrite <- eq_Z_tuple_index_list_cons. propositional.
     unfold eq_Z_tup. simpl. propositional.
     eapply eq_zexpr_sub. apply H0. apply eq_zexpr_id. auto.
-    eapply eq_zexpr_sub. apply H0. apply eq_zexpr_id. auto.
+    invert H0. simpl in *. lia.
   - rewrite Hmap; auto.
-    cases l. auto. cases p. simpl.
-    unfold subst_var_in_Z_tup. simpl. f_equal. f_equal.
-    rewrite (subst_var_in_Zexpr_id k). auto.
-    invert Hk. rewrite H1. sets.
+    cases l. auto. cases p. reflexivity.
   - rewrite Hvarsarg.
     cases l. auto. cases p. simpl.
-    invert Hk. rewrite H0. repeat rewrite constant_app_no_dups.
+    repeat rewrite constant_app_no_dups.
     sets.
   - eapply nondestructivity_trunc_l; eauto.
-    eapply Hk.
 Qed.
 
 Lemma well_formed_reindexer_padl :
@@ -2359,10 +2104,8 @@ Lemma well_formed_reindexer_padl :
          reindexer
          (result_shape_Z
             (V (repeat
-                  (gen_pad
-                     (map Z.to_nat
-                          (map (eval_Zexpr_Z_total $0) l0)))
-                  (Z.to_nat (eval_Zexpr_Z_total $0 k))
+                  (gen_pad l0)
+                  (Z.to_nat k)
                   ++ x0))) v)
       (filter
          (fun x =>
@@ -2371,84 +2114,69 @@ Lemma well_formed_reindexer_padl :
                  (result_lookup_Z_option
                     x
                     (V (repeat
-                          (gen_pad
-                             (map Z.to_nat
-                                  (map (eval_Zexpr_Z_total $0) l0)))
-                          (Z.to_nat (eval_Zexpr_Z_total $0 k))
+                          (gen_pad l0)
+                          (Z.to_nat k)
                           ++ x0)))))
          (mesh_grid
             (result_shape_Z
                (V (repeat
-                     (gen_pad
-                        (map Z.to_nat
-                             (map (eval_Zexpr_Z_total $0) l0)))
-                     (Z.to_nat (eval_Zexpr_Z_total $0 k))                     
+                     (gen_pad l0)
+                     (Z.to_nat k)                     
                           ++ x0))))) ->
     result_has_shape
-      (V x0) (Z.to_nat (eval_Zexpr_Z_total $0 m)
-                       :: map Z.to_nat (map (eval_Zexpr_Z_total $0) l0)) ->
+      (V x0) (m :: l0) ->
     (forall var : var, contains_substring "?" var -> ~ var \in dom v) ->
-    eq_zexpr k (| eval_Zexpr_Z_total $0 k |)%z ->
-    eq_zexpr m (| eval_Zexpr_Z_total $0 m |)%z ->
-    (0 < eval_Zexpr_Z_total $0 m)%Z ->
-    (0 <= eval_Zexpr_Z_total $0 k)%Z ->
-    (forall l1 l2 : list (Zexpr * Zexpr),
+    (0 < m) ->
+    (0 <= k)%Z ->
+    (forall l1 l2 : list (Zexpr * Z),
         eq_Z_tuple_index_list l1 l2 ->
         eq_Z_tuple_index_list (reindexer l1) (reindexer l2)) ->
     vars_of_reindexer (reindexer []) \subseteq dom v ->
-    (forall (var : var) (k0 : Z) (l : list (Zexpr * Zexpr)),
+    (forall (var : var) (k0 : Z) (l : list (Zexpr * Z)),
         ~ var \in vars_of_reindexer (reindexer []) ->
                   map (subst_var_in_Z_tup var k0) (reindexer l) =
                     reindexer (map (subst_var_in_Z_tup var k0) l)) ->
-    (forall l : list (Zexpr * Zexpr),
+    (forall l : list (Zexpr * Z),
         vars_of_reindexer (reindexer l) =
           vars_of_reindexer (reindexer []) \cup vars_of_reindexer l) ->
-    h $? o = Some a ->
     nondestructivity st h o reindexer
    (V
-      (repeat (gen_pad (map Z.to_nat (map (eval_Zexpr_Z_total $0) l0)))
-         (Z.to_nat (eval_Zexpr_Z_total $0 k)) ++ x0)) v asn ->
-        h $? o = Some a ->
+      (repeat (gen_pad l0)
+         (Z.to_nat k) ++ x0)) v asn ->
+    h $? o = Some a ->
     well_formed_reindexer
-      (fun l : list (Zexpr * Zexpr) =>
+      (fun l : list (Zexpr * Z) =>
          reindexer
            match l with
            | [] => l
-           | (v0, d) :: xs => ((v0 + k)%z, (d + k)%z) :: xs
+           | (v0, d) :: xs => ((v0 + | k |)%z, (d + k)%Z) :: xs
            end) v
       (V x0) st h o asn.
 Proof.
-  intros ? ? ? ? ? ? ? ? ? ? ? H Hsh Hvar Hk Hm Hmnonneg Hknonneg HeqZlist
+  intros ? ? ? ? ? ? ? ? ? ? ? H Hsh Hvar Hmnonneg Hknonneg HeqZlist
     Hvarsub Hmap Hvarsarg Hnondstr Hheap.
   unfold well_formed_reindexer. propositional.
   - erewrite result_has_shape_result_shape_Z by eauto.
-    cases (Z.to_nat (eval_Zexpr_Z_total $0 m)).
+    cases m.
     simpl. unfold partial_injective. propositional. invert H1.
-    rewrite <- Heq in *. 
     eapply partial_injective_padl; eauto. 
   - eapply HeqZlist. pose proof H0.
     cases l1; cases l2.
     eauto.
-    invert H1; simpl in *; try lia.
-    invert H1; simpl in *; try lia.
+    invert H1. invert H3.
+    invert H1. invert H3.
     cases p. cases p0.
     erewrite <- eq_Z_tuple_index_list_cons_tup.
     erewrite <- eq_Z_tuple_index_list_cons_tup in H1.
     propositional.
     eapply eq_zexpr_add; eauto.
-    eapply eq_zexpr_add; eauto. 
+    lia.
   - rewrite Hmap by auto.
-    cases l. reflexivity. cases p. simpl.
-    unfold subst_var_in_Z_tup. f_equal. f_equal. simpl.
-    rewrite (subst_var_in_Zexpr_id k). auto.
-    invert Hk. rewrite H3. sets.
+    cases l. reflexivity. cases p. reflexivity.
   - rewrite Hvarsarg. cases l. reflexivity.
     cases p. simpl.
-    repeat rewrite constant_app_no_dups.
-    invert Hk. rewrite H2. sets.
+    repeat rewrite constant_app_no_dups. sets.
   - eapply nondestructivity_pad_l; eauto.
-    simpl map. eauto.
-    eapply Hm. eapply Hk.
 Qed.
 
 Lemma well_formed_reindexer_truncr :
@@ -2458,47 +2186,35 @@ Lemma well_formed_reindexer_truncr :
       (V
          (rev
             (truncl_list
-               (Z.to_nat (eval_Zexpr_Z_total $0 k))
+               k
                (rev
                   (x ++
                      gen_pad_list
-                     (Z.to_nat (eval_Zexpr_Z_total $0 k)
-                               :: map Z.to_nat
-                               (map (eval_Zexpr_Z_total $0) l0))))))) st h o a ->
+                     (k :: l0)))))) st h o a ->
     result_has_shape
       (V
          (x ++
             gen_pad_list
-            (Z.to_nat (eval_Zexpr_Z_total $0 k)
-                      :: map Z.to_nat (map (eval_Zexpr_Z_total $0) l0))))
-      (Z.to_nat (eval_Zexpr_Z_total $0 m)
-                :: map Z.to_nat (map (eval_Zexpr_Z_total $0) l0)) ->    
+            (k :: l0)))
+      (m :: l0) ->    
     (forall var : var, contains_substring "?" var -> ~ var \in dom v) ->
-    eq_zexpr k (| eval_Zexpr_Z_total $0 k |)%z ->
-    (0 <= eval_Zexpr_Z_total $0 m)%Z ->
-    (0 <= eval_Zexpr_Z_total $0 k )%Z ->
     h $? o = Some arr ->
-    vars_of_Zexpr m = [] ->
-    (eval_Zexpr_Z_total $0 k < eval_Zexpr_Z_total $0 m)%Z ->
+    (k < m) ->
     well_formed_reindexer
-      (fun l : list (Zexpr * Zexpr) =>
+      (fun l : list (Zexpr * Z) =>
          reindexer match l with
                    | [] => l
-                   | (v0, d) :: xs => (v0, (d - k)%z) :: xs
+                   | (v0, d) :: xs => (v0, (d - Z.of_nat k)%Z) :: xs
                    end) v
       (V
          (x ++
             gen_pad_list
-            (Z.to_nat (eval_Zexpr_Z_total $0 k)
-                      :: map Z.to_nat (map (eval_Zexpr_Z_total $0) l0)))) st h o a.
+            (k :: l0))) st h o a.
 Proof.
-  intros ? ? ? ? ? ? ? ? ? ? ? Hrdx Hsh Hvar Hk Hmnonneg Hknonneg Hheap
-  Hm Hkm.
+  intros ? ? ? ? ? ? ? ? ? ? ? Hrdx Hsh Hvar Hheap Hkm.
   decomp_well_formed_reindexer.
   propositional.
-  - assert (0 < eval_Zexpr_Z_total $0 m - eval_Zexpr_Z_total $0 k \/
-              eval_Zexpr_Z_total $0 m - eval_Zexpr_Z_total $0 k <= 0)%Z
-      by lia.
+  - assert (0 < m - k \/ m - k <= 0) by lia.
     invert H.
     2: { eapply result_has_shape_app_r in Hsh.
          2: simpl; rewrite repeat_length; eauto.
@@ -2509,8 +2225,6 @@ Proof.
          rewrite filter_gen_pad_empty.
          unfold partial_injective. propositional. invert H2. }
     erewrite result_has_shape_result_shape_Z by eauto.
-    rewrite <-map_cons.
-    rewrite <-map_cons.
     rewrite filter_pad_r_mesh_grid.
     eapply partial_injective_truncr.
     rewrite rev_app_distr in Hinj.
@@ -2523,44 +2237,35 @@ Proof.
     2: { eapply result_has_shape_app_r; eauto. }
     simpl gen_pad_list in Hinj. rewrite repeat_length in *.
     apply Hinj.
-    eauto. auto. auto. auto. auto. auto. auto. auto. auto.
-    lia.
+    eauto. auto. auto. auto. auto. auto. auto.
     simpl.
-    replace (Z.to_nat (eval_Zexpr_Z_total $0 m)) with
-      (Z.to_nat (eval_Zexpr_Z_total $0 k) +
-         ((Z.to_nat (eval_Zexpr_Z_total $0 m) -
-             (Z.to_nat (eval_Zexpr_Z_total $0 k))))) by lia.
+    replace m with
+      (k +
+         (m - k)) by lia.
     eapply result_has_shape_concat.
     eapply result_has_shape_repeat_gen_pad.
     eapply result_has_shape_app_r; eauto.
     simpl. rewrite repeat_length. auto.
     lia.
-  - cases l1; cases l2; pose proof H; invert H; simpl in *; try lia.
-    eapply HeqZlist. eapply eq_Z_tuple_index_list_id.
+  - cases l1; cases l2; pose proof H; invert H; simpl; auto.
+    invert H1.
+    invert H1.
+    invert H1. eapply HeqZlist.
     cases p. cases p0.
-    eapply HeqZlist.
-    simpl.
     erewrite <- eq_Z_tuple_index_list_cons in *.
     propositional.
     unfold eq_Z_tup in *. simpl in H. propositional.
-    simpl. eapply eq_zexpr_sub; auto.
+    simpl. subst. reflexivity.
   - rewrite Hmap by auto. cases l. reflexivity.
     cases p. simpl.
-    unfold subst_var_in_Z_tup. simpl. f_equal.
-    f_equal. rewrite (subst_var_in_Zexpr_id k).
-    reflexivity. invert Hk. rewrite H1. sets.
+    unfold subst_var_in_Z_tup. reflexivity.
   - rewrite Hvarsarg. cases l. reflexivity.
-    cases p. simpl. rewrite constant_app_no_dups.
-    invert Hk. rewrite H0. sets.
+    cases p. reflexivity.
   - eapply nondestructivity_trunc_r; eauto.
     rewrite rev_app_distr in Hinj.
     simpl in *. rewrite rev_repeat in Hinj.
     rewrite truncl_list_skipn in Hinj.
-    replace (repeat
-               (gen_pad (map Z.to_nat (map (eval_Zexpr_Z_total $0) l0)))
-               (Z.to_nat (eval_Zexpr_Z_total $0 k)))
-      with (gen_pad_list ((Z.to_nat (eval_Zexpr_Z_total $0 k))::
-                            (map Z.to_nat (map (eval_Zexpr_Z_total $0) l0))))
+    replace (repeat (gen_pad l0) k) with (gen_pad_list (k :: l0))
     in Hinj.
     2: { simpl. eauto. }
     rewrite <- truncl_list_skipn in Hinj.
@@ -2568,25 +2273,16 @@ Proof.
     rewrite rev_involutive in Hinj.
     simpl in *. 
     rewrite truncl_list_skipn.
-    replace (repeat
-               (gen_pad (map Z.to_nat (map (eval_Zexpr_Z_total $0) l0)))
-               (Z.to_nat (eval_Zexpr_Z_total $0 k)))
-      with (gen_pad_list ((Z.to_nat (eval_Zexpr_Z_total $0 k))::
-                            (map Z.to_nat (map (eval_Zexpr_Z_total $0) l0)))).
+    replace (repeat (gen_pad l0) k) with (gen_pad_list (k :: l0)).
     2: { simpl. eauto. }
     rewrite <- truncl_list_skipn.
     erewrite truncl_list_gen_pad_id.
     rewrite rev_involutive.
     eauto.
-    eapply Hk.
     rewrite rev_app_distr in Hnondstr.
     simpl in *. rewrite rev_repeat in Hnondstr.
     rewrite truncl_list_skipn in Hnondstr.
-    replace (repeat
-               (gen_pad (map Z.to_nat (map (eval_Zexpr_Z_total $0) l0)))
-               (Z.to_nat (eval_Zexpr_Z_total $0 k)))
-      with (gen_pad_list ((Z.to_nat (eval_Zexpr_Z_total $0 k))::
-                            (map Z.to_nat (map (eval_Zexpr_Z_total $0) l0))))
+    replace (repeat (gen_pad l0) k) with (gen_pad_list (k :: l0))
     in Hnondstr.
     2: { simpl. eauto. }
     rewrite <- truncl_list_skipn in Hnondstr.
@@ -2602,7 +2298,7 @@ Lemma well_formed_reindexer_eval_cons0 :
     result_has_shape (V (r1 :: r2)) (result_shape_nat (V (r1 :: r2))) ->
     well_formed_reindexer
       (fun l => reindexer
-                  (((|0|)%z,(| Z.of_nat (Datatypes.S (length r2)) |)%z)::l))
+                  (((|0|)%z,Z.of_nat (Datatypes.S (length r2))%Z)::l))
       v r1 st h o a.
 Proof.
   intros. decomp_well_formed_reindexer. propositional.
@@ -2624,7 +2320,7 @@ Proof.
   - eapply HeqZlist.
     erewrite <- eq_Z_tuple_index_list_cons.
     propositional.
-    unfold eq_Z_tup. simpl. propositional. auto. auto.
+    unfold eq_Z_tup. simpl. propositional. auto.
   - rewrite Hvarsarg.
     simpl. sets.
   - rewrite Hmap.
@@ -2646,20 +2342,17 @@ Lemma well_formed_reindexer_shift_top_dim_reindexer :
     h $? o = Some arr ->
     ~ i \in dom v ->
     ~ contains_substring "?" i ->
-    (eval_Zexpr_Z_total $0 lo < eval_Zexpr_Z_total $0 hi)%Z ->
-    eq_zexpr lo (| eval_Zexpr_Z_total $0 lo |)%z ->
-    eq_zexpr hi (| eval_Zexpr_Z_total $0 hi |)%z ->
+    (lo < hi)%Z ->
     well_formed_allocation reindexer (V (x1 :: xs1)) st h o v ->
-    Datatypes.length xs1 =
-      Z.to_nat (eval_Zexpr_Z_total $0 hi - (eval_Zexpr_Z_total $0 lo + 1)) ->
+    Datatypes.length xs1 = Z.to_nat (hi - (lo + 1)) ->
     well_formed_reindexer (shift_top_dim_reindexer reindexer) 
                           v (V xs1) st (h $+ (o,
           array_add arr
             (tensor_to_array_delta
                (partial_interpret_reindexer
-                  (fun l5 : list (Zexpr * Zexpr) =>
-                   reindexer (((! i ! - lo)%z, (hi - lo)%z) :: l5))
-                  (result_shape_Z x1) (v $+ (i, eval_Zexpr_Z_total $0 lo))) x1))) o a.
+                  (fun l5 : list (Zexpr * Z) =>
+                   reindexer (((! i ! - | lo |)%z, (hi - lo)%Z) :: l5))
+                  (result_shape_Z x1) (v $+ (i, lo))) x1))) o a.
 Proof. 
   intros. decomp_well_formed_reindexer.
   unfold well_formed_reindexer. 
@@ -2669,15 +2362,15 @@ Proof.
     eapply partial_injective_shift_top_dim_reindexer; eauto.
     inversion 1.
   - cases l1; cases l2; simpl in *; pose proof H;
-      try invert H; simpl in *; try lia.
+      try invert H; simpl in *.
     eapply HeqZlist. eauto.
+    invert0 H9. invert0 H9. invert H1.
     cases p. cases p0.
     eapply HeqZlist. simpl in *. 
     erewrite <- eq_Z_tuple_index_list_cons in *. invs.
     propositional.
     unfold eq_Z_tup in *. simpl in *. invs.
     propositional.
-    eapply eq_zexpr_add; auto.
     eapply eq_zexpr_add; auto.
   - unfold shift_top_dim_reindexer. cases l. simpl.
     rewrite Hmap. reflexivity. auto.
@@ -2700,15 +2393,15 @@ Lemma tensor_to_array_delta_add_result : forall r1 r2 r3,
            (partial_interpret_reindexer reindexer (result_shape_Z r3) v)
            (filter (fun x : list Z => negb (is_None (result_lookup_Z_option x r3)))
               (mesh_grid (result_shape_Z r3))) ->
-(forall l1 l2 : list (Zexpr * Zexpr),
+(forall l1 l2 : list (Zexpr * Z),
              eq_Z_tuple_index_list l1 l2 ->
              eq_Z_tuple_index_list (reindexer l1) (reindexer l2)) ->
                vars_of_reindexer (reindexer []) \subseteq dom v ->
-  (forall (var : var) (k : Z) (l : list (Zexpr * Zexpr)),
+  (forall (var : var) (k : Z) (l : list (Zexpr * Z)),
          ~ var \in vars_of_reindexer (reindexer []) ->
          map (subst_var_in_Z_tup var k) (reindexer l) =
          reindexer (map (subst_var_in_Z_tup var k) l)) ->
-  (forall l : list (Zexpr * Zexpr),
+  (forall l : list (Zexpr * Z),
              vars_of_reindexer (reindexer l) =
              vars_of_reindexer (reindexer []) \cup vars_of_reindexer l) ->
       (forall var : var, contains_substring "?" var -> ~ var \in dom v) ->
@@ -2731,15 +2424,15 @@ Proof.
            (partial_interpret_reindexer reindexer (result_shape_Z r3) v)
            (filter (fun x : list Z => negb (is_None (result_lookup_Z_option x r3)))
               (mesh_grid (result_shape_Z r3))) ->
-(forall l1 l2 : list (Zexpr * Zexpr),
+(forall l1 l2 : list (Zexpr * Z),
              eq_Z_tuple_index_list l1 l2 ->
              eq_Z_tuple_index_list (reindexer l1) (reindexer l2)) ->
                vars_of_reindexer (reindexer []) \subseteq dom v ->
-  (forall (var : var) (k : Z) (l : list (Zexpr * Zexpr)),
+  (forall (var : var) (k : Z) (l : list (Zexpr * Z)),
          ~ var \in vars_of_reindexer (reindexer []) ->
          map (subst_var_in_Z_tup var k) (reindexer l) =
          reindexer (map (subst_var_in_Z_tup var k) l)) ->
-  (forall l : list (Zexpr * Zexpr),
+  (forall l : list (Zexpr * Z),
              vars_of_reindexer (reindexer l) =
              vars_of_reindexer (reindexer []) \cup vars_of_reindexer l) ->
        (forall var : var, contains_substring "?" var -> ~ var \in dom v) ->
@@ -2760,15 +2453,15 @@ Proof.
 partial_injective (partial_interpret_reindexer reindexer (result_shape_Z (V r3)) v)
     (filter (fun x : list Z => negb (is_None (result_lookup_Z_option x (V r3))))
        (mesh_grid (result_shape_Z (V r3)))) ->
-  (forall l1 l2 : list (Zexpr * Zexpr),
+  (forall l1 l2 : list (Zexpr * Z),
    eq_Z_tuple_index_list l1 l2 ->
    eq_Z_tuple_index_list (reindexer l1) (reindexer l2)) ->
   vars_of_reindexer (reindexer []) \subseteq dom v ->
-  (forall (var : var) (k : Z) (l : list (Zexpr * Zexpr)),
+  (forall (var : var) (k : Z) (l : list (Zexpr * Z)),
    ~ var \in vars_of_reindexer (reindexer []) ->
    map (subst_var_in_Z_tup var k) (reindexer l) =
    reindexer (map (subst_var_in_Z_tup var k) l)) ->
-  (forall l : list (Zexpr * Zexpr),
+  (forall l : list (Zexpr * Z),
    vars_of_reindexer (reindexer l) =
    vars_of_reindexer (reindexer []) \cup vars_of_reindexer l) ->
   
@@ -2890,21 +2583,20 @@ partial_injective (partial_interpret_reindexer reindexer (result_shape_Z (V r3))
       * intros. unfold shift_top_dim_reindexer.
         destruct l1; destruct l2.
         eapply H15; eauto.
-        inversion H20. simpl in *. lia. inversion H20. simpl in *. lia.
-        destruct p. destruct p0.
-        eapply eq_Z_tuple_index_list_cons_tup in H20.        
-        eapply H15.
-        erewrite <- eq_Z_tuple_index_list_cons_tup.
-        split. eapply eq_zexpr_add. propositional. eauto.
-        split. eapply eq_zexpr_add. propositional. eauto.
-        propositional.
+        inversion H20. simpl in *. invert0 H21. invert H20. invert0 H21.
+        invert H20. invert H21.
+        destruct p. destruct p0. simpl in *.
+        apply H15.
+        split. simpl. f_equal; auto. lia.
+        invert H22. simpl. constructor; auto.
+        eapply eq_zexpr_add. propositional. eauto.
       * unfold shift_top_dim_reindexer. sets.
       * intros. unfold shift_top_dim_reindexer.
         destruct l. simpl. sets.
         destruct p. simpl. rewrite H17. simpl. eauto. sets.
       * intros. unfold shift_top_dim_reindexer. destruct l.
         sets. destruct p. simpl. rewrite H18. symmetry. rewrite H18.
-        simpl. rewrite app_no_dups_empty_r. rewrite app_no_dups_empty_r. sets.
+        simpl. rewrite app_no_dups_empty_r. reflexivity.
       * eauto.
       * propositional.
         eapply partial_injective_add_result_r; try apply Hinj.
@@ -2950,38 +2642,32 @@ Lemma well_formed_reindexer_eval0 :
     result_has_shape (V (x1 :: xs1)) (result_shape_nat (V (x1 :: xs1))) ->
     ~ i \in dom v ->
     ~ In i (shape_to_vars (result_shape_Z x1)) ->
-    (eval_Zexpr_Z_total $0 hi - eval_Zexpr_Z_total $0 lo)%Z =
-      Z.of_nat (Datatypes.length (x1 :: xs1)) ->
-    eq_zexpr lo (|eval_Zexpr_Z_total $0 lo|)%z ->
-    eq_zexpr hi (|eval_Zexpr_Z_total $0 hi|)%z ->
+    (hi - lo)%Z = Z.of_nat (Datatypes.length (x1 :: xs1)) ->
     h $? o = Some arr ->
-    (eval_Zexpr_Z_total $0 lo < eval_Zexpr_Z_total $0 hi)%Z ->
+    (lo < hi)%Z ->
     ~ contains_substring "?" i ->
     well_formed_reindexer
-      (fun l0 : list (Zexpr * Zexpr) =>
-         reindexer (((! i ! - lo)%z,
-                      (hi - lo)%z) :: l0))
-      (v $+ (i, eval_Zexpr_Z_total $0 lo)) x1 st h o a.
+      (fun l0 : list (Zexpr * Z) =>
+         reindexer (((! i ! - | lo |)%z,
+                      (hi - lo)%Z) :: l0))
+      (v $+ (i, lo)) x1 st h o a.
 Proof.
   intros. decomp_well_formed_reindexer. propositional.
   - eapply partial_injective_cons_reindexer; eauto.
   - eapply HeqZlist. 
     erewrite <- eq_Z_tuple_index_list_cons in *. propositional.
     unfold eq_Z_tup. simpl. propositional.
-    eauto. eauto.
+    eauto.
   - rewrite dom_add. rewrite Hvarsarg.
     simpl. rewrite cup_empty_r.
     repeat rewrite constant_app_no_dups.
-    invert H5. rewrite H10. invert H6. rewrite H11.
-    simpl. sets.
+    rewrite Hvarsarg. sets.
   - rewrite Hmap. simpl.
     unfold subst_var_in_Z_tup at 1. simpl.
     rewrite Hvarsarg in H. simpl in H.
     repeat rewrite constant_app_no_dups in H.
     rewrite cup_empty_r in H.
     cases (i ==v var). sets.
-    rewrite subst_var_in_Zexpr_id by sets.
-    rewrite subst_var_in_Zexpr_id by sets.
     reflexivity.
     rewrite Hvarsarg in H. simpl in *. sets.
   - rewrite Hvarsarg.
@@ -3006,9 +2692,9 @@ Proof.
   - unfold partial_injective in *. propositional.
     unfold partial_interpret_reindexer in *.
     rewrite @partially_eval_Z_tup_add_partial in * by auto.
-    replace (fun e : Zexpr * Zexpr =>
+    replace (fun e : Zexpr * Z =>
                subst_var_in_Z_tup i x (partially_eval_Z_tup v e)) with
-      (fun e : Zexpr * Zexpr =>
+      (fun e : Zexpr * Z =>
          partially_eval_Z_tup v (subst_var_in_Z_tup i x e)) in *.
     2: { eapply functional_extensionality. intros.
          rewrite subst_var_in_Z_tup_partially_eval_Z_tup_comm. auto.
@@ -3052,25 +2738,14 @@ Qed.
 *)
 Lemma well_formed_reindexer_transpose :
   forall l n0 m0 l0 v reindexer st h o a arr,
-  result_has_shape (V l)
-                   (Z.to_nat
-                      (eval_Zexpr_Z_total $0 n0)
-                      :: Z.to_nat (eval_Zexpr_Z_total $0 m0)
-                      :: map Z.to_nat (map (eval_Zexpr_Z_total $0) l0)) ->
+  result_has_shape (V l) (n0 :: m0 :: l0) ->
   well_formed_reindexer
-    reindexer v
-    (transpose_result l
-                      (Z.to_nat
-                         (eval_Zexpr_Z_total $0 m0)
-                         :: Z.to_nat (eval_Zexpr_Z_total $0 n0)
-                         :: map Z.to_nat (map (eval_Zexpr_Z_total $0) l0)))
+    reindexer v (transpose_result l (m0 :: n0 :: l0))
   st h o a ->
   (forall var : var, contains_substring "?" var -> var \in dom v -> False) ->
   h $? o = Some arr ->
- vars_of_Zexpr n0 = [] ->
- vars_of_Zexpr m0 = [] ->
   well_formed_reindexer
-    (fun l1 : list (Zexpr * Zexpr) =>
+    (fun l1 : list (Zexpr * Z) =>
      reindexer
        match l1 with
        | [] => l1
@@ -3078,22 +2753,22 @@ Lemma well_formed_reindexer_transpose :
        | (v0, d) :: (vi, di) :: xs => (vi, di) :: (v0, d) :: xs
        end) v (V l) st h o a.
 Proof.
-  intros ? ? ? ? ? ? ? ? ? ? ? Hsh Hrdx Henv Harr Hn0 Hm0.
+  intros ? ? ? ? ? ? ? ? ? ? ? Hsh Hrdx Henv Harr.
   decomp_well_formed_reindexer. propositional.
   - eapply partial_injective_transpose; eauto.
   - eapply HeqZlist.
     cases l1; cases l2.
     eapply eq_Z_tuple_index_list_id.
-    invert H. simpl in *. lia.
-    invert H. simpl in *. lia.
+    invert H. invert0 H0.
+    invert H. invert0 H0.
     cases p. cases p0.
     erewrite <- eq_Z_tuple_index_list_cons in H. invs.
     cases l1; cases l2.
     simpl.
     erewrite <- eq_Z_tuple_index_list_cons.
     propositional.
-    invert H1. simpl in *. lia.
-    invert H1. simpl in *. lia.
+    invert H1. invert0 H.
+    invert H1. invert0 H.
     cases p. cases p0.
     erewrite <- eq_Z_tuple_index_list_cons in H1. invs.
     erewrite <- eq_Z_tuple_index_list_cons.
@@ -3118,28 +2793,16 @@ Lemma well_formed_reindexer_concat_l :
   forall reindexer l1 l2 v st h o a arr dim1 dim2 rest1,
     well_formed_reindexer
       reindexer v (V (l1 ++ l2)) st h o a ->
-    result_has_shape (V l2)
-      (Z.to_nat (eval_Zexpr_Z_total $0 dim2)
-         :: map Z.to_nat
-         (map
-            (eval_Zexpr_Z_total $0) rest1)) ->
-    result_has_shape (V l1)
-      (Z.to_nat (eval_Zexpr_Z_total $0 dim1)
-         :: map Z.to_nat
-         (map
-            (eval_Zexpr_Z_total $0) rest1)) ->
-    (0 <= eval_Zexpr_Z_total $0 dim1)%Z ->
-    (0 <= eval_Zexpr_Z_total $0 dim2)%Z ->
-    eq_zexpr dim1 (| eval_Zexpr_Z_total $0 dim1 |)%z ->
-    eq_zexpr dim2 (| eval_Zexpr_Z_total $0 dim2 |)%z ->
+    result_has_shape (V l2) (dim2 :: rest1) ->
+    result_has_shape (V l1) (dim1 :: rest1) ->
     (forall var : var, contains_substring "?" var -> ~ var \in dom v) ->
     h $? o = Some arr ->
     well_formed_reindexer
-      (fun l3 : list (Zexpr * Zexpr) =>
+      (fun l3 : list (Zexpr * Z) =>
          reindexer
          match l3 with
          | [] => l3
-         | (v0, d) :: xs => ((v0, (d + dim2)%z) :: xs)
+         | (v0, d) :: xs => ((v0, (d + Z.of_nat dim2)%Z) :: xs)
          end) v (V l1) st h o a.
 Proof.
   intros.
@@ -3147,66 +2810,50 @@ Proof.
   propositional.
   - erewrite result_has_shape_result_shape_Z by eauto.
     eapply partial_injective_concat_l; eauto.
-    rewrite Z2Nat.id by lia. eauto.
   - cases l0; cases l3.
     eapply HeqZlist. auto.
-    invert H. simpl in *. lia.
-    invert H. simpl in *. lia.
+    invert H. invert0 H4.
+    invert H. invert0 H4.
     cases p. cases p0.
     erewrite <- eq_Z_tuple_index_list_cons_tup in H.
     eapply HeqZlist.
     erewrite <- eq_Z_tuple_index_list_cons_tup.
-    propositional. eapply eq_zexpr_add; auto.
+    propositional. lia.
   - cases l.
     simpl. rewrite Hmap by auto. reflexivity.
     cases p.
     simpl. rewrite Hmap by auto.
-    simpl. f_equal. f_equal.
-    unfold subst_var_in_Z_tup. simpl.
-    rewrite (subst_var_in_Zexpr_id dim2).
     reflexivity.
-    unfold eq_zexpr in *. simpl in *. invs. rewrite H9. sets.
   - cases l.
     rewrite Hvarsarg. sets.
     cases p.
-    rewrite Hvarsarg. f_equal.
-    simpl.
-    unfold eq_zexpr in *. simpl in *. invs. rewrite H8.
-    rewrite app_no_dups_empty_r. 
-    sets.
+    rewrite Hvarsarg. reflexivity.
   - eapply nondestructivity_concat_l; eauto.    
 Qed.
 
 Lemma well_formed_reindexer_concat_r :
   forall reindexer l1 l2 v n m l0 st h o a arr,
     well_formed_reindexer reindexer v (V (l1 ++ l2)) st h o a ->
-    result_has_shape (V l1) (Z.to_nat (eval_Zexpr_Z_total $0 n)
-            :: map Z.to_nat
-                 (map (eval_Zexpr_Z_total $0) l0)) ->
-    result_has_shape (V l2) (Z.to_nat (eval_Zexpr_Z_total $0 m)
-            :: map Z.to_nat
-                 (map (eval_Zexpr_Z_total $0) l0)) ->
+    result_has_shape (V l1) (Z.to_nat n :: l0) ->
+    result_has_shape (V l2) (m :: l0) ->
     (forall var : var, contains_substring "?" var -> ~ var \in dom v) ->
-    eq_zexpr n (| eval_Zexpr_Z_total $0 n |)%z ->
-    (0 <= eval_Zexpr_Z_total $0 n)%Z ->
+    (0 <= n)%Z ->
     h $? o = Some arr ->
-     (0 <= eval_Zexpr_Z_total $0 m)%Z ->
-     eq_zexpr m (| eval_Zexpr_Z_total $0 m |)%z ->
     well_formed_reindexer
-      (fun l3 : list (Zexpr * Zexpr) =>
+      (fun l3 : list (Zexpr * Z) =>
          reindexer
          match l3 with
          | [] => l3
-         | (v0, d) :: xs => (((v0 + n)%z, (d + n)%z) :: xs)
+         | (v0, d) :: xs => (((v0 + | n |)%z, (d + n)%Z) :: xs)
          end) v (V l2) st (h $+ (o,
      array_add arr
        (tensor_to_array_delta
           (partial_interpret_reindexer
-             (fun l6 : list (Zexpr * Zexpr) =>
+             (fun l6 : list (Zexpr * Z) =>
               reindexer
                 match l6 with
                 | [] => l6
-                | (v0, d) :: xs => (v0, (d + m)%z) :: xs
+                | (v0, d) :: xs => (v0, (d + Z.of_nat m)%Z) :: xs
                 end) (result_shape_Z (V l1)) v) (V l1)))) o a.
 Proof.
   intros.
@@ -3216,52 +2863,42 @@ Proof.
     eapply partial_injective_concat_r; eauto.
   - cases l3; cases l4.
     eapply HeqZlist. auto.
-    invert H. simpl in *. lia.
-    invert H. simpl in *. lia.
+    invert H. invert0 H6.
+    invert H. invert0 H6.
     cases p. cases p0.
     erewrite <- eq_Z_tuple_index_list_cons_tup in H.
     eapply HeqZlist.
     erewrite <- eq_Z_tuple_index_list_cons_tup.
     propositional. eapply eq_zexpr_add; auto.
-    eapply eq_zexpr_add; auto.
+    lia.
   - cases l.
     simpl. rewrite Hmap by auto. reflexivity.
     cases p.
-    simpl. rewrite Hmap by auto.
-    simpl. f_equal. f_equal.
-    unfold subst_var_in_Z_tup. simpl.
-    rewrite (subst_var_in_Zexpr_id n).
-    reflexivity.
-    invert H3. rewrite H9. sets.
+    simpl. rewrite Hmap by auto. reflexivity.
   - cases l.
     rewrite Hvarsarg. sets.
     cases p.
     rewrite Hvarsarg. f_equal.
     simpl.
-    unfold eq_zexpr in *. simpl in *. invs. rewrite H9.
     repeat rewrite app_no_dups_empty_r. 
-    sets.
+    reflexivity.
   - eapply nondestructivity_concat_r__; eauto.
 Qed.
 
 Lemma well_formed_reindexer_flatten :
   forall v l n m l0 reindexer st h o a arr,
-    result_has_shape (V l)
-                      (Z.to_nat (eval_Zexpr_Z_total $0 n)
-                               :: Z.to_nat (eval_Zexpr_Z_total $0 m)
-                               :: map Z.to_nat
-                               (map (eval_Zexpr_Z_total $0) l0)) ->
+    result_has_shape (V l) (n :: m :: l0) ->
     well_formed_reindexer reindexer v (V (flatten_result l)) st h o a ->
     (forall var : var, contains_substring "?" var -> var \in dom v -> False)->
     h $? o = Some arr ->
     well_formed_reindexer
-      (fun l2 : list (Zexpr * Zexpr) =>
+      (fun l2 : list (Zexpr * Z) =>
          reindexer
            match l2 with
            | [] => l2
            | [(v0, d)] => l2
            | (v0, d) :: (vi, di) :: xs =>
-               ((v0 * di + vi)%z, (d * di)%z) :: xs
+               ((v0 * | di | + vi)%z, (d * di)%Z) :: xs
            end) v (V l) st h o a.
 Proof.
   intros ? ? ? ? ? ? ? ? ? ? ? Hsh Hrdx Henv Hheap.
@@ -3274,24 +2911,23 @@ Proof.
   - eapply HeqZlist.
     cases l1; cases l2.
     eapply eq_Z_tuple_index_list_id.
-    invert H. simpl in *. lia.
-    invert H. simpl in *. lia.
+    invert H. invert0 H0.
+    invert H. invert0 H0.
     erewrite <- eq_Z_tuple_index_list_cons in H. propositional.
     cases p. cases p0.
     cases l1; cases l2.    
     erewrite <- eq_Z_tuple_index_list_cons. propositional.
-    invert H1. simpl in *. lia.
-    invert H1. simpl in *. lia.
+    invert H1. invert0 H.
+    invert H1. invert0 H.
     cases p. cases p0.
     erewrite <- eq_Z_tuple_index_list_cons. propositional.
     unfold eq_Z_tup in *. propositional. simpl in *.
     erewrite <- eq_Z_tuple_index_list_cons_tup in H1. propositional.
     eapply eq_zexpr_add; auto.
     eapply eq_zexpr_mul; auto.
-    simpl.
-    eapply eq_zexpr_mul; auto.
-    erewrite <- eq_Z_tuple_index_list_cons_tup in H1. propositional.
-    erewrite <- eq_Z_tuple_index_list_cons_tup in H1. propositional.
+    subst. apply eq_zexpr_id. reflexivity.
+    invert H1. simpl in *. invert H0. lia.
+    apply eq_Z_tuple_index_list_cons in H1. destruct H1. assumption.
   - rewrite Hmap by eauto. cases l1.
     reflexivity.
     cases p. simpl. cases l1. reflexivity.
@@ -3305,56 +2941,42 @@ Qed.
 
 Lemma well_formed_reindexer_padr :
   forall l m l0 v reindexer k st h o a arr,
-    result_has_shape (V l)
-                     (map Z.to_nat (map (eval_Zexpr_Z_total $0) (m :: l0))) ->
+    result_has_shape (V l) (m :: l0) ->
     well_formed_reindexer
       reindexer v
       (V
-         (l ++
-            repeat (gen_pad (map Z.to_nat (map (eval_Zexpr_Z_total $0) l0)))
-            (Z.to_nat (eval_Zexpr_Z_total $0 k)))) st h o a ->
-    eq_zexpr k (| eval_Zexpr_Z_total $0 k|)%z ->
-    eq_zexpr m (| eval_Zexpr_Z_total $0 m |)%z ->
-    (0 < eval_Zexpr_Z_total $0 m)%Z ->
-    (0 <= eval_Zexpr_Z_total $0 k)%Z ->
+         (l ++ repeat (gen_pad l0) k)) st h o a ->
+    (0 < m) ->
     (forall var : var, contains_substring "?" var -> ~ var \in dom v) ->
     h $? o = Some arr ->
     well_formed_reindexer
-      (fun l1 : list (Zexpr * Zexpr) =>
+      (fun l1 : list (Zexpr * Z) =>
          reindexer match l1 with
                    | [] => l1
-                   | (v0, d) :: xs => (v0, (d + k)%z) :: xs
+                   | (v0, d) :: xs => (v0, (d + Z.of_nat k)%Z) :: xs
                    end) v (V l) st h o a.
 Proof.
-  intros ? ? ? ? ? ? ? ? ? ? ? Hsh Hrdx Hk Hm Hmpos Hkpos Henv Hheap.
+  intros ? ? ? ? ? ? ? ? ? ? ? Hsh Hrdx Hmpos Henv Hheap.
   decomp_well_formed_reindexer. propositional.
   - erewrite result_has_shape_result_shape_Z by eauto.
     pose proof Hinj.
-    rewrite map_cons.
-    rewrite map_cons.
     eapply partial_injective_concat_l; auto; try apply Henv.
     apply Hinj.
     eapply result_has_shape_repeat_gen_pad.
-    rewrite Z2Nat.id by lia. auto.
   - eapply HeqZlist.
     cases l1; cases l2.
     apply eq_Z_tuple_index_list_id.
-    invert H. simpl in *. lia.
-    invert H. simpl in *. lia.
+    invert H. invert0 H0.
+    invert H. invert0 H0.
     cases p. cases p0.
     erewrite <- eq_Z_tuple_index_list_cons_tup in H. propositional.
     erewrite <- eq_Z_tuple_index_list_cons_tup. propositional.
-    eapply eq_zexpr_add; auto.
+    subst. reflexivity.
   - rewrite Hmap by auto.
     cases l1. auto.
-    cases p. simpl.
-    f_equal. f_equal. unfold subst_var_in_Z_tup. simpl.
-    rewrite (subst_var_in_Zexpr_id k). auto.
-    invert Hk. rewrite H1. sets.
+    cases p. reflexivity.
   - rewrite Hvarsarg. cases l1. auto.
-    cases p. simpl.
-    repeat rewrite constant_app_no_dups.
-    invert Hk. rewrite H0. sets.
+    cases p. reflexivity.
   - eapply nondestructivity_pad_r; eauto.
 Qed.  
 
@@ -3396,53 +3018,42 @@ Qed.
 Lemma well_formed_reindexer_split :
   forall reindexer l0 k v l n st h o a arr,
     well_formed_reindexer reindexer v
-      (V (split_result (Z.to_nat (eval_Zexpr_Z_total $0 k)) l)) st h o a ->
-result_has_shape (V l)
-          (Z.to_nat (eval_Zexpr_Z_total $0 n)
-           :: map Z.to_nat (map (eval_Zexpr_Z_total $0) l0)) ->
+      (V (split_result (Z.to_nat k) l)) st h o a ->
+    result_has_shape (V l) (n :: l0) ->
     (forall var : var, contains_substring "?" var -> ~ var \in dom v) ->
-    eq_zexpr k (| eval_Zexpr_Z_total $0 k |)%z ->
-    (0 <= eval_Zexpr_Z_total $0 n)%Z ->
-    (0 < eval_Zexpr_Z_total $0 k)%Z ->
+    (0 < k)%Z ->
     h $? o = Some arr ->
     well_formed_reindexer
-    (fun l2 : list (Zexpr * Zexpr) =>
+    (fun l2 : list (Zexpr * Z) =>
      reindexer
        match l2 with
        | [] => l2
-       | (v0, d) :: xs => ((v0 / k)%z, (d // k)%z) :: ((ZMod v0 k)%z, k) :: xs
+       | (v0, d) :: xs => ((v0 / | k |)%z, (d // k)%Z) :: ((v0 % | k |)%z, k) :: xs
        end) v (V l) st h o a.
 Proof.
-  intros ? ? ? ? ? ? ? ? ? ? ? H Hsh Hvar Hk Hnnonneg Hknonneg Hheap.
+  intros ? ? ? ? ? ? ? ? ? ? ? H Hsh Hvar Hknonneg Hheap.
   decomp_well_formed_reindexer.
   propositional.
   - eapply partial_injective_split; eauto.
   - eapply HeqZlist.
     cases l1; cases l2. eauto.
-    invert H. simpl in *. lia.
-    invert H. simpl in *. lia.
+    invert H. invert0 H0.
+    invert H. invert0 H0.
     erewrite <- eq_Z_tuple_index_list_cons in H. propositional.
     cases p. cases p0. 
     erewrite <- eq_Z_tuple_index_list_cons. propositional.
     unfold eq_Z_tup. simpl. propositional.
     eapply eq_zexpr_div. apply H0. apply eq_zexpr_id. auto.
-    eapply eq_zexpr_divc. apply H0. apply eq_zexpr_id. auto.
+    invert H0. simpl in *. subst. reflexivity.
     erewrite <- eq_Z_tuple_index_list_cons. propositional.
     unfold eq_Z_tup. simpl. propositional.
     eapply eq_zexpr_mod. apply H0. apply eq_zexpr_id. auto.
-    apply eq_zexpr_id. auto.
   - rewrite Hmap; auto.
     cases l1. auto. cases p. simpl.
-    unfold subst_var_in_Z_tup. simpl. f_equal. f_equal.
-    rewrite (subst_var_in_Zexpr_id k). auto.
-    invert Hk. rewrite H1. sets.
-    f_equal. rewrite (subst_var_in_Zexpr_id k). auto.
-    invert Hk. rewrite H1. sets.
+    unfold subst_var_in_Z_tup. simpl. reflexivity.
   - rewrite Hvarsarg.
     cases l1. auto. cases p. simpl.
-    invert Hk. rewrite H0. repeat rewrite constant_app_no_dups.
+    repeat rewrite constant_app_no_dups.
     sets.
   - eapply nondestructivity_split; eauto.
-    eapply Hk.
 Qed.
-

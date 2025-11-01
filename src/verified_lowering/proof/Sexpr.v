@@ -17,7 +17,7 @@ Import ListNotations.
 From ATL Require Import FrapWithoutSets Div Tactics.
 From Lower Require Import Array Zexpr Result.
 
-Definition context := fmap string (list Zexpr).
+Definition context := fmap string (list nat).
 Definition expr_context := fmap string result.
 Definition stack := fmap string R.
 
@@ -32,7 +32,7 @@ Inductive Sexpr :=
 
 Inductive Sstmt :=
 | SVar (v : string)
-| SGet (v : string) (i : list (Zexpr * Zexpr))
+| SGet (v : string) (i : list (Z * Zexpr))
 | SMul (x y : Sstmt)
 | SAdd (x y : Sstmt)
 | SDiv (x y : Sstmt)
@@ -45,7 +45,7 @@ Fixpoint lowerS (s : Sexpr) (sh : context) : Sstmt :=
   | Var v => SVar v
   | Get v i =>
     match sh $? v with
-    | Some str => SGet v (List.combine str i)
+    | Some str => SGet v (List.combine (map Z.of_nat str) i)
     | None => SVar v
     end    
   | Mul x y => SMul (lowerS x sh) (lowerS y sh)

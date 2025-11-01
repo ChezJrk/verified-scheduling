@@ -54,11 +54,11 @@ Ltac stringify_nat n :=
   | (?x - ?y)%nat =>
       let xstr := stringify_nat x in 
       let ystr := stringify_nat y in
-      constr:((xstr++" - "++ystr)%string)
+      constr:(xstr ++ " - (" ++ ystr ++ ")")
   | (?x * ?y)%nat =>
       let xstr := stringify_nat x in 
       let ystr := stringify_nat y in
-      constr:((xstr++" * "++ystr)%string)
+      constr:("("++xstr ++ ") * (" ++ ystr ++")")
   | (?x //n ?y)%nat =>
       let xstr := stringify_nat x in 
       let ystr := stringify_nat y in
@@ -85,6 +85,10 @@ Ltac stringify_nat n :=
         let xstr := stringify_int x in
         let ystr := stringify_int y in
         constr:("((" ++ xstr ++ ") / (" ++ ystr ++"))")
+    | (?x // ?y)%Z =>
+        let xstr := stringify_int x in
+        let ystr := stringify_int y in
+        constr:("((" ++ xstr ++ ") + (" ++ ystr ++ ") - 1 ) / (" ++ ystr ++")")
     | Z.opp ?x =>
         let xstr :=
           match x with
@@ -150,14 +154,14 @@ Ltac stringify_Bexpr p :=
     constr:(xstr ++ " < " ++ ystr)
   end.
 
-Fixpoint flatten_list_Zexpr_helper (l : list (Zexpr * Zexpr))
-  : (Zexpr * Zexpr) :=
+Fixpoint flatten_list_Zexpr_helper (l : list (Zexpr * Z))
+  : (Zexpr * Z) :=
   match l with
   | [(i,d)] => (i,d)
   | (i,d)::l' =>
       let (i',d') := flatten_list_Zexpr_helper l' in
-      (ZPlus (ZTimes i d') i', ZTimes d d')
-  | _ => (ZLit 0%Z, ZLit 0%Z)
+      ((i * | d' | + i')%z, (d * d')%Z)
+  | _ => (ZLit 0%Z, 0%Z)
   end.
 
 Definition flatten_list_Zexpr l := fst (flatten_list_Zexpr_helper l).
@@ -173,10 +177,10 @@ Ltac stringify_Sstmt s :=
   | SVar ?v => v
   | SGet ?v ?idx =>
       let idx := constr:(swap_tups idx) in
-      let idx := eval simpl in idx in
+      let idx := eval cbn[swap_tups] in idx in
       let flat_idx_ := constr:((flatten_list_Zexpr idx)) in
       let flat_idx_ := eval unfold flatten_list_Zexpr in flat_idx_ in
-      let flat_idx := eval simpl in flat_idx_ in
+      let flat_idx := eval cbn [fst flatten_list_Zexpr_helper] in flat_idx_ in
       let idxstr := stringify_Zexpr flat_idx in
       constr:((v++"["++idxstr++"]")%string)
   | SMul ?x ?y =>
@@ -213,7 +217,7 @@ Ltac stringify_stmt s :=
   match s with
   | Store ?redeq ?v ?idx ?sc =>
       match idx with
-      | @nil (Zexpr * Zexpr) =>
+      | @nil (Zexpr * Z) =>
           let redstr := constr:((stringify_storetype redeq)) in
           let str := stringify_Sstmt sc in
           constr:([v ++ redstr ++ str ++ ";"])
@@ -221,7 +225,7 @@ Ltac stringify_stmt s :=
           let redstr := constr:((stringify_storetype redeq)) in
           let flat_idx_ := constr:((flatten_list_Zexpr idx)) in
           let flat_idx_ := eval unfold flatten_list_Zexpr in flat_idx_ in
-          let flat_idx := eval simpl in flat_idx_ in
+          let flat_idx := eval cbn [fst flatten_list_Zexpr_helper] in flat_idx_ in
           let idxstr := stringify_Zexpr flat_idx in
           let str := stringify_Sstmt sc in
           constr:([v ++ "[" ++ idxstr ++ "]" ++ redstr ++ str ++ ";"])
@@ -233,7 +237,7 @@ Ltac stringify_stmt s :=
                    ++ sstr
                    ++ ["}"])%list )
   | AllocV ?v ?size =>
-      let sizestr := stringify_Zexpr size in
+      let sizestr := stringify_nat size in
       constr:( ([("float *" ++ v ++ " = calloc("++ sizestr ++", sizeof(float));")%string])%list )
   | AllocS ?v =>
       constr:( ([("{ float " ++ v ++ " = 0;")%string])%list )
@@ -254,4 +258,3 @@ Ltac stringify_stmt s :=
       let str2 := stringify_stmt s2 in
       constr:((str1++str2)%list)
   end.
-

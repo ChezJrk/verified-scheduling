@@ -560,10 +560,7 @@ Proof. reflexivity. Qed.
 
 Lemma tensor_to_array_delta_cons :
   forall r0 v i lo hi reindexer,
-    eq_zexpr lo (| eval_Zexpr_Z_total $0 lo |)%z ->
-    eq_zexpr hi (| eval_Zexpr_Z_total $0 hi |)%z ->
-    Z.to_nat (eval_Zexpr_Z_total $0 hi - eval_Zexpr_Z_total $0 lo) =
-      Datatypes.S (Datatypes.length r0) ->
+    Z.to_nat (hi - lo) = Datatypes.S (Datatypes.length r0) ->
     forall r,
       result_has_shape (V (r::r0)) (result_shape_nat (V (r::r0))) ->
       partial_injective
@@ -572,15 +569,15 @@ Lemma tensor_to_array_delta_cons :
               (fun x : list Z =>
                negb (is_None (result_lookup_Z_option x (V (r :: r0)))))
               (mesh_grid (result_shape_Z (V (r :: r0))))) ->
-           (forall l1 l2 : list (Zexpr * Zexpr),
+           (forall l1 l2 : list (Zexpr * Z),
              eq_Z_tuple_index_list l1 l2 ->
              eq_Z_tuple_index_list (reindexer l1) (reindexer l2)) ->
                vars_of_reindexer (reindexer []) \subseteq dom v ->
-             (forall (var : var) (k : Z) (l : list (Zexpr * Zexpr)),
+             (forall (var : var) (k : Z) (l : list (Zexpr * Z)),
                  ~ var \in vars_of_reindexer (reindexer []) ->
                            map (subst_var_in_Z_tup var k) (reindexer l) =
                              reindexer (map (subst_var_in_Z_tup var k) l)) ->
-             (forall l : list (Zexpr * Zexpr),
+             (forall l : list (Zexpr * Z),
                  vars_of_reindexer (reindexer l) =
                    vars_of_reindexer (reindexer []) \cup vars_of_reindexer l) ->
       ~ i \in dom v ->
@@ -594,15 +591,15 @@ Lemma tensor_to_array_delta_cons :
         (tensor_to_array_delta
            (partial_interpret_reindexer
               (fun l0 => reindexer
-                           (((! i ! - lo)%z,
-                              (hi - lo)%z) :: l0))
+                           (((! i ! - | lo |)%z,
+                              (hi - lo)%Z) :: l0))
               (result_shape_Z r)
-              (v $+ (i, eval_Zexpr_Z_total $0 lo))) r) =
+              (v $+ (i, lo))) r) =
         tensor_to_array_delta (partial_interpret_reindexer
                                  reindexer (result_shape_Z (V (r :: r0))) v)
                               (V (r :: r0)).
 Proof.
-  intros ? ? ? ? ? ? ? ? ? ? ? Hinj HeqZlist Hvarsub Hmap Hvarsarg. intros.
+  intros ? ? ? ? ? ? ? ? ? Hinj HeqZlist Hvarsub Hmap Hvarsarg. intros.
   cases r0.
   { unfold tensor_to_array_delta at 1.
     unfold tensor_to_array_delta_by_indices at 1. simpl.
@@ -612,7 +609,7 @@ Proof.
     subst.
     unfold tensor_to_array_delta.
     erewrite result_has_shape_result_shape_Z.
-    2: { invert H2. eauto. }
+    2: { invert H0. eauto. }
     erewrite result_has_shape_result_shape_Z by eauto.
     simpl map.
     symmetry.
@@ -637,7 +634,7 @@ Proof.
     - replace (map Z.of_nat (filter_until (result_shape_nat r) 0))
         with (result_shape_Z r).
       2: { erewrite result_has_shape_result_shape_Z. reflexivity.
-           invert H2. eauto. }
+           invert H0. eauto. }
       eapply partial_injective_cons_reindexer with (r0:=[]);
         try eapply H3; eauto.
       simpl in *. lia.
@@ -645,7 +642,7 @@ Proof.
       2: { eauto. }      
       eauto.
     - unfold injective. propositional.
-      invert H9. auto.
+      invert H7. auto.
     - eapply no_dup_filter.
       eapply no_dup_mesh_grid.
     - eapply no_dup_filter.
@@ -662,7 +659,7 @@ Proof.
     intros.
 
     erewrite result_has_shape_result_shape_Z at 1.
-    2: { invert H2. eauto. }
+    2: { invert H0. eauto. }
     erewrite eq_partial_interpret_reindexer_eval_0.
     erewrite result_has_shape_result_shape_Z by eauto.
     reflexivity.
@@ -671,12 +668,12 @@ Proof.
     eapply no_dup_filter.
     eapply no_dup_mesh_grid.
   - erewrite result_has_shape_result_shape_Z.
-    2: { invert H2. eapply forall_result_has_shape. eauto. reflexivity. }
+    2: { invert H0. eapply forall_result_has_shape. eauto. reflexivity. }
     unfold tensor_to_array_delta.
     eapply eq_tensor_to_array_delta_by_indices.
     intros.
-    erewrite result_has_shape_result_shape_Z in H6.
-    2: { eapply forall_result_has_shape. invert H2. eauto. reflexivity. }
+    erewrite result_has_shape_result_shape_Z in H4.
+    2: { eapply forall_result_has_shape. invert H0. eauto. reflexivity. }
     repeat decomp_index.
     erewrite eq_partial_interpret_reindexer_shift_top_dim_reindexer.
     erewrite result_has_shape_result_shape_Z by eauto.
@@ -687,8 +684,8 @@ Proof.
                     (length (r0 :: r1) :: result_shape_nat r) 0))
       with (result_shape_Z (V (r0 :: r1))).
     2: { erewrite result_has_shape_result_shape_Z.
-         invert H2. reflexivity.
-         eapply forall_result_has_shape. invert H2. eauto. auto. }
+         invert H0. reflexivity.
+         eapply forall_result_has_shape. invert H0. eauto. auto. }
     eapply partial_injective_shift_top_dim_reindexer; eauto; try apply H3.
     inversion 1.
     eapply partial_injective_shift_top_dim_reindexer_match; eauto;
@@ -708,7 +705,7 @@ Lemma tensor_to_array_delta_add_valuation :
       (filter
          (fun x => negb (is_None (result_lookup_Z_option x r)))
          (mesh_grid (result_shape_Z r))) ->
-       (forall (var : var) (k : Z) (l : list (Zexpr * Zexpr)),
+       (forall (var : var) (k : Z) (l : list (Zexpr * Z)),
            ~ var \in vars_of_reindexer (reindexer []) ->
                      map (subst_var_in_Z_tup var k) (reindexer l) =
                        reindexer (map (subst_var_in_Z_tup var k) l)) ->
@@ -726,9 +723,9 @@ Proof.
     unfold partial_interpret_reindexer.
     decomp_index.
     rewrite partially_eval_Z_tup_add_partial by auto.
-    replace (fun e : Zexpr * Zexpr =>
+    replace (fun e : Zexpr * Z =>
                subst_var_in_Z_tup i loz0 (partially_eval_Z_tup v e)) with
-      (fun e : Zexpr * Zexpr =>
+      (fun e : Zexpr * Z =>
          partially_eval_Z_tup v  (subst_var_in_Z_tup i loz0 e)).
     2: { eapply functional_extensionality. intros.
          erewrite subst_var_in_Z_tup_partially_eval_Z_tup_comm; auto. }
@@ -749,9 +746,9 @@ Proof.
     unfold partial_interpret_reindexer in *.
     decomp_index.
     rewrite partially_eval_Z_tup_add_partial in * by auto.
-    replace (fun e : Zexpr * Zexpr =>
+    replace (fun e : Zexpr * Z =>
                subst_var_in_Z_tup i loz0 (partially_eval_Z_tup v e)) with
-      (fun e : Zexpr * Zexpr =>
+      (fun e : Zexpr * Z =>
          partially_eval_Z_tup v  (subst_var_in_Z_tup i loz0 e)) in *.
     2: { eapply functional_extensionality. intros.
          erewrite subst_var_in_Z_tup_partially_eval_Z_tup_comm; auto. }
@@ -779,15 +776,15 @@ Lemma tensor_to_array_delta_shift_match :
          (fun x : list Z =>
             negb (is_None (result_lookup_Z_option x (V (x1 :: xs1)))))
          (mesh_grid (result_shape_Z (V (x1 :: xs1))))) ->
-    (forall l1 l2 : list (Zexpr * Zexpr),
+    (forall l1 l2 : list (Zexpr * Z),
         eq_Z_tuple_index_list l1 l2 ->
              eq_Z_tuple_index_list (reindexer l1) (reindexer l2)) ->
     vars_of_reindexer (reindexer []) \subseteq dom v ->
-    (forall (var : var) (k : Z) (l : list (Zexpr * Zexpr)),
+    (forall (var : var) (k : Z) (l : list (Zexpr * Z)),
         ~ var \in vars_of_reindexer (reindexer []) ->
                   map (subst_var_in_Z_tup var k) (reindexer l) =
                     reindexer (map (subst_var_in_Z_tup var k) l)) ->
-           (forall l : list (Zexpr * Zexpr),
+           (forall l : list (Zexpr * Z),
                vars_of_reindexer (reindexer l) =
                  vars_of_reindexer (reindexer []) \cup vars_of_reindexer l) ->
            (forall var : var, contains_substring "?" var -> ~ var \in dom v) ->
@@ -843,9 +840,7 @@ Proof.
   erewrite <- eq_Z_tuple_index_list_cons_tup.
   split.
   eapply eq_zexpr_comm. eapply eq_zexpr_add_literal.
-  split.
-  eapply eq_zexpr_comm. eapply eq_zexpr_transitivity.
-  eapply eq_zexpr_add_literal. eapply eq_zexpr_id. f_equal. lia.
+  split. lia.
   eapply eq_Z_tuple_index_list_id.
   eapply partial_injective_shift_top_dim_reindexer_match. apply Hinj. eauto.
   cases xs1. simpl. unfold partial_injective. propositional. invert H2.
@@ -861,15 +856,15 @@ Lemma tensor_to_array_delta_cons0 : forall reindexer x1 xs1 v,
               (fun x : list Z =>
                negb (is_None (result_lookup_Z_option x (V (x1 :: xs1)))))
               (mesh_grid (result_shape_Z (V (x1 :: xs1))))) ->
-(forall l1 l2 : list (Zexpr * Zexpr),
+(forall l1 l2 : list (Zexpr * Z),
              eq_Z_tuple_index_list l1 l2 ->
              eq_Z_tuple_index_list (reindexer l1) (reindexer l2)) ->
                vars_of_reindexer (reindexer []) \subseteq dom v ->
-  (forall (var : var) (k : Z) (l : list (Zexpr * Zexpr)),
+  (forall (var : var) (k : Z) (l : list (Zexpr * Z)),
          ~ var \in vars_of_reindexer (reindexer []) ->
          map (subst_var_in_Z_tup var k) (reindexer l) =
          reindexer (map (subst_var_in_Z_tup var k) l)) ->
-  (forall l : list (Zexpr * Zexpr),
+  (forall l : list (Zexpr * Z),
       vars_of_reindexer (reindexer l) =
         vars_of_reindexer (reindexer []) \cup vars_of_reindexer l) ->
 
@@ -882,7 +877,7 @@ Lemma tensor_to_array_delta_cons0 : forall reindexer x1 xs1 v,
       tensor_to_array_delta
         (partial_interpret_reindexer
            (fun l =>
-              reindexer (((|0|, | Z.of_nat (length (x1::xs1))|)%z)::l))
+              reindexer (((|0|, Z.of_nat (length (x1::xs1)))%z)::l))
            (result_shape_Z x1) v) x1.
 Proof.
   intros ? ? ? ?.
@@ -950,10 +945,10 @@ Qed.
 Lemma tensor_to_array_delta_id_valuation :
   forall sh v,
     (forall var : var, contains_substring "?" var -> ~ var \in dom v) ->
-    (partial_interpret_reindexer (fun l : list (Zexpr * Zexpr) => l)
+    (partial_interpret_reindexer (fun l : list (Zexpr * Z) => l)
                                  sh v)
     =
-    (partial_interpret_reindexer (fun l : list (Zexpr * Zexpr) => l)
+    (partial_interpret_reindexer (fun l : list (Zexpr * Z) => l)
        sh $0).
 Proof.
   unfold interpret_reindexer.
@@ -1385,245 +1380,104 @@ Proof.
     propositional.
 Qed.
 
-Lemma constant_nonneg_bounds_size_of_eval_expr_result_has_shape :
-  forall e l,
-    constant_nonneg_bounds e ->
-    size_of e l ->
+Lemma size_of_eval_expr_result_has_shape :
+  forall e sz,
+    size_of e sz ->
     forall v sh ec r,
       eval_expr sh v ec e r ->
-      result_has_shape r (map Z.to_nat (map (eval_Zexpr_Z_total $0) l)).
+      result_has_shape r sz.
 Proof.
-  intros ? ? ? ? ?.
-  pose proof H0.
-  eapply constant_nonneg_bounds_size_of_no_vars in H1; eauto.
-  eapply forall_no_vars_eval_Zexpr_Z_total with (v:=v) in H1.
-  induct e; intros; simpl in *.
-  - (* GEN *) invs.
-    eapply vars_of_Zexpr_empty_eval_Zexpr_literal in H.
-    eapply vars_of_Zexpr_empty_eval_Zexpr_literal in H3.
-    invs. invert H2.
+  intros e. induct e; intros; simpl in *.
+  - (* GEN *) invs. invert H0.
     + (* EMPTY GEN *)
-      eapply eval_Zexpr_Z_eval_Zexpr in H17,H16.
-      eq_eval_Z.
-      simpl map. rewrite <- H5.
-      simpl. replace (Z.to_nat (hiz - loz)) with 0 by lia. econstructor.
+      rename H6 into Hlo. rename H7 into Hhi.
+      eapply eval_Zexpr_includes_valuation in Hlo, Hhi; try apply empty_includes.
+      eapply eval_Zexpr_Z_eval_Zexpr in Hhi,Hlo.
+      rewrite Hlo, Hhi in *. invs.
+      replace (Z.to_nat (hiz0 - loz0)) with 0 by lia. constructor.
     + (* STEP GEN *)
-      eapply eval_Zexpr_Z_eval_Zexpr in H14,H13.
-      eq_eval_Z. simpl map.
-      simpl. cases (Z.to_nat (hiz - loz) =? 0)%nat.
-      eapply Nat.eqb_eq in Heq. lia. clear Heq.
-      rewrite <- H5.
-      simpl. cases (Z.to_nat (hiz-loz)%Z). lia.
+      rename H6 into Hlo. rename H7 into Hhi.
+      eapply eval_Zexpr_includes_valuation in Hlo, Hhi; try apply empty_includes.
+      eapply eval_Zexpr_Z_eval_Zexpr in Hhi,Hlo.
+      rewrite Hlo, Hhi in *. invs.
+      simpl. cases (Z.to_nat (hiz0-loz0)%Z). lia.
       econstructor. erewrite length_eval_expr_gen.
       2: { eassumption. }
-      2: { simpl. eapply eval_Zexpr_Z_eval_Zexpr in H7,H8.
-           rewrite H7,H8. eauto. }
+      2: { simpl. rewrite Hlo,Hhi. eauto. }
       lia.
       clear Heq. clear n.
       eapply IHe. eauto. eassumption.
-      eapply eval_Zexprlist_add. 2: eassumption.
-      2: eassumption. auto.
       pose proof (eval_expr_for_gen_result_has_shape
-                    n sh v ec i (lo+|1|)%z hi (loz+1) hiz e l).
-      assert (eval_Zexpr_Z v (lo + | 1 |)%z = Some (loz+1)%Z).
-      simpl. eapply eval_Zexpr_Z_eval_Zexpr in H8. rewrite H8. eauto.
-      assert ((hiz - (loz + 1))%Z = Z.of_nat n). lia.
-      eapply eval_Zexpr_Z_eval_Zexpr in H7.
-      specialize (H1 H2 H7 H3 H22).
+                    n sh v ec i (lo+|1|)%z hi (loz0+1) hiz0 e l).
+      assert (eval_Zexpr_Z v (lo + | 1 |)%z = Some (loz0+1)%Z).
+      simpl. eapply eval_Zexpr_Z_eval_Zexpr in Hhi. rewrite Hlo. eauto.
+      assert ((hiz0 - (loz0 + 1))%Z = Z.of_nat n). lia.
+      specialize (H ltac:(assumption) ltac:(assumption) ltac:(assumption) ltac:(assumption)).
       eapply Forall_forall. intros.
-      eapply In_nth with (d:= S (SS 0)) in H9. invs.
-      eapply IHe. eauto. eauto.
-      2: { eapply H1. eapply length_eval_expr_gen in H22; eauto.
-           2: { simpl. eapply eval_Zexpr_Z_eval_Zexpr in H8.
-                rewrite H7,H8. reflexivity. } lia. }
-      eapply eval_Zexprlist_add. eauto. eauto.
+      eapply In_nth with (d:= S (SS 0)) in H2. invs.
+      eapply IHe. eauto.
+      eapply H. eapply length_eval_expr_gen in H16; eauto.
+      2: { simpl. rewrite Hlo,Hhi. reflexivity. }
+      lia.
   - (* SUM *)
-    invert H0. invert H2.
+    invert H. invert H0.
     + (* STEP SUM *)
       eapply result_has_shape_add_result.
       eassumption.
       eapply IHe. 2: eassumption. propositional.
-      eapply eval_Zexprlist_add. eassumption. eassumption. eassumption.
-      eapply result_has_shape_for_sum with (n:=(Z.to_nat (hiz - (loz+1))%Z)).
+      eapply result_has_shape_for_sum.
       eapply IHe. propositional.
-      6: apply H16.
-      eassumption. eassumption.
-      simpl. rewrite H6. reflexivity. eauto. lia.
+      4: eassumption. simpl. rewrite H4. reflexivity.
+      eassumption. rewrite Z2Nat.id. reflexivity. lia.
     + (* EMPTY SUM *)
       eq_size_of. eq_eval_Zlist.
       eapply result_has_shape_gen_pad.
-  - invs. invert H2.
-    eq_size_of. eq_eval_Zlist.
-    eapply result_has_shape_gen_pad.
+  - invs. invert H0.
+    eq_size_of.
+    apply result_has_shape_gen_pad.
     eauto.
-  - invs. invert H2.
+  - invs. invert H0.
     + eauto.
     + eauto.
-  - invs. invert H2. simpl.
-    rewrite <- H1.
-    rewrite Z2Nat.inj_add.
-    2: { pose proof H3.
-         eapply constant_nonneg_bounds_sizeof_nonneg in H3.
-         eapply constant_nonneg_bounds_sizeof_no_vars in H.
-         erewrite size_of_sizeof in * by eauto.
-         2: { erewrite size_of_sizeof in * by eauto.
-              econstructor. eauto. eauto. }
-         invert H. invert H3.
-         lia. }
-    2: { pose proof H4.
-         eapply constant_nonneg_bounds_sizeof_nonneg in H4.
-         eapply constant_nonneg_bounds_sizeof_no_vars in H.
-         erewrite size_of_sizeof in * by eauto.
-         2: { erewrite size_of_sizeof in * by eauto.
-              econstructor. eauto.
-              eapply forall_no_vars_eval_Zexpr_Z_total.
-              eapply constant_nonneg_bounds_size_of_no_vars in H4.
-              2: { eauto. }
-              invert H4. eauto. }
-         invert H. invert H4.
-         lia. }
-    pose proof H3. pose proof H4.
-    eapply constant_nonneg_bounds_size_of_no_vars in H3,H4; eauto.
-    eapply forall_no_vars_eval_Zexpr_Z_total with (v:=v) in H3,H4; eauto.
-    eapply result_has_shape_concat; rewrite <- map_cons.
-    + invert H3. invert H4. eq_eval_Zlist.
-      eq_eval_Z. rewrite <- map_cons.
-      eapply IHe1; eauto.
-      simpl. econstructor; eauto.
-    + invert H3. invert H4. eq_eval_Zlist.
-      rewrite H9.
-      eq_eval_Z. rewrite <- map_cons.
-      eapply IHe2.
-      eauto. eauto.
-      simpl. econstructor; eauto. eauto.
-  - invs. invert H2.
-    simpl. rewrite <- H3.
-    rewrite Z2Nat.inj_mul.
-    2: { eapply constant_nonneg_bounds_size_of_nonneg in H; eauto.
-         invert H. lia. }
-    2: { pose proof H.
-         eapply constant_nonneg_bounds_size_of_nonneg in H; eauto.
-         invert H. invert H6.
-         eapply constant_nonneg_bounds_size_of_no_vars in H0; eauto.
-         eapply forall_no_vars_eval_Zexpr_Z_total with (v:=v) in H0; eauto.
-         invert H0. invert H16. invert H13.
-         eq_eval_Z. invert H11. lia. invert H11. lia. invert H11. lia.
-         invert H11. lia.
-         invert H11. lia.
-         invert H11. lia.
-         invert H11. lia.
-         invert H11. lia. }
-    eapply result_has_shape_flatten.
-    repeat rewrite <- map_cons.
-    pose proof H.
-    eapply constant_nonneg_bounds_size_of_no_vars in H; eauto.
-    eapply forall_no_vars_eval_Zexpr_Z_total with (v:=v) in H; eauto.
-    invert H. invert H14. eq_eval_Z.
-    rewrite <- map_cons.
-    rewrite <- map_cons.
-    eapply IHe; eauto.
-    simpl. econstructor; eauto.
-  - invs. eq_eval_Z. repeat rewrite map_cons. pose proof H8.
-    eapply constant_nonneg_bounds_size_of_no_vars in H0.
-    invert H0.
-    erewrite eval_Zexpr_Z_total_ceil_div_distr in *.
-    2: { eapply vars_of_Zexpr_empty_eq_zexpr_eval_Zexpr_Z_total; eauto. }
-    2: { eapply vars_of_Zexpr_empty_eq_zexpr_eval_Zexpr_Z_total; eauto. }
-    2: { eapply vars_of_Zexpr_empty_eq_zexpr_eval_Zexpr_Z_total; eauto. }
-    2: { eapply vars_of_Zexpr_empty_eq_zexpr_eval_Zexpr_Z_total; eauto. }
-    2: eauto.
-    invert H2. eapply IHe in H14; eauto.
-    2: { eapply forall_no_vars_eval_Zexpr_Z_total.
-         econstructor; eauto. }
-    repeat rewrite map_cons in *. pose proof H.
-    eapply constant_nonneg_bounds_size_of_nonneg in H0; eauto.
-    invert H0.
-    eapply vars_of_Zexpr_empty_eq_zexpr_eval_Zexpr_Z_total
-      with (v:=$0) in H10.
-    eapply H10 in H6. invert H6.
-    rewrite Z2Nat_div_distr by lia.
+  - invs. invert H0. eauto using result_has_shape_concat.
+  - invs. invert H0. eauto using result_has_shape_flatten.
+  - invs. invert H0.
+    apply eval_Zexpr_Z_eval_Zexpr in H3. rewrite H3 in *. invs.
     eapply result_has_shape_split_result. lia. eauto.
-  - invs. invert H2.
+  - invs. invert H0.
     simpl.
-    eq_size_of. invert H0. invert H9.
-    invert H12. eq_eval_Zlist. eq_eval_Z.
+    eq_size_of. invert H.
     eapply result_has_shape_transpose_result.
     repeat rewrite <- map_cons.
     eapply IHe; eauto.
-    econstructor; eauto.
-  - invs. invert H2.
-    eapply result_has_shape_rev.    
-    eapply eval_Zexpr_Z_eval_Zexpr in H10. eq_eval_Z.
-    simpl. rewrite <- H5.
-    rewrite Z2Nat.inj_sub.
-    2: lia.
+  - invs. invert H0.
+    eapply result_has_shape_rev.
+    eapply eval_Zexpr_includes_valuation in H3; try apply empty_includes.
+    eapply eval_Zexpr_Z_eval_Zexpr in H3. rewrite H2 in H3. invs.
     eapply result_has_shape_truncl_list.
     eapply result_has_shape_rev.
     erewrite <- result_has_shape_filter_until_0.
-    rewrite <- map_cons.
-    pose proof H3.
-    eapply constant_nonneg_bounds_size_of_no_vars in H0; eauto.
-    eapply forall_no_vars_eval_Zexpr_Z_total with (v:=v) in H0; eauto.
-    invert H0. eq_eval_Z.
-    rewrite <- map_cons.
-    eapply IHe; eauto. econstructor; eauto.
-  - invs. invert H2.
-    eapply eval_Zexpr_Z_eval_Zexpr in H10. eq_eval_Z.
-    simpl. rewrite <- H5.
-    rewrite Z2Nat.inj_sub.
-    2: lia.
+    eapply IHe; eauto.
+  - invs. invert H0.
+    eapply eval_Zexpr_includes_valuation in H3; try apply empty_includes.
+    eapply eval_Zexpr_Z_eval_Zexpr in H3. rewrite H2 in H3. invs.
     eapply result_has_shape_truncl_list.
     erewrite <- result_has_shape_filter_until_0.
-    rewrite <- map_cons.
-    pose proof H3.
-    eapply constant_nonneg_bounds_size_of_no_vars in H0; eauto.
-    eapply forall_no_vars_eval_Zexpr_Z_total with (v:=v) in H0; eauto.
-    invert H0. eq_eval_Z.
-    rewrite <- map_cons.
-    eapply IHe; eauto. econstructor; eauto.
-  - invs. invert H2.
-    eq_size_of. invert H0. eq_eval_Zlist.
-    eapply eval_Zexpr_Z_eval_Zexpr in H6.
-    eq_eval_Z. simpl.
-    rewrite <- H4.
-    pose proof H3.
-    eapply constant_nonneg_bounds_size_of_no_vars in H0; eauto.
-    eapply forall_no_vars_eval_Zexpr_Z_total with (v:=v) in H0; eauto.
-    invert H0.
-    eapply eval_Zexpr_Z_eval_Zexpr in H6,H9.
-    eq_eval_Z. eq_eval_Zlist.
-    simpl. rewrite Z2Nat.inj_add.
-    2: { eapply constant_nonneg_bounds_size_of_nonneg in H3; eauto.         
-         invert H3.
-         lia. }
+    eapply IHe; eauto.
+  - invs. invert H0.
+    eq_size_of. invert H.
+    eapply eval_Zexpr_includes_valuation in H3; try apply empty_includes.
+    eapply eval_Zexpr_Z_eval_Zexpr in H3. rewrite H2 in H3. invs.
     eapply result_has_shape_concat.
-    rewrite <- map_cons.
-    rewrite <- map_cons.
-    eapply IHe; eauto. econstructor; eauto.
-    eapply result_has_shape_repeat_gen_pad. lia.
-  - invs. invert H2.
-    eq_size_of. invert H0. eq_eval_Zlist.
-    eapply eval_Zexpr_Z_eval_Zexpr in H6.
-    eq_eval_Z.
-    simpl.
-    pose proof H3.
-    eapply constant_nonneg_bounds_size_of_no_vars in H0; eauto.
-    eapply forall_no_vars_eval_Zexpr_Z_total with (v:=v) in H0; eauto.
-    invert H0.
-    eapply eval_Zexpr_Z_eval_Zexpr in H6,H9.
-    eq_eval_Z. eq_eval_Zlist.
-    rewrite <- H4.
-    rewrite Z2Nat.inj_add.
-    2: { eapply constant_nonneg_bounds_size_of_nonneg in H3; eauto.
-         invert H3.
-         lia. }
+    eapply IHe; eauto.
+    eapply result_has_shape_repeat_gen_pad.
+  - invs. invert H0.
+    eq_size_of. invert H.
+    eapply eval_Zexpr_includes_valuation in H3; try apply empty_includes.
+    eapply eval_Zexpr_Z_eval_Zexpr in H3. rewrite H2 in H3. invs.
     rewrite Nat.add_comm.
     eapply result_has_shape_concat.
     eapply result_has_shape_repeat_gen_pad.
-    rewrite <- map_cons.
-    rewrite <- map_cons.
-    eapply IHe; eauto. econstructor; eauto.
-    lia.
-  - invs. invert H2. econstructor.
+    eapply IHe; eauto.
+  - invs. invert H0. econstructor.
 Qed.
-
