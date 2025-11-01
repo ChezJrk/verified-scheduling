@@ -247,9 +247,7 @@ Inductive size_of : ATLexpr -> list nat -> Prop :=
     eval_Zexpr $0 hi hiz ->
     size_of body sh ->
     size_of (Gen i lo hi body) (Z.to_nat (hiz - loz) :: sh)
-| SizeOfSum : forall i lo loz hi hiz body sh,
-    eval_Zexpr $0 lo loz ->
-    eval_Zexpr $0 hi hiz ->
+| SizeOfSum : forall i lo hi body sh,
     size_of body sh ->
     size_of (Sum i lo hi body) sh
 | SizeOfGuard : forall p e sh,

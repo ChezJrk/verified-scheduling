@@ -872,26 +872,20 @@ Proof.
    - (* STEPPING SUM *)
      simpl in *.
      unfold lookup_total in *.
-     invert Hsize. rename H14 into Hsize.
-     rename H12 into Hlo. rename H13 into Hhi.
-     pose proof Hlo as Hlo'. pose proof Hhi as Hhi'.
-     eapply eval_Zexpr_includes_valuation in Hlo', Hhi'; try apply empty_includes.
-     apply eval_Zexpr_Z_eval_Zexpr in Hlo', Hhi'. rewrite Hlo', Hhi' in *. invs'.
-     apply eval_Zexpr_Z_eval_Zexpr in Hlo, Hhi.
+     invert Hsize. rename H12 into Hsize.
+     rename H into Hlo. rename H0 into Hhi.
      
      assert (result_has_shape s ls) as Hsh.
      { assert (eval_expr sh v ec (Sum i lo hi body) s).
        econstructor; eauto.
        eapply size_of_eval_expr_result_has_shape.
-       2: eassumption. eauto. econstructor; eauto.
-       apply eval_Zexpr_Z_eval_Zexpr. eassumption.
-       apply eval_Zexpr_Z_eval_Zexpr. eassumption. }
+       2: eassumption. eauto. }
        pose proof H6 as Hshh.
        eapply result_has_shape_add_result_result in Hshh.
        2: { eassumption. }
        inversion Hshh as [Hsh1 Hsh2 ]. clear Hshh.
        invert Heval; eq_eval_Z; try lia.
-       rewrite Hlo',Hhi' in *. invs'.
+       rewrite Hlo,Hhi in *. invs'.
        invert Hpad.
        { cbv [eval_Zexpr_Z_total] in *. rewrite Hhi, Hlo in *. lia. }
          
@@ -919,17 +913,15 @@ Proof.
          
          cases (Z.to_nat (hiz0 - (loz0 + 1))).
          { invert H5.
-           cbv [eval_Zexpr_Z_total] in *. simpl in *. rewrite Hlo', Hhi' in *.
+           cbv [eval_Zexpr_Z_total] in *. simpl in *. rewrite Hlo, Hhi in *.
            invs'. lia.
            
-           cbv [eval_Zexpr_Z_total] in *. simpl in *. rewrite Hlo', Hhi' in *.
+           cbv [eval_Zexpr_Z_total] in *. simpl in *. rewrite Hlo, Hhi in *.
            invs'.
            cases sz; simpl in *; try discriminate. invert H12.
            invert H0.
            * eapply IHeval_expr2 with (asn:=Reduce) in H17.
-             2: { econstructor; eauto. econstructor; eauto.
-                  apply eval_Zexpr_Z_eval_Zexpr. eassumption.
-                  apply eval_Zexpr_Z_eval_Zexpr. eassumption. }
+             2: { econstructor; eauto. }
              2: { eapply well_formed_environment_add_stack. eauto.
                   eapply lookup_Some_dom in H. sets. }
              2: { replace (S SX) with (gen_pad []) by reflexivity.
@@ -952,9 +944,7 @@ Proof.
              propositional. f_equal. ring.
              eauto.
            * eapply IHeval_expr2 with (asn:=Reduce) in H17.
-             2: { econstructor; eauto. econstructor; eauto.
-                  apply eval_Zexpr_Z_eval_Zexpr. eassumption.
-                  apply eval_Zexpr_Z_eval_Zexpr. eassumption. }
+             2: { econstructor; eauto. }
              2: { eapply well_formed_environment_add_stack. eauto.
                   eapply lookup_Some_dom in H. sets. }
              2: { replace (S SX) with (gen_pad []) by reflexivity.
@@ -986,9 +976,7 @@ Proof.
          invert H0. ring.
          invert H0. ring.
          ring.
-         { econstructor; eauto. econstructor; eauto.
-           apply eval_Zexpr_Z_eval_Zexpr. eassumption.
-           apply eval_Zexpr_Z_eval_Zexpr. eassumption. }
+         { econstructor; eauto. }
          eapply well_formed_environment_add_stack. eauto.
          eapply lookup_Some_dom. eauto.
          decomp_well_formed_reindexer.
@@ -1018,18 +1006,16 @@ Proof.
        invs'. rewrite H in *. invs'.
        cases (Z.to_nat (hiz0 - (loz0 + 1))).
        { invert H5.
-         simpl in *. rewrite Hlo', Hhi' in *. invs'. lia.
+         simpl in *. rewrite Hlo, Hhi in *. invs'. lia.
 
          eq_size_of.
-         simpl in *. rewrite Hlo', Hhi' in *. invs'.
+         simpl in *. rewrite Hlo, Hhi in *. invs'.
          
          pose proof H6 as Hh.
          eapply add_result_gen_pad_r in Hh; eauto. subst.
 
          eapply IHeval_expr2 with (asn:=Reduce) in H17.
-         2: { econstructor; eauto. econstructor; eauto.
-              apply eval_Zexpr_Z_eval_Zexpr. eassumption.
-              apply eval_Zexpr_Z_eval_Zexpr. eassumption. }
+         2: { econstructor; eauto. }
          2: { eapply well_formed_environment_add_heap. eauto. eauto. }
          2: { pose proof Hrdx.
               decomp_well_formed_reindexer.
@@ -1066,9 +1052,6 @@ Proof.
        rewrite H in *. invs'.
        rewrite add_overwrite.
        rewrite <- array_add_assoc. split. 2: auto. f_equal. f_equal.
-       2: { econstructor; eauto. econstructor; eauto.
-            apply eval_Zexpr_Z_eval_Zexpr. eassumption.
-            apply eval_Zexpr_Z_eval_Zexpr. eassumption. }
        2: { eapply well_formed_environment_add_heap; eauto. }
        2 :{ decomp_well_formed_reindexer. propositional.
             eapply partial_injective_add_result_r; try apply H6; eauto.
@@ -1126,12 +1109,9 @@ Proof.
      simpl in Heval. invert Heval.
      rewrite H, H0 in *. invs'. lia.
      unfold lookup_total in *.
-     invert Hsize. rename H10 into Hsize. eq_size_of.
-     rename H8 into Hlo. rename H9 into Hhi.
-     pose proof Hlo as Hlo'. pose proof Hhi as Hhi'.
-     eapply eval_Zexpr_includes_valuation in Hlo', Hhi'; try apply empty_includes.
-     apply eval_Zexpr_Z_eval_Zexpr in Hlo', Hhi'. rewrite Hlo', Hhi' in *. invs'.
-     apply eval_Zexpr_Z_eval_Zexpr in Hlo, Hhi.
+     invert Hsize. rename H13 into Hsize. eq_size_of.
+     rename H11 into Hlo. rename H12 into Hhi.
+     rewrite Hlo, Hhi in *. invs'.
 
      destruct (reindexer
               (shape_to_index

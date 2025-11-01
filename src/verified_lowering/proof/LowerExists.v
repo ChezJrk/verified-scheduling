@@ -779,12 +779,8 @@ Proof.
   - (* STEPPING SUM *)
     simpl in *. pose proof Hsize as Hsize0. invert Hsize. 
 
-    rename H14 into Hsize. pose proof Hsize as Hsize'.
-    rename H12 into Hlo. rename H13 into Hhi.
-    pose proof Hlo as Hlo'. pose proof Hhi as Hhi'.
-    eapply eval_Zexpr_includes_valuation in Hlo', Hhi'; try apply empty_includes.
-    apply eval_Zexpr_Z_eval_Zexpr in Hlo', Hhi'. rewrite Hlo', Hhi' in *. invs'.
-    apply eval_Zexpr_Z_eval_Zexpr in Hlo, Hhi.
+    rename H12 into Hsize. pose proof Hsize as Hsize'.
+    rename H into Hlo. rename H0 into Hhi.
 
     invert Hpad.
     { cbv [eval_Zexpr_Z_total] in *. cbn [eval_Zexpr_Z] in *. rewrite Hhi, Hlo in *.
@@ -867,9 +863,7 @@ Proof.
         rewrite Heq in Halloc'. invs'. rewrite H0 in *.
         eassert (size_of _ _) as Hsize1.
         2: eapply IHeval_expr2 with (asn:=Reduce) in Hsize1.
-        { econstructor.
-          apply eval_Zexpr_Z_eval_Zexpr. simpl. rewrite Hlo. reflexivity.
-          apply eval_Zexpr_Z_eval_Zexpr. eassumption. eassumption. }
+        { eauto. }
         2: { eapply well_formed_environment_add_stack.
              eauto. eapply lookup_Some_dom. eauto. }
         2: { decomp_well_formed_reindexer. clear IHeval_expr1.
@@ -918,7 +912,7 @@ Proof.
         eauto. eauto. lia.
         eassumption.
         eapply EvalForBase.
-        simpl. rewrite Hlo'. reflexivity. eassumption. lia.
+        simpl. rewrite Hlo. reflexivity. eassumption. lia.
       }
     }
     { assert (loz + 1 < hiz \/ loz + 1 = hiz)%Z as [H12|H12] by lia.
@@ -937,9 +931,7 @@ Proof.
         rewrite H0 in *.
         eassert (size_of _ _) as Hsize1.
         2: eapply IHeval_expr2 with (asn:=Reduce) in Hsize1.
-        { econstructor.
-          apply eval_Zexpr_Z_eval_Zexpr. simpl. rewrite Hlo. reflexivity.
-          apply eval_Zexpr_Z_eval_Zexpr. eassumption. eassumption. }
+        { eauto. }
         2: { eapply well_formed_environment_add_heap.
              eauto. eauto. }
         2: { decomp_well_formed_reindexer. clear IHeval_expr1.
@@ -987,16 +979,12 @@ Proof.
         eauto. eauto. lia.
         eassumption.
         eapply EvalForBase.
-        simpl. rewrite Hlo'. reflexivity. eassumption. lia.
+        simpl. rewrite Hlo. reflexivity. eassumption. lia.
       }
     }
   - simpl in *. invs.
 
-    rename H8 into Hlo. rename H9 into Hhi.
-    pose proof Hlo as Hlo'. pose proof Hhi as Hhi'.
-    eapply eval_Zexpr_includes_valuation in Hlo', Hhi'; try apply empty_includes.
-    apply eval_Zexpr_Z_eval_Zexpr in Hlo', Hhi'. rewrite Hlo', Hhi' in *. invs'.
-    apply eval_Zexpr_Z_eval_Zexpr in Hlo, Hhi.
+    rename H into Hlo. rename H0 into Hhi.
 
     invert Hpad.
     2: { cbv [eval_Zexpr_Z_total] in *. rewrite Hlo, Hhi in *. lia. }

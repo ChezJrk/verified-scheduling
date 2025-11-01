@@ -123,14 +123,14 @@ Inductive has_pad :
     has_pad ctx v g (Guard p e) l
 | HasPadSumEmpty : forall v i lo hi e l g ctx pads,
     size_of e l ->
-    (eval_Zexpr_Z_total $0 hi - eval_Zexpr_Z_total $0 lo <= 0)%Z ->
+    (eval_Zexpr_Z_total v hi - eval_Zexpr_Z_total v lo <= 0)%Z ->
     pads = shape_to_pad_type l ->
     has_pad ctx v g (Sum i lo hi e) pads
 | HasPadSum : forall v i lo hi e l g ctx,
     (forall iz,
-        (eval_Zexpr_Z_total $0 lo <= iz < eval_Zexpr_Z_total $0 hi)%Z ->
+        (eval_Zexpr_Z_total v lo <= iz < eval_Zexpr_Z_total v hi)%Z ->
         has_pad ctx (v $+(i,iz)) g e l) ->
-    (0 < eval_Zexpr_Z_total $0 hi - eval_Zexpr_Z_total $0 lo)%Z ->
+    (0 < eval_Zexpr_Z_total v hi - eval_Zexpr_Z_total v lo)%Z ->
     has_pad ctx v g (Sum i lo hi e) l
 | HasPadLbind : forall v x e1 e2 l1 l2 g ctx size,
     has_pad ctx v g e1 l1 ->
@@ -811,7 +811,7 @@ Proof.
     + eq_size_of. rewrite <- gen_pad_filter_until_0.
       eapply relate_pads_filter_until_0. eapply result_has_shape_gen_pad.
       eapply relate_pads_gen_pad_id.
-    + eapply IHe. eauto. apply (H11 (eval_Zexpr_Z_total $0 lo)). lia.
+    + eapply IHe. eauto. apply (H9 (eval_Zexpr_Z_total v lo)). lia.
   - invert H. simpl in *. invert H0.
     + eq_size_of. rewrite <- gen_pad_filter_until_0.
       eapply relate_pads_filter_until_0. eapply result_has_shape_gen_pad.
@@ -3636,12 +3636,7 @@ Proof.
   - (* STEP SUM *)
     simpl in *.
     invert Hsize.
-    pose proof H12 as Hloz. pose proof H13 as Hhiz.
-    pose proof Hloz as Hloz'. pose proof Hhiz as Hhiz'.
-    eapply eval_Zexpr_includes_valuation in Hhiz', Hloz'; try apply empty_includes.
-    apply eval_Zexpr_Z_eval_Zexpr in Hloz', Hhiz'.
-    rewrite Hloz', Hhiz' in *. invs. clear Hloz' Hhiz'.
-    apply eval_Zexpr_Z_eval_Zexpr in Hloz, Hhiz.
+    rename H into Hloz. rename H0 into Hhiz.
 
     invert Hpad.
     { cbv [eval_Zexpr_Z_total] in *. rewrite Hloz, Hhiz in *. lia. }
@@ -3649,7 +3644,7 @@ Proof.
     eassert (Hsz: size_of _ _) by eassumption.
     eapply IHeval_expr1 in Hsz.
     2: { eapply result_has_shape_add_result_result in Hsh; eauto. invs.
-         apply H16. lia. }
+         apply H14. lia. }
     2: { eapply result_has_shape_add_result_result in Hsh; eauto. invs.
          eauto. }
     assert (0 < hiz - (loz + 1) \/ hiz = loz + 1)%Z as Hcase by lia.
@@ -3658,20 +3653,15 @@ Proof.
       3: { eapply IHeval_expr2.
            { eapply HasPadSum.
              cbv [eval_Zexpr_Z_total]. simpl. rewrite Hloz, Hhiz.
-             intros. apply H16. lia.
+             intros. apply H14. lia.
              cbv [eval_Zexpr_Z_total]. simpl. rewrite Hloz, Hhiz. lia. }
            eapply result_has_shape_add_result_result in Hsh; eauto.
            invs. eauto. eauto. eauto. econstructor; eauto. }
       eauto. eauto.
     + subst. invert H5.
-      * apply eval_Zexpr_Z_eval_Zexpr in Hhiz, Hloz.
-        eapply eval_Zexpr_includes_valuation in Hloz, Hhiz; try apply empty_includes.
-        apply eval_Zexpr_Z_eval_Zexpr in Hhiz, Hloz. simpl in *. rewrite Hhiz, Hloz in *.
-        invs. lia.
-      * apply eval_Zexpr_Z_eval_Zexpr in Hhiz, Hloz.
-        eapply eval_Zexpr_includes_valuation in Hloz, Hhiz; try apply empty_includes.
-        apply eval_Zexpr_Z_eval_Zexpr in Hhiz, Hloz. simpl in *. rewrite Hhiz, Hloz in *.
-        invs. pose proof H6 as H. eapply result_has_shape_add_result_result in H; eauto.
+      * simpl in *. rewrite Hhiz, Hloz in *. invs'. lia.
+      * simpl in *. rewrite Hhiz, Hloz in *. invs'.
+        pose proof H6 as H. eapply result_has_shape_add_result_result in H; eauto.
         invs.
         pose proof (result_has_shape_gen_pad sz).
         eapply result_has_shape_result_shape_nat in H5,H.
@@ -3688,12 +3678,7 @@ Proof.
      + eauto.
   - (* EMPTY SUM *)
     invert Hsize.
-    pose proof H8 as Hloz. pose proof H9 as Hhiz.
-    pose proof Hloz as Hloz'. pose proof Hhiz as Hhiz'.
-    eapply eval_Zexpr_includes_valuation in Hhiz', Hloz'; try apply empty_includes.
-    apply eval_Zexpr_Z_eval_Zexpr in Hloz', Hhiz'.
-    rewrite Hloz', Hhiz' in *. invs. clear Hloz' Hhiz'.
-    apply eval_Zexpr_Z_eval_Zexpr in Hloz, Hhiz.
+    rename H into Hloz. rename H0 into Hhiz.
 
     invert Hpad.
     2: { cbv [eval_Zexpr_Z_total] in *. rewrite Hloz, Hhiz in *. lia. }
