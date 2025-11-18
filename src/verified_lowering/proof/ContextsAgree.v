@@ -112,8 +112,36 @@ Proof.
       propositional. lia.
 Qed.
 
+(*surely this is implied by some other eval_get lemmas, but i don't see how right now*)
+Lemma eval_get_length v rs l r sz :
+  eval_get v rs l r ->
+  result_has_shape (V rs) sz ->
+  length l = length sz.
+Proof.
+  intros H. revert sz. induction H; simpl; intros sz Hsz.
+  - (*definition of result_has_shape is mildly annoying *)
+    (*definition was like that because result induction principle was useless.
+      this is not a problem anymore, so would be nice to have a better definition of
+      result_has_shape*)
+    (*i suspect refactoring would be a huge amount of effort though*)
+    invert Hsz; simpl.
+    + rewrite nth_error_nil in H1. discriminate H1.
+    + f_equal. apply IHeval_get. apply nth_error_In in H1. simpl in H1.
+      destruct H1; subst.
+      -- assumption.
+      -- rewrite Forall_forall in H6. specialize (H6 _ ltac:(eassumption)).
+         assumption.
+  - (*unnecessary case split again, because of result_has_shape*)
+    invert Hsz.
+    + rewrite nth_error_nil in H1. discriminate H1.
+    + simpl. apply nth_error_In in H1. simpl in H1. destruct H1; subst.
+      -- invert H4. reflexivity.
+      -- rewrite Forall_forall in H5. specialize (H5 _ ltac:(eassumption)).
+         invert H5. reflexivity.
+Qed.
+
 Lemma eval_Sexpr_eval_Sstmt : forall sh (v : valuation) ec s r,
-    eval_Sexpr sh v ec s r ->
+    eval_Sexpr v ec s r ->
     forall st h r0,
       contexts_agree ec st h sh ->
       eval_Sstmt v st h (lowerS s sh) r0 ->
@@ -122,16 +150,16 @@ Lemma eval_Sexpr_eval_Sstmt : forall sh (v : valuation) ec s r,
       | SX => 0%R
       end = r0.
 Proof.
-  induct 1; intros; simpl in *; try invert1 H2; try f_equal; eauto.
-  - eapply H1 in H. invs. rewrite H3 in H7. invert H7. cases r; auto.
-  - rewrite H0 in *.
-    invert H4.
-    rewrite map_fst_combine in H8 by (rewrite length_map; auto).
-    rewrite map_snd_combine in H8 by (rewrite length_map; auto).
-    unfold contexts_agree in *.
-    specialize (H3 x). invert H3. clear H5.
-    eapply H4 in H.
-    clear H4. invs.
+  induct 1; intros; simpl in *;
+    try match goal with
+      | H: eval_Sstmt _ _ _ _ _ |- _ => invert1 H
+      end; f_equal; eauto.
+  - eapply H0 in H. invs. rewrite H2 in H6. invert H6. cases r; auto.
+  - apply H1 in H. (* <- magic*) invs. clear H1. rewrite H in H2. invert H2.
+    assert (length x0 = length l).
+    { eapply eval_get_length in H0; eauto. }
+    rewrite map_fst_combine in H7 by (rewrite length_map; auto).
+    rewrite map_snd_combine in H7 by (rewrite length_map; auto).
     
     (* REVISIT *)
     assert (Some
@@ -146,38 +174,37 @@ Proof.
                (V rs))) = Some l0).
     rewrite <- H5. eauto.
     
-    rewrite H0 in *. invert H.
-    pose proof H2. eapply eval_get_eval_Zexprlist in H2. invs.
-    eapply eval_Zexpr_Z_eval_Zexpr in H8.
-    erewrite eval_Zexpr_Z_flatten_index_flatten in H8; eauto.
-    invert H8.
+    pose proof H0. eapply eval_get_eval_Zexprlist in H0. invs.
+    eapply eval_Zexpr_Z_eval_Zexpr in H7.
+    erewrite eval_Zexpr_Z_flatten_index_flatten in H7; eauto.
+    invert H7.
 
-    pose proof H.
+    pose proof H4 as H2.
     eapply eval_get_lookup_result_Z in H2; eauto. subst.
 
-    erewrite <- result_has_shape_result_shape_Z in H14 by eauto.
+    erewrite <- result_has_shape_result_shape_Z in H13 by eauto.
     rewrite
       tensor_to_array_delta_partial_interpret_reindexer_flatten
-      in H14.
+      in H13.
     unfold array_add in *.
     rewrite lookup_merge in *.
-    erewrite result_has_shape_result_shape_Z in H14 by eauto.
+    erewrite result_has_shape_result_shape_Z in H13 by eauto.
     pose proof forall_nonneg_exists_zero_or_forall_pos x0 as H'.
     destruct H'.
-    + rewrite filter_until_0_id in H14 by assumption.
+    + rewrite filter_until_0_id in H13 by assumption.
       
       rewrite result_lookup_Z_tensor_to_array_delta in *.
-      eapply eval_get_In_meshgrid in H; eauto.
-      erewrite result_has_shape_result_shape_Z in H; eauto.
+      eapply eval_get_In_meshgrid in H4; eauto.
+      erewrite result_has_shape_result_shape_Z in H4; eauto.
       repeat decomp_index.
       cases rs.
       { invert H3. cases x1. simpl in *. contradiction.
         invert H6. rewrite map_cons in *. 
         repeat decomp_index. lia. }
-      invert H3. cases x1. invert H6. discriminate.
-      cbn [map] in *. invert H6.
-      eapply in_mesh_grid_args_flatten_bounds in H.
-      invert H.
+      invert H3. cases x1. invert H8. discriminate.
+      cbn [map] in *. invert H8.
+      eapply in_mesh_grid_args_flatten_bounds in H4.
+      invert H4.
       2: { invert H2.
            enough (0 <= fold_left Z.mul (map Z.of_nat xs_shape)
                          (Z.of_nat (Datatypes.S (Datatypes.length rs))))%Z by lia.
@@ -187,9 +214,9 @@ Proof.
       | H: match alloc_array ?arr1' _ $? ?arr2' with _ => _ end = _ |- _ => remember arr1' as arr1 eqn:E1; remember arr2' as arr2 eqn:E2
       end.
       cases (alloc_array arr1 $0 $? arr2).
-      * pose proof (lookup_alloc_array arr1 arr2).
-        invert H. subst. rewrite H4 in *. discriminate.
-        rewrite H4 in *. invs.
+      * pose proof (lookup_alloc_array arr1 arr2) as H'.
+        invert H'. subst. rewrite H3 in *. discriminate.
+        rewrite H3 in *. invs.
         cases (result_lookup_Z_option (z :: x1) (V (r :: rs))). invs.
         rewrite Rplus_0_l.
         eapply result_lookup_Z_option_result_lookup_Z in Heq. rewrite Heq.
@@ -197,7 +224,7 @@ Proof.
         invs.
         eapply result_lookup_Z_option_result_lookup_Z_None in Heq.
         cases (result_lookup_Z (z :: x1) (V (r :: rs))); eauto.
-      * eapply result_lookup_Z_option_result_lookup_Z in H14. rewrite H14.
+      * eapply result_lookup_Z_option_result_lookup_Z in H13. rewrite H13.
         auto.
       * eapply result_has_shape_self; eauto.
       * eapply result_has_shape_self; eauto.
@@ -209,9 +236,9 @@ Proof.
         erewrite result_has_shape_result_shape_Z by eauto.
         rewrite filter_until_0_id by assumption.
       auto.
-    + eapply eval_get_In_meshgrid in H; eauto.
-      erewrite result_has_shape_result_shape_Z in H; eauto.
-      erewrite exists_0_empty_mesh_grid in H.
+    + eapply eval_get_In_meshgrid in H4; eauto.
+      erewrite result_has_shape_result_shape_Z in H4; eauto.
+      erewrite exists_0_empty_mesh_grid in H4.
       simpl in *. propositional.
       eapply exists_0_map_Z_of_nat.
       eapply exists_0_filter_until_0.
@@ -223,14 +250,12 @@ Proof.
   - eapply IHeval_Sexpr1 in H5; eauto.
     eapply IHeval_Sexpr2 in H9; eauto.
     cases r1; cases r2; subst; simpl; auto. 
-  - invert H3.
-    eapply IHeval_Sexpr1 in H6; eauto.
+  - eapply IHeval_Sexpr1 in H6; eauto.
     eapply IHeval_Sexpr2 in H10; eauto.
     cases r1; cases r2; subst; simpl; auto.
   - eapply IHeval_Sexpr1 in H5; eauto.
     eapply IHeval_Sexpr2 in H9; eauto.
     cases r1; cases r2; subst; simpl; auto.
-  - invert H0. eauto.
 Qed.
 
 Lemma contexts_agree_add_heap : forall ec st h sh a val p,
@@ -390,4 +415,3 @@ Proof.
   - eapply H2 in H1; clear H2. invs. rewrite H1 in *. invs.
     eauto.
 Qed.    
-

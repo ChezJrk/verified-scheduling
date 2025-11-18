@@ -39,11 +39,11 @@ Arguments flatten : simpl nomatch.
             
 Theorem lower_correct_weak_top :
   forall e,
-    forall sh v ec r,
+    forall v ec r,
       (* functional evaluation of ATL *)
-      eval_expr sh v ec e r ->
+      eval_expr v ec e r ->
       forall l, size_of e l ->
-      forall p st h reindexer asn,
+      forall p st h reindexer asn sh,
         (* our environment is well-formed *)
         well_formed_environment st h p sh v (vars_of e) ec ->
         (* reindexer is well-formed *)
@@ -53,7 +53,7 @@ Theorem lower_correct_weak_top :
         (* expr context and imperative state agree *)
         contexts_agree ec st h sh ->
         forall pads g,
-          has_pad sh v g e pads ->
+          has_pad v g e pads ->
         (forall pads (x : var) (r0 : result),
             g $? x = Some pads ->
             ec $? x = Some r0 ->
@@ -87,7 +87,7 @@ Theorem lower_correct_weak_top :
                    end)
 .
 Proof.
-  intros e sh v ec r Heval ls Hsize p st h reindexer asm
+  intros e v ec r Heval ls Hsize p st h reindexer asm sh
          Henv Hrdx Halloc Hctx pads g Hpad Hrelate.
   pose proof Heval.
   eapply lower_correct_exists in H; eauto. invs. pose proof H.
@@ -101,7 +101,7 @@ Theorem lower_correct_top :
   forall e,
     forall r,
       (* functional evaluation of ATL *)
-      eval_expr $0 $0 $0 e r ->
+      eval_expr $0 $0 e r ->
       forall l, size_of e l ->
       forall p st h asn,
         (h,st) =
@@ -113,7 +113,7 @@ Theorem lower_correct_top :
           end ->
         ~ p \in vars_of e ->
         forall pads,
-          has_pad $0 $0 $0 e pads ->
+          has_pad $0 $0 e pads ->
         (* imperative evaluation of lowering *)
         eval_stmt $0 st h (lower e (fun l => l) p asn $0) 
                   (match (fun l => l) (shape_to_index

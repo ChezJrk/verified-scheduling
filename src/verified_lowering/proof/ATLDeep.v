@@ -366,110 +366,110 @@ Inductive eval_stmt (v : valuation) :
 Local Hint Constructors eval_stmt.
 Local Hint Constructors eval_Zexprlist.
 
-Inductive eval_expr (sh : context) :
+Inductive eval_expr :
   valuation -> expr_context -> ATLexpr -> result -> Prop :=
 | EvalGenBase : forall ec v lo hi loz hiz i body,
     eval_Zexpr_Z v lo = Some loz ->
     eval_Zexpr_Z v hi = Some hiz ->
     (hiz <= loz)%Z ->
-    eval_expr sh v ec (Gen i lo hi body) (V [])
+    eval_expr v ec (Gen i lo hi body) (V [])
 | EvalGenStep : forall ec v lo hi loz hiz i body l r,
     eval_Zexpr_Z v lo = Some loz ->
     eval_Zexpr_Z v hi = Some hiz ->
     (loz < hiz)%Z ->
     ~ i \in dom v ->
     ~ contains_substring "?" i ->
-    eval_expr sh (v $+ (i,loz)) ec body r ->
-    eval_expr sh v ec (Gen i (ZPlus lo (ZLit 1%Z)) hi body) (V l) ->
-    eval_expr sh v ec (Gen i lo hi body) (V (r::l))
+    eval_expr (v $+ (i,loz)) ec body r ->
+    eval_expr v ec (Gen i (ZPlus lo (ZLit 1%Z)) hi body) (V l) ->
+    eval_expr v ec (Gen i lo hi body) (V (r::l))
 | EvalSumStep : forall v ec lo hi loz hiz i body r r' s,
     eval_Zexpr_Z v lo = Some loz ->
     eval_Zexpr_Z v hi = Some hiz ->
     (loz < hiz)%Z ->
     ~ i \in dom v ->
     ~ contains_substring "?" i ->
-    eval_expr sh (v $+ (i,loz)) ec body r ->
-    eval_expr sh v ec (Sum i (ZPlus lo (ZLit 1%Z)) hi body) r' ->
+    eval_expr (v $+ (i,loz)) ec body r ->
+    eval_expr v ec (Sum i (ZPlus lo (ZLit 1%Z)) hi body) r' ->
     add_result r r' s ->
-    eval_expr sh v ec (Sum i lo hi body) s
+    eval_expr v ec (Sum i lo hi body) s
 | EvalSumBase : forall v ec lo hi loz hiz i body sz,
     eval_Zexpr_Z v lo = Some loz ->
     eval_Zexpr_Z v hi = Some hiz ->
     (hiz <= loz)%Z ->
     size_of body sz ->
-    eval_expr sh v ec (Sum i lo hi body) (gen_pad sz)
+    eval_expr v ec (Sum i lo hi body) (gen_pad sz)
 | EvalGuardFalse : forall e v ec b sz,
     eval_Bexpr v b false ->
     size_of e sz ->
-    eval_expr sh v ec (Guard b e) (gen_pad sz)
+    eval_expr v ec (Guard b e) (gen_pad sz)
 | EvalGuardTrue : forall e ec v b r,
     eval_Bexpr v b true ->
-    eval_expr sh v ec e r ->
-    eval_expr sh v ec (Guard b e) r
+    eval_expr v ec e r ->
+    eval_expr v ec (Guard b e) r
 | EvalLbindS : forall v e1 e2 x r1 l2 ec,
     size_of e1 [] ->
     ec $? x = None ->
     ~ x \in vars_of e1 /\ ~ x \in vars_of e2 ->
     vars_of e1 \cap vars_of e2 = constant nil ->
-    eval_expr sh v ec e1 (S r1) ->
-    eval_expr (sh $+ (x,[])) v (ec $+ (x,S r1)) e2 l2 ->
-    eval_expr sh v ec (Lbind x e1 e2) l2              
+    eval_expr v ec e1 (S r1) ->
+    eval_expr v (ec $+ (x,S r1)) e2 l2 ->
+    eval_expr v ec (Lbind x e1 e2) l2              
 | EvalLbindV : forall v e1 e2 x l1 l2 ec sz1,
     sz1 <> [] ->
     size_of e1 sz1 ->
     ec $? x = None ->
     ~ x \in vars_of e1 /\ ~ x \in vars_of e2 ->
     vars_of e1 \cap vars_of e2 = constant nil ->
-    eval_expr sh v ec e1 (V l1) ->
-    eval_expr (sh $+ (x, sz1)) v
+    eval_expr v ec e1 (V l1) ->
+    eval_expr v
               (ec $+ (x,V l1)) e2 l2 ->
-    eval_expr sh v ec (Lbind x e1 e2) l2
+    eval_expr v ec (Lbind x e1 e2) l2
 | EvalConcat : forall ec v e1 e2 l1 l2,
-    eval_expr sh v ec e1 (V l1) ->
-    eval_expr sh v ec e2 (V l2) ->
-    eval_expr sh v ec (Concat e1 e2) (V (l1++l2))
+    eval_expr v ec e1 (V l1) ->
+    eval_expr v ec e2 (V l2) ->
+    eval_expr v ec (Concat e1 e2) (V (l1++l2))
 | EvalTranspose : forall e v ec l n m esh,
-    eval_expr sh v ec e (V l) ->
+    eval_expr v ec e (V l) ->
     size_of e (n::m::esh) ->
-    eval_expr sh v ec (Transpose e)
+    eval_expr v ec (Transpose e)
               (transpose_result l (m::n::esh))
 | EvalFlatten : forall e v ec l,
-    eval_expr sh v ec e (V l) ->
+    eval_expr v ec e (V l) ->
     Forall (fun x => exists v, x = V v) l ->
-    eval_expr sh v ec (Flatten e) (V (flatten_result l))
+    eval_expr v ec (Flatten e) (V (flatten_result l))
 | EvalSplit : forall e v ec l k kz,
-    eval_expr sh v ec e (V l) ->
+    eval_expr v ec e (V l) ->
     eval_Zexpr_Z $0 k = Some kz ->
     Forall (fun x => exists v, x = V v) l ->
-    eval_expr sh v ec (Split k e) (V (split_result (Z.to_nat kz) l))
+    eval_expr v ec (Split k e) (V (split_result (Z.to_nat kz) l))
 | EvalTruncr : forall e v ec k kz l,
     eval_Zexpr_Z v k = Some kz ->
     (0 <= kz)%Z ->
-    eval_expr sh v ec e (V l) ->
-    eval_expr sh v ec (Truncr k e)
+    eval_expr v ec e (V l) ->
+    eval_expr v ec (Truncr k e)
               (V (List.rev (truncl_list (Z.to_nat kz) (List.rev l))))
 | EvalTruncl : forall e v ec k kz l,
     eval_Zexpr_Z v k = Some kz ->
     (0 <= kz)%Z ->
-    eval_expr sh v ec e (V l) ->
-    eval_expr sh v ec (Truncl k e) (V (truncl_list (Z.to_nat kz) l))
+    eval_expr v ec e (V l) ->
+    eval_expr v ec (Truncl k e) (V (truncl_list (Z.to_nat kz) l))
 | EvalPadr : forall e v ec l s n k kz,
     eval_Zexpr_Z v k = Some kz ->
     (0 <= kz)%Z ->
     size_of e (n::s) ->
-    eval_expr sh v ec e (V l) ->
-    eval_expr sh v ec (Padr k e)
+    eval_expr v ec e (V l) ->
+    eval_expr v ec (Padr k e)
               (V (l++gen_pad_list ((Z.to_nat kz)::s)))
 | EvalPadl : forall e v ec l s n k kz,
     eval_Zexpr_Z v k = Some kz ->
     (0 <= kz)%Z ->
     size_of e (n::s) ->
-    eval_expr sh v ec e (V l) ->
-    eval_expr sh v ec (Padl k e)
+    eval_expr v ec e (V l) ->
+    eval_expr v ec (Padl k e)
               (V (gen_pad_list ((Z.to_nat kz)::s)++l))
 | EvalScalar : forall s v ec r,
-    eval_Sexpr sh v ec s r ->
-    eval_expr sh v ec (Scalar s) (S r).
+    eval_Sexpr v ec s r ->
+    eval_expr v ec (Scalar s) (S r).
 
 Ltac invs :=
   repeat
@@ -558,8 +558,8 @@ Proof.
   rewrite dom_add. reflexivity.
 Qed.
 
-Lemma length_eval_expr_gen : forall sh c v e l i lo hi,
-    eval_expr sh v c (Gen i lo hi e) (V l) ->
+Lemma length_eval_expr_gen : forall c v e l i lo hi,
+    eval_expr v c (Gen i lo hi e) (V l) ->
     forall z,
       eval_Zexpr_Z v (ZMinus hi lo) = Some z ->
       length l = Z.to_nat z.
@@ -587,8 +587,8 @@ Hint Extern 3 (Datatypes.length _ = Datatypes.length _) =>
        rewrite length_map; rewrite length_nat_range_rec;
        eapply length_mesh_grid_indices; eassumption : reindexers.
 
-Lemma result_shape_gen_length : forall i lo hi body c v sh l,
-    eval_expr c v sh (Gen i lo hi body) (V l) ->
+Lemma result_shape_gen_length : forall i lo hi body v sh l,
+    eval_expr v sh (Gen i lo hi body) (V l) ->
     forall hiz loz,
     eval_Zexpr_Z v lo = Some loz ->
     eval_Zexpr_Z v hi = Some hiz ->
@@ -696,14 +696,14 @@ Proof.
 Qed.
 
 Lemma eval_expr_for_gen_result_has_shape :
-  forall n c v ec i lo hi loz hiz e v0,
+  forall n v ec i lo hi loz hiz e v0,
     eval_Zexpr_Z v lo = Some loz ->
     eval_Zexpr_Z v hi = Some hiz ->
     (hiz -loz)%Z = Z.of_nat n ->
-    eval_expr c v ec (Gen i lo hi e) (V v0) ->
+    eval_expr v ec (Gen i lo hi e) (V v0) ->
     (forall ii,
         0 <= ii < n ->
-        eval_expr c (v$+(i,Z.of_nat ii+loz))%Z ec e
+        eval_expr (v$+(i,Z.of_nat ii+loz))%Z ec e
                   (nth ii v0 (S (SS 0%R)))).
 Proof.
   induct n; intros.
@@ -725,15 +725,15 @@ Lemma result_has_shape_for_sum :
     (forall sz : list nat,
         size_of e sz ->
         forall v : valuation,
-        forall (sh : context) (ec : expr_context) (r : result),
-        eval_expr sh v ec e r ->
+        forall (ec : expr_context) (r : result),
+        eval_expr v ec e r ->
         result_has_shape r sz) ->
-    forall n sz r sh ec i lo hi loz hiz,
+    forall n sz r ec i lo hi loz hiz,
     size_of e sz ->
     eval_Zexpr_Z v lo = Some loz ->
     eval_Zexpr_Z v hi = Some hiz ->
     Z.of_nat n = (hiz - loz)%Z ->
-    eval_expr sh v ec (Sum i lo hi e) r ->
+    eval_expr v ec (Sum i lo hi e) r ->
     result_has_shape r sz.
 Proof.
   intros ? ? ? ?.

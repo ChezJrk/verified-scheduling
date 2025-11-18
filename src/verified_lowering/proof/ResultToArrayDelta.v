@@ -1383,8 +1383,8 @@ Qed.
 Lemma size_of_eval_expr_result_has_shape :
   forall e sz,
     size_of e sz ->
-    forall v sh ec r,
-      eval_expr sh v ec e r ->
+    forall v ec r,
+      eval_expr v ec e r ->
       result_has_shape r sz.
 Proof.
   intros e. induct e; intros; simpl in *.
@@ -1408,7 +1408,7 @@ Proof.
       clear Heq. clear n.
       eapply IHe. eauto. eassumption.
       pose proof (eval_expr_for_gen_result_has_shape
-                    n sh v ec i (lo+|1|)%z hi (loz0+1) hiz0 e l).
+                    n v ec i (lo+|1|)%z hi (loz0+1) hiz0 e l).
       assert (eval_Zexpr_Z v (lo + | 1 |)%z = Some (loz0+1)%Z).
       simpl. eapply eval_Zexpr_Z_eval_Zexpr in Hhi. rewrite Hlo. eauto.
       assert ((hiz0 - (loz0 + 1))%Z = Z.of_nat n). lia.
