@@ -406,23 +406,14 @@ Inductive eval_expr :
     eval_Bexpr v b true ->
     eval_expr v ec e r ->
     eval_expr v ec (Guard b e) r
-| EvalLbindS : forall v e1 e2 x r1 l2 ec,
-    size_of e1 [] ->
-    ec $? x = None ->
-    ~ x \in vars_of e1 /\ ~ x \in vars_of e2 ->
-    vars_of e1 \cap vars_of e2 = constant nil ->
-    eval_expr v ec e1 (S r1) ->
-    eval_expr v (ec $+ (x,S r1)) e2 l2 ->
-    eval_expr v ec (Lbind x e1 e2) l2              
-| EvalLbindV : forall v e1 e2 x l1 l2 ec sz1,
-    sz1 <> [] ->
+| EvalLbind : forall v e1 e2 x l1 l2 ec sz1,
     size_of e1 sz1 ->
     ec $? x = None ->
     ~ x \in vars_of e1 /\ ~ x \in vars_of e2 ->
     vars_of e1 \cap vars_of e2 = constant nil ->
-    eval_expr v ec e1 (V l1) ->
+    eval_expr v ec e1 l1 ->
     eval_expr v
-              (ec $+ (x,V l1)) e2 l2 ->
+              (ec $+ (x,l1)) e2 l2 ->
     eval_expr v ec (Lbind x e1 e2) l2
 | EvalConcat : forall ec v e1 e2 l1 l2,
     eval_expr v ec e1 (V l1) ->

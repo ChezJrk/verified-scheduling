@@ -1257,7 +1257,7 @@ Lemma has_pad_gen_pad : forall v ec r e,
     relate_pads pads r rsh.
 Proof.
   induct 1; intros rsh pads g Hpad Hsh Hrelate size Hsize.
-  11: { invert Hpad.
+  10: { invert Hpad.
     invert Hsize. eq_size_of. invert H1.
     simpl in *|-.
     pose proof H3 as Hsize.
@@ -1686,7 +1686,7 @@ Proof.
         erewrite <- result_has_shape_filter_until_0. auto.
         rewrite <- H10.
         eapply relate_pads_filter_until_0. eauto. eauto. }
-  11: { (* SPLIT *)
+  10: { (* SPLIT *)
     simpl in *. invs. invert Hpad. eq_size_of. invert H2.
     cbv [eval_Zexpr_Z_total] in *.
     apply eval_Zexpr_Z_eval_Zexpr in H4. rewrite H4 in *. invs.
@@ -3730,36 +3730,20 @@ Proof.
     + eq_eval_B. discriminate.
     + simpl in *. 
       eapply IHeval_expr; eauto.
-  - (* LET SCALAR *)
+  - (* LET *)
     invert Hsize. eq_size_of.
     invert Hpad. simpl in *. invs.
     eq_size_of. 
     eapply IHeval_expr1 in H11.
-    2: { econstructor. }
+    2: { eauto using size_of_eval_expr_result_has_shape. }
     2: { eauto. }
     2: { eauto. }
     eapply IHeval_expr2; eauto.
     { intros.
       cases (x0 ==v x); subst.
       + rewrite lookup_add_eq in * by auto. invs. 
-        simpl. assumption.
-      + rewrite lookup_add_ne in * by auto. eauto. }
-  - (* LET VECTOR *)
-    invert Hsize. eq_size_of.
-    invert Hpad. simpl in *. invs.
-    eq_size_of.
-    eapply IHeval_expr1 in H12.
-    2: { eapply size_of_eval_expr_result_has_shape;
-         try apply H4; eauto. }
-    2: { eauto. }
-    2: { eauto. }
-    eapply IHeval_expr2; eauto.
-    { intros.
-      cases (x0 ==v x); subst.
-      + rewrite lookup_add_eq in * by auto. invs.
         erewrite result_has_shape_result_shape_nat.
-        2: { eapply size_of_eval_expr_result_has_shape;
-             try apply H4; eauto. }
+        2: { eauto using size_of_eval_expr_result_has_shape. }
         eapply relate_pads_filter_until_0; eauto.
         eapply size_of_eval_expr_result_has_shape; eauto.
       + rewrite lookup_add_ne in * by auto. eauto. }

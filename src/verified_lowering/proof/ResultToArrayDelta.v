@@ -1438,7 +1438,6 @@ Proof.
     eauto.
   - invs. invert H0.
     + eauto.
-    + eauto.
   - invs. invert H0. eauto using result_has_shape_concat.
   - invs. invert H0. eauto using result_has_shape_flatten.
   - invs. invert H0.
