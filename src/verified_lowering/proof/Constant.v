@@ -429,3 +429,21 @@ Lemma cap_monotone_contra {X} : forall (x y z : set X),
       x \cap y = constant [].
 Proof. intros. sets. Qed.
 
+Lemma constant_not_empty {X} : forall (l : list X),
+    l <> [] ->
+    constant l = constant [] ->
+    False.
+Proof.
+  intros.
+  erewrite <- sets_equal in H0.
+  cases l. propositional.
+  specialize (H0 x).
+  propositional. simpl in H1. sets.
+Qed.
+
+(*idk where to put this*)
+Ltac cups_empty :=
+  repeat match goal with
+    | H: constant _ = constant [] |- _ => eapply constant_not_empty in H; [contradiction | solve[inversion 1]]
+    | H: _ \cup _ = constant [] |- _ => simpl in H; apply cup_empty in H; destruct H
+    end.

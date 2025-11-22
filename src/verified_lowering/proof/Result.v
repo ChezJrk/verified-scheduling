@@ -1116,18 +1116,18 @@ Qed.
 Lemma result_lookup_Z_option_Some_pad_r : forall z x2 x sh k r,
     (0 <= z)%Z ->
     result_lookup_Z_option
-      (z :: x2) (V (x ++ repeat (gen_pad sh) (Z.to_nat k))) = Some r ->
+      (z :: x2) (V (x ++ repeat (gen_pad sh) k)) = Some r ->
     (z < Z.of_nat (length x))%Z.
 Proof.
   intros. simpl in *.
   cases z; try lia.
   simpl in *.
-  cases (x ++ repeat (gen_pad sh) (Z.to_nat k)). discriminate.
-  cases x. simpl in *. cases (Z.to_nat k). simpl in *. discriminate.
+  cases (x ++ repeat (gen_pad sh) k). discriminate.
+  cases x. simpl in *. cases k. simpl in *. discriminate.
   simpl in *. invert Heq.
   rewrite result_lookup_Z_option_gen_pad in H0. discriminate.
   simpl. lia.
-  cases (nth_error (x ++ repeat (gen_pad sh) (Z.to_nat k))
+  cases (nth_error (x ++ repeat (gen_pad sh) k)
                    (Z.to_nat (Z.pos p))).
   2 : { discriminate. }
   pose proof Heq.

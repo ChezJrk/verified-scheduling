@@ -451,7 +451,7 @@ Proof.
     rewrite H.
     simpl. eauto.
 Qed.
-Lemma map_fst_combine {X} : forall (l1 l2 : list X),
+Lemma map_fst_combine {X Y} : forall (l1 : list X) (l2 : list Y),
     length l1 = length l2 ->
     map fst (combine l1 l2) = l1.
 Proof.
@@ -460,7 +460,7 @@ Proof.
   - rewrite IHl1 by lia. auto.
 Qed.
 
-Lemma map_snd_combine {X} : forall (l2 l1 : list X),
+Lemma map_snd_combine {X Y} : forall (l2 : list X) (l1 : list Y),
     length l1 = length l2 ->
     map snd (combine l1 l2) = l2.
 Proof.
@@ -592,15 +592,12 @@ Proof.
 Qed.
 
 Lemma forall_nonneg_exists_zero_or_forall_pos : forall l,
-    Forall (fun x : nat => x >= 0) l ->
     Forall (fun x : nat => x > 0) l \/ Exists (fun x => x = 0) l.
 Proof.
   induct l; intros.
   - auto.
-  - invert H. invert H2.
-    + right. eauto.
-    + eapply IHl in H3. invert H3. left. econstructor. lia. auto.
-      right. eauto.
+  - assert (a = 0 \/ a > 0) by lia. destruct H; eauto.
+    destruct IHl; eauto.
 Qed.
 
 Lemma concat_repeat_empty {X} : forall n,
@@ -724,22 +721,12 @@ Proof.
     rewrite IHl. auto.
 Qed.
 
-Lemma Z_of_nat_fold_left_mul : forall l,
-    Z.of_nat (fold_left mul l 1) = fold_left Z.mul (map Z.of_nat l) 1%Z.
+Lemma Z_of_nat_fold_left_mul : forall l n,
+    Z.of_nat (fold_left mul l n) = fold_left Z.mul (map Z.of_nat l) (Z.of_nat n).
 Proof.
   induct l; intros.
   - reflexivity.
-  - simpl. replace (match Z.of_nat a with
-                    | 0%Z => 0%Z
-                    | Z.pos y' => Z.pos y'
-                    | Z.neg y' => Z.neg y'
-                    end) with (1 * Z.of_nat a)%Z.
-    rewrite fold_left_mul_assoc.
-    rewrite add_0_r.
-    replace a with (1 * a) at 1 by lia.
-    rewrite fold_left_mul_assoc_nat.
-    lia.
-    cases (Z.of_nat a); lia.
+  - simpl. rewrite IHl. rewrite Nat2Z.inj_mul. reflexivity.
 Qed.
 
 Fixpoint extract_Some {X} (l : list (option X)) :=
@@ -1165,14 +1152,14 @@ Proof.
 Qed.
 
 Lemma exists_filter_until_0 : forall l,
-  Exists (fun x => x = 0%Z) l ->
-  Exists (fun x2 => Z.of_nat x2 = 0%Z) (filter_until (map Z.to_nat l) 0).
+  Exists (fun x => x = 0) l ->
+  Exists (fun x2 => x2 = 0) (filter_until l 0).
 Proof.
   induct l; intros.
   - invert H.
   - invert H.
     + simpl. econstructor. lia.
-    + simpl. cases (Z.to_nat a). simpl. econstructor. lia.
+    + simpl. cases a. simpl. econstructor. lia.
       simpl. right. eauto.
 Qed.
 
@@ -1312,4 +1299,12 @@ Proof.
   2: { eapply le_trans. eapply Div0.mul_div_le. lia. }
   rewrite Div0.mod_eq by lia. eauto.
 Qed.
-  
+
+Lemma fold_left_mul_filter_until l n :
+  fold_left mul (filter_until l 0) n = fold_left mul l n.
+Proof.
+  revert n. induction l; eauto.
+  assert (0 = a \/ 0 < a) as [?|?] by lia.
+  - subst. simpl. intros. rewrite fold_left_mul_assoc_nat. lia.
+  - rewrite filter_until_0_cons by lia. simpl. auto.
+Qed.

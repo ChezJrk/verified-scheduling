@@ -188,8 +188,8 @@ Ltac arith :=
 
 Ltac outer_dim e :=
   let outer_dim := constr:(match (sizeof e) with
-                            | n::_ => eval_Zexpr_Z_total $0 n
-                            | _ => 0%Z
+                            | n::_ => n
+                            | _ => 0
                             end) in
   let outer_dim := eval unfold eval_Zexpr_Z_total in outer_dim in
     let outer_dim := eval simpl in outer_dim in
@@ -197,35 +197,45 @@ Ltac outer_dim e :=
 
 Ltac inner_dim e :=
   let inner_dim := constr:(match (sizeof e) with
-                           | _::d::_ => eval_Zexpr_Z_total $0 d
-                           | _ => 0%Z
+                           | _::d::_ => d
+                           | _ => 0
                            end) in
   let inner_dim := eval unfold eval_Zexpr_Z_total in inner_dim in
     let inner_dim := eval simpl in inner_dim in
       inner_dim.
+
+Ltac infer_size_of :=
+  repeat match goal with
+    | _ => progress simpl
+    | |- size_of _ _ => econstructor
+    | |- eval_Zexpr _ _ _ => econstructor; eauto
+    | |- _ = _ => reflexivity
+    | |- _ :: _ = _ :: _ => f_equal
+    | _ => lia
+    end.
+
 Ltac infer_pad left right :=
   match goal with
-  | |- has_pad _ _ _ (Scalar _) _ =>
+  | |- has_pad _ _ (Scalar _) _ =>
       eapply HasPadScalarNotPad
-  | |- has_pad _ _ _ (Split _ _) _ =>
+  | |- has_pad _ _ (Split _ _) _ =>
       infer_split left right 
-  | |- has_pad _ _ _ (Truncr ?k _) _ =>
+  | |- has_pad _ _ (Truncr ?k _) _ =>
       infer_truncr left right 0%nat
-  | |- has_pad _ _ _ (Truncl ?k _) _ =>
+  | |- has_pad _ _ (Truncl ?k _) _ =>
       infer_truncl left right 0%nat
-  | |- has_pad _ _ _ (Padr ?k _) _ =>
+  | |- has_pad _ _ (Padr ?k _) _ =>
       infer_padr left right
-  | |- has_pad _ _ _ (Padl ?k _) _ =>
+  | |- has_pad _ _ (Padl ?k _) _ =>
       infer_padl left right
-  | |- has_pad _ _ _ (Gen ?i ?lo ?hi ?e) _ =>
+  | |- has_pad _ _ (Gen ?i ?lo ?hi ?e) _ =>
       infer_gen left right
-  | |- has_pad _ _ _ (Lbind ?x ?e1 ?e2) _ =>
+  | |- has_pad _ _ (Lbind ?x ?e1 ?e2) _ =>
       eapply HasPadLbind;
       [ solve [ infer_pad 0%Z 0%Z ] |
-        repeat (econstructor; autounfold; try intros; simpl );
-        try list_eq; eauto |
+        infer_size_of |
         solve [ infer_pad left right ] ]
-  | |- has_pad ?ctx ?v ?g (Guard ?p ?e) _ =>
+  | |- has_pad ?v ?g (Guard ?p ?e) _ =>
       first [ solve [ eapply HasPadGuardFalse;
                       [ eapply Bexpr_to_Prop_eval_Bexpr_false;
                         [ autounfold; simpl;
@@ -233,66 +243,66 @@ Ltac infer_pad left right :=
                                  [ rewrite lookup_add_ne by inversion 1 |
                                    rewrite lookup_add_eq by auto ]; lia |
                           simpl; repeat rewrite dom_add; rewrite dom_empty; simpl; sets ] |
-                repeat (econstructor; eauto) |
+                infer_size_of |
                 reflexivity ] ] |
               eapply HasPadGuardTrue; infer_pad left right ]
-  | |- has_pad ?ctx ?v ?g (Concat ?e1 ?e2) _ =>
+  | |- has_pad ?v ?g (Concat ?e1 ?e2) _ =>
       infer_concat left right
-  | |- has_pad ?ctx ?v ?g (Sum ?i ?lo ?hi ?e) _ =>
+  | |- has_pad ?v ?g (Sum ?i ?lo ?hi ?e) _ =>
       first [ eapply HasPadSumEmpty;
-              [ repeat (econstructor; eauto) |
+              [ infer_size_of |
                 autounfold; simpl; lia |
                 reflexivity ] |
               eapply HasPadSum;
               [ autounfold; simpl; intros; infer_pad left right |
                 autounfold; simpl; lia ] ]
-  | |- has_pad ?ctx ?v ?g (Flatten ?e) _ =>
+  | |- has_pad ?v ?g (Flatten ?e) _ =>
       infer_flatten left right 0%nat
-  | |- has_pad _ _ _ (Transpose _) _ =>
+  | |- has_pad _ _ (Transpose _) _ =>
       infer_transpose 0%Z 0%Z 0%nat 0%nat
   end with infer_padr left right :=
     match goal with
-    | |- has_pad _ _ _ (Padr ?k ?e) _ =>
+    | |- has_pad _ _ (Padr ?k ?e) _ =>
         let outer_dim := outer_dim e in
         let right' := constr:(Z.max (right-eval_Zexpr_Z_total $0 k)%Z 0%Z) in
         let right' := eval unfold eval_Zexpr_Z_total in right' in
           let right' := eval simpl in right' in
-            first [ solve [ assert (0 < outer_dim)%Z as Hcheck by lia;
+            first [ solve [ assert (0 < outer_dim)%nat as Hcheck by lia;
                             clear Hcheck;
                             eapply HasPadPadr;
                             [ autounfold; simpl; intros; try lia;
                                       infer_pad left right' |
-                              repeat (econstructor; eauto) |
+                              infer_size_of |
                               arith |
                               arith |
                               arith |
                               arith ] ] |
-                    eapply HasPadPadrEmpty; [ repeat (econstructor; eauto) |
+                    eapply HasPadPadrEmpty; [ infer_size_of |
                                               infer_pad 0%Z 0%Z |
                                               arith ] ]
   end with infer_padl left right :=
     match goal with
-    | |- has_pad _ _ _ (Padl ?k ?e) _ =>
+    | |- has_pad _ _ (Padl ?k ?e) _ =>
         let outer_dim := outer_dim e in
         let left' := constr:(Z.max (left-eval_Zexpr_Z_total $0 k)%Z 0%Z) in
         let left' := eval unfold eval_Zexpr_Z_total in left' in
           let left' := eval simpl in left' in
-            first [ solve [ assert (0 < outer_dim)%Z as Hcheck by lia;
+            first [ solve [ assert (0 < outer_dim)%nat as Hcheck by lia;
                             clear Hcheck;
                             eapply HasPadPadl;
                             [ autounfold; simpl; intros; try lia;
                                       infer_pad left' right |
-                              repeat (econstructor; eauto) |
+                              infer_size_of |
                               arith |
                               arith |
                               arith |
                               arith ] ] |
-                    eapply HasPadPadlEmpty; [ repeat (econstructor; eauto) |
+                    eapply HasPadPadlEmpty; [ infer_size_of |
                                               infer_pad 0%Z 0%Z |
                                               arith ] ]
 end with infer_truncr left right offset :=
     match goal with
-    | |- has_pad _ _ _ (Truncr ?k ?e) _ =>
+    | |- has_pad _ _ (Truncr ?k ?e) _ =>
         let outer_dim := outer_dim e in
         let right' := constr:((right+ eval_Zexpr_Z_total $0 k)%Z) in
         let right' := eval unfold eval_Zexpr_Z_total in right' in
@@ -305,7 +315,7 @@ end with infer_truncr left right offset :=
             ]
   end with infer_truncl left right offset :=
     match goal with
-    | |- has_pad _ _ _ (Truncl ?k ?e) _ =>
+    | |- has_pad _ _ (Truncl ?k ?e) _ =>
         let outer_dim := outer_dim e in
         let left' := constr:((left+ eval_Zexpr_Z_total $0 k)%Z) in
         let left' := eval unfold eval_Zexpr_Z_total in left' in
@@ -315,20 +325,22 @@ end with infer_truncr left right offset :=
                             [ infer_pad left' right |
                               arith |
                               arith ] ] |
-                    assert (Z.to_nat left' + offset < Z.to_nat outer_dim) as
+                    assert (Z.to_nat left' + offset < outer_dim)%nat as
                     Hcheck by (arith; lia); clear Hcheck;
                     infer_truncl left right constr:(offset+1)
             ]
   end with infer_concat left right :=
     match goal with
-    | |- has_pad _ _ _ (Concat _ _) _ =>
-        first [ solve [ eapply HasPadConcat with
+    | |- has_pad _ _ (Concat _ _) _ =>
+        first [
+            (*Uncommenting the folllowing code will cause blur_tiles_guarded pad inference
+              to take a very very long time.  idk if it goes into an infinite loop, but i
+              let it run for 30 minutes and nothing happened.*)
+            (*solve [ eapply HasPadConcat with
                     (x:=0) (y:=0) (a:=0) (b:=0)
-                    (l1:=0) (r1:=0) (l1:=0) (r2:=0);
-        [ repeat (econstructor; autounfold; try intros; simpl );
-          try list_eq; eauto |
-          repeat (econstructor; autounfold; try intros; simpl );
-          try list_eq; eauto |
+                    (l1:=0) (r1:=0) (r2:=0);
+        [ infer_size_of |
+          infer_size_of |
           autounfold; simpl; intros; try lia;
                   infer_pad 0%Z 0%Z |
           autounfold; simpl; intros; try lia;
@@ -336,12 +348,10 @@ end with infer_truncr left right offset :=
           arith |
           arith |
           arith |
-          arith ] ] |
+          arith ] ] |*)
           solve [ eapply HasPadConcat;
-        [ repeat (econstructor; autounfold; try intros; simpl );
-          try list_eq; eauto |
-          repeat (econstructor; autounfold; try intros; simpl );
-          try list_eq; eauto |
+        [ infer_size_of |
+          infer_size_of |
           autounfold; simpl; intros; try lia;
                   infer_pad 0%Z 0%Z |
           autounfold; simpl; intros; try lia;
@@ -352,7 +362,7 @@ end with infer_truncr left right offset :=
           arith ] ] ]
   end with infer_gen left right :=
     match goal with
-    | |- has_pad _ _ _ (Gen ?i ?lo ?hi _) (PadCons ?kk ?l ?p1 ?r ?p2 ?cc) =>
+    | |- has_pad _ _ (Gen ?i ?lo ?hi _) (PadCons ?kk ?l ?p1 ?r ?p2 ?cc) =>
         let kkk := match goal with
                    | |- _ => let _ :=
                                (* if it's an evar let's instantiate 
@@ -410,8 +420,7 @@ end with infer_truncr left right offset :=
                         [ arith |
                           arith |
                           arith |
-                          repeat (econstructor; autounfold; try intros;simpl );
-                          try list_eq; eauto |
+                          infer_size_of |
                           autounfold; simpl; intros; try lia; infer_pad 0%Z 0%Z |
                           autounfold; simpl; intros; try lia; infer_pad 0%Z 0%Z |
                           autounfold;simpl;intros;
@@ -423,14 +432,13 @@ end with infer_truncr left right offset :=
                         [ arith |
                           arith |
                           arith |
-                          repeat (econstructor; autounfold; try intros; simpl );
-                          try list_eq; eauto |
+                          infer_size_of |
                           autounfold; simpl; intros; try lia; infer_pad 0%Z 0%Z |
                           autounfold; simpl; intros; try lia; infer_pad 0%Z 0%Z |
                           autounfold;simpl;intros;first [ lia|infer_pad 0%Z 0%Z ] |
                           try (autounfold; simpl; try first [ lia | reflexivity]) ]
                 ] ]
-    | |- has_pad _ _ _ (Gen ?i ?lo ?hi ?e) _ =>
+    | |- has_pad _ _ (Gen ?i ?lo ?hi ?e) _ =>
         (* if it doesn't have any pad type structure all bets are off *)
         let kk:= constr:(Z.to_nat left) in
         let cc:= constr:(Z.to_nat right) in
@@ -444,8 +452,7 @@ end with infer_truncr left right offset :=
                         [ arith |
                           arith |
                           arith |
-                          repeat (econstructor; autounfold; try intros;simpl );
-                          try list_eq; eauto |
+                          infer_size_of |
                           autounfold; simpl; intros; try lia; infer_pad 0%Z 0%Z |
                           autounfold; simpl; intros; try lia; infer_pad 0%Z 0%Z |
                           autounfold;simpl;intros;
@@ -457,8 +464,7 @@ end with infer_truncr left right offset :=
                         [ arith |
                           arith |
                           arith |
-                          repeat (econstructor; autounfold; try intros; simpl );
-                          try list_eq; eauto |
+                          infer_size_of |
                           autounfold; simpl; intros; try lia; infer_pad 0%Z 0%Z |
                           autounfold; simpl; intros; try lia; infer_pad 0%Z 0%Z |
                           autounfold;simpl;intros;first [ lia|infer_pad 0%Z 0%Z ] |
@@ -467,7 +473,7 @@ end with infer_truncr left right offset :=
     end
 with infer_flatten left right offset :=
   match goal with
-  | |- has_pad _ _ _ (Flatten ?e) (PadCons ?xx ?ll ?p1 ?rr ?p4 ?yy) =>
+  | |- has_pad _ _ (Flatten ?e) (PadCons ?xx ?ll ?p1 ?rr ?p4 ?yy) =>
       let inner_dim := inner_dim e in
       let outer_dim := outer_dim e in
       let xxx := match goal with
@@ -480,55 +486,55 @@ with infer_flatten left right offset :=
                            constr:(Z.to_nat right)
                  | |- _ => yy
                  end in
-      let aa := constr:(xxx mod Z.to_nat inner_dim) in
-      let bb := constr:(yyy mod Z.to_nat inner_dim) in
-      let x_ := constr:(xxx / Z.to_nat inner_dim) in
-      let y_ := constr:(yyy / Z.to_nat inner_dim) in
+      let aa := constr:(xxx mod inner_dim) in
+      let bb := constr:(yyy mod inner_dim) in
+      let x_ := constr:(xxx / inner_dim) in
+      let y_ := constr:(yyy / inner_dim) in
       let ll := offset in
       (* idtac x_; idtac ll; idtac aa; idtac bb; idtac y_; *)
       first [ solve [ eapply HasPadFlattenStrong with (b:=bb) (a:=aa)
                                                       (x:=x_) (y:=y_) (l:=ll)
                       (l1:=0) (r1:=0) (c:=0) (l2:=0) (r2:=0) (d:=0);
               [ infer_pad x_ y_  |
-                repeat econstructor; eauto |
+                infer_size_of |
                 arith | arith | arith | arith | arith | arith | arith |
                 arith | arith ] ] |
               solve [ eapply HasPadFlattenStrong with (b:=bb) (a:=aa)
                                                       (x:=x_) (y:=y_) (l:=ll)
                       (l1:=0) (r1:=0) (c:=0);
               [ infer_pad x_ y_  |
-                repeat econstructor; eauto |
+                infer_size_of |
                 arith | arith | arith | arith | arith | arith | arith |
                 arith | arith ] ] |
               solve [ eapply HasPadFlattenStrong with (b:=bb) (a:=aa)
                                               (x:=x_) (y:=y_) (l:=ll);
               [ infer_pad x_ y_  |
-                repeat econstructor; eauto |
+                infer_size_of |
                 arith | arith | arith | arith | arith | arith | arith |
                 arith | arith ] ] |
               solve [ eapply HasPadFlattenStrong with (b:=bb) (a:=aa)
                                               (x:=x_) (y:=y_);
               [ infer_pad x_ y_ |
-                repeat econstructor; eauto |
+                infer_size_of |
                 arith | arith | arith | arith | arith | arith | arith |
                 arith | arith ] ] |
-              assert (offset < Z.to_nat outer_dim - x_ - y_)
+              assert (offset < outer_dim - x_ - y_)
               as Hcheck by (arith; lia); clear Hcheck;
               solve [ infer_flatten left right constr:(offset+1) ] 
         ]
 end with infer_transpose left right offset1 offset2 :=
     match goal with
-    | |- has_pad _ _ _ (Transpose ?e) ?pi =>
+    | |- has_pad _ _ (Transpose ?e) ?pi =>
           is_unspec_pad_ty pi;
           solve [ eapply HasPadTransposeWeak;
                   [ infer_pad 0%Z 0%Z |
-                    repeat econstructor |
+                    infer_size_of |
                     arith |
                     arith |
                     arith |
                     arith ]
             ]
-    | |- has_pad _ _ _ (Transpose ?e)
+    | |- has_pad _ _ (Transpose ?e)
                  (PadCons ?ll_ ?lll_ ?pi1 ?rrr_ ?pi2 ?rr_) =>
         let outer_dim := outer_dim e in
         let inner_dim := inner_dim e in
@@ -542,32 +548,32 @@ end with infer_transpose left right offset1 offset2 :=
                              constr:(Z.to_nat right)
                    | |- _ => rr_
                    end in
-        let lll':= constr:(Z.to_nat inner_dim - ll' - rr' - offset1) in
+        let lll':= constr:(inner_dim - ll' - rr' - offset1) in
         let rrr' := offset1 in
-        let l' := constr:(Z.to_nat outer_dim - offset2) in
+        let l' := constr:(outer_dim - offset2) in
         let r' := offset2 in          
         (* idtac ll'; idtac rr'; idtac lll'; idtac rrr'; *)
         first [ solve [ eapply HasPadTransposeStrong
                 with (x:=0) (y:=0) (ll:=ll') (rr:=rr')
                      (lll:=lll') (rrr:=rrr') (l:=l') (r:=r');
                         cycle 1;
-                        [ repeat (econstructor; eauto) |
+                        [ infer_size_of |
                           arith |
                           arith |
                           arith |
                           arith |
                           arith |
               autounfold; simpl; intros; arith; try lia; infer_pad 0%Z 0%Z ] ] |
-                assert (offset2 + 1 <= Z.to_nat outer_dim - ll' - rr')
+                assert (offset2 + 1 <= outer_dim - ll' - rr')
                 as Hcheck by (arith; try lia) ; clear Hcheck;
                 infer_transpose left right offset1 constr:((offset2 + 1)%nat)
           ]
     end with infer_split left right :=
       match goal with
-      | |- has_pad _ _ _ (Split _ _) _ =>
+      | |- has_pad _ _ (Split _ _) _ =>
           eapply HasPadSplit;
           [ infer_pad 0%Z 0%Z |
-            repeat econstructor |
+            infer_size_of |
             arith |
             arith |
             arith |
@@ -577,14 +583,14 @@ end with infer_transpose left right offset1 offset2 :=
 Goal forall v, Common.truncl 3 (GEN [ i < 10 ] (|[ 1 <? i ]| v _[i+4])) = [].
 Proof.
   let ast := R in
-  assert (exists pad, has_pad $0 $0 $0 ast pad).
+  assert (exists pad, has_pad $0 $0 ast pad).
   { eexists. Fail infer_pad 0%Z 0%Z.
 Abort. 
 
 Goal forall v, Common.truncl 3 (GEN [ i < 10 ] (v _[i])) = [].
 Proof.
   let ast := R in
-  assert (exists pad, has_pad $0 $0 $0 ast pad).
+  assert (exists pad, has_pad $0 $0 ast pad).
   { eexists. Fail infer_pad 0%Z 0%Z.
 Abort.
 
@@ -595,7 +601,7 @@ Goal forall n m (v : list (list R)),
     blurimmediate_partition n m v = @nil _.
 Proof.
   let ast := R in
-  assert (exists pad, has_pad $0 $0 $0 ast pad).
+  assert (exists pad, has_pad $0 $0 ast pad).
   { eexists. infer_pad 0%Z 0%Z. }
 Abort.
 
@@ -607,7 +613,7 @@ Goal forall (A B C D : nat) (m1 m2 : (list (list (list (list R))))),
 Proof.
   autounfold.
   let ast := R in
-  assert (exists pad, has_pad $0 $0 $0 ast pad).
+  assert (exists pad, has_pad $0 $0 ast pad).
   { eexists. infer_pad 0%Z 0%Z. }
 Abort.  
 
@@ -621,7 +627,7 @@ Goal forall B C K W RR (w : list (list (list R))) (x : list (list (list R))),
       im2col_lifted B K W C RR w x.
 Proof.
   let ast := R in
-  assert (exists pad, has_pad $0 $0 $0 ast pad).
+  assert (exists pad, has_pad $0 $0 ast pad).
   { eexists. infer_pad 0%Z 0%Z. }
 Abort.    
 
@@ -634,7 +640,7 @@ Goal forall B C K W RR (w : list (list (list R))) (x : list (list (list R))),
     im2col_lifted B K W C RR w x = im2col B K W C RR w x.
 Proof.
   let ast := R in
-  assert (exists pad, has_pad $0 $0 $0 ast pad).
+  assert (exists pad, has_pad $0 $0 ast pad).
   { eexists. infer_pad 0%Z 0%Z. }
 Abort.    
 
@@ -650,7 +656,7 @@ Goal forall (W C B K : Z) (x w : list (list (list R))) (RR : Z) (a b :nat),
 Proof.
   intros. unfold scatter_full.
   let ast := R in
-  assert (exists pad, has_pad $0 $0 $0 ast pad).
+  assert (exists pad, has_pad $0 $0 ast pad).
   { eexists. infer_pad 0%Z 0%Z. }
 Abort.
 
@@ -666,7 +672,7 @@ Goal forall (W C B K : Z) (x w : list (list (list R))) (RR : Z) (a b :nat),
 Proof.
   intros. unfold gather_full.
   let ast := R in
-  assert (exists pad, has_pad $0 $0 $0 ast pad).
+  assert (exists pad, has_pad $0 $0 ast pad).
   { eexists. infer_pad 0%Z 0%Z. }
 Abort.
   
@@ -682,7 +688,7 @@ Goal forall (A B C : nat) (m1 m2 : (list (list R))) (k : Z),
 Proof.
   autounfold with examples.
   let ast := R in
-  assert (exists pad, has_pad $0 $0 $0 ast pad).
+  assert (exists pad, has_pad $0 $0 ast pad).
   { eexists. infer_pad 0%Z 0%Z. }
 Abort.
 
@@ -691,12 +697,11 @@ Goal forall n m (l : list (list R)),
     0 < m ->
     consistent l (n,(m,tt)) ->
     blur_tiles_guarded l 64 64 4 4 = @nil _.
-Proof. 
+Proof.
   autounfold. unfold blur_tiles_guarded.
   let ast := R in
-  assert (exists pad, has_pad $0 $0 $0 ast pad).
-  eexists.
-  { infer_pad 0%Z 0%Z. (* Takes ~10m to run *) }
+  assert (exists pad, has_pad $0 $0 ast pad).
+  { eexists. infer_pad 0%Z 0%Z. (* Takes ~10m to run *) }
 Abort.
 
 Goal forall n m (v : list (list R)),
@@ -706,7 +711,7 @@ Goal forall n m (v : list (list R)),
     blurimmediate_isolate n m v = @nil _.
 Proof.
   let ast := R in
-  assert (exists pad, has_pad $0 $0 $0 ast pad).
+  assert (exists pad, has_pad $0 $0 ast pad).
   { eexists. infer_concat 0%Z 0%Z. }
 Abort.
 
@@ -717,14 +722,14 @@ Goal forall N M (v : list (list R)),
     blurtwostage_partition N M v = @nil _.
 Proof.
   let ast := R in
-  assert (exists pad, has_pad $0 $0 $0 ast pad).
+  assert (exists pad, has_pad $0 $0 ast pad).
   { eexists. infer_pad 0%Z 0%Z. }
 Abort.
 
 Goal forall v, Common.truncl 3 (GEN [ i < 10 ] (|[ 2 <? i ]| v _[i+4])) = [].
 Proof.
   let ast := R in
-  assert (exists pad, has_pad $0 $0 $0 ast pad).
+  assert (exists pad, has_pad $0 $0 ast pad).
   { eexists. infer_pad 0%Z 0%Z. }
 Abort.
 
@@ -735,7 +740,7 @@ Goal forall N M (v : list (list R)),
     blurimmediate v M N = blurtwostage N M v.
 Proof.
   let ast := R in
-  assert (exists pad, has_pad $0 $0 $0 ast pad).
+  assert (exists pad, has_pad $0 $0 ast pad).
   { eexists. infer_pad 0%Z 0%Z. }
 Abort.
  
@@ -746,7 +751,7 @@ Goal forall N M (v : list (list R)),
     blurtwostage N M v = blurimmediate v M N.
 Proof.
   let ast := R in
-  assert (exists pad, has_pad $0 $0 $0 ast pad).
+  assert (exists pad, has_pad $0 $0 ast pad).
   { eexists. infer_pad 0%Z 0%Z. }
 Abort.
 
@@ -758,7 +763,7 @@ Goal forall n m (l : list (list R)),
     = @nil _.
 Proof.
   let ast := R in
-  assert (exists pad, has_pad $0 $0 $0 ast pad).
+  assert (exists pad, has_pad $0 $0 ast pad).
   { eexists. infer_pad 0%Z 0%Z. }
 Abort.
 
@@ -770,7 +775,7 @@ Goal forall W R0 (x w : list R),
     GatherScatter.gather W x w = @nil _.
 Proof.
   let ast := R in
-  assert (exists pad, has_pad $0 $0 $0 ast pad).
+  assert (exists pad, has_pad $0 $0 ast pad).
   { eexists. infer_pad 0%Z 0%Z. }
 Abort.      
 
@@ -782,7 +787,7 @@ Goal forall W R0 (x w : list R),
     GatherScatter.scatter W x w = @nil _.
 Proof.
   let ast := R in
-  assert (exists pad, has_pad $0 $0 $0 ast pad).
+  assert (exists pad, has_pad $0 $0 ast pad).
   { eexists. infer_pad 0%Z 0%Z. }
 Abort.
 
@@ -798,7 +803,7 @@ Goal forall (A B C D : nat) (m1 m2 : (list (list (list (list R))))),
 Proof.
   autounfold.
   let ast := R in
-  assert (exists pad, has_pad $0 $0 $0 ast pad).
+  assert (exists pad, has_pad $0 $0 ast pad).
   { eexists. infer_pad 0%Z 0%Z. }
 Abort.  
 
@@ -814,7 +819,7 @@ Goal forall (A B C : nat) (m1 m2 : (list (list R))) (k : Z),
 Proof.
   autounfold with examples.
   let ast := R in
-  assert (exists pad, has_pad $0 $0 $0 ast pad).
+  assert (exists pad, has_pad $0 $0 ast pad).
   eexists. { infer_pad 0%Z 0%Z. }
 Abort.
 
@@ -830,7 +835,6 @@ Goal forall (A B C : nat) (m1 m2 : (list (list R))) (k : Z),
 Proof.
   autounfold with examples.
   let ast := R in
-  assert (exists pad, has_pad $0 $0 $0 ast pad).
+  assert (exists pad, has_pad $0 $0 ast pad).
   eexists. { infer_pad 0%Z 0%Z. }
 Abort.
-

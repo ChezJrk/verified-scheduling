@@ -17,7 +17,7 @@ Import ListNotations.
 From ATL Require Import FrapWithoutSets Div Tactics.
 From Lower Require Import Array Zexpr Result.
 
-Definition context := fmap string (list Zexpr).
+Definition context := fmap string (list nat).
 Definition expr_context := fmap string result.
 Definition stack := fmap string R.
 
@@ -32,7 +32,7 @@ Inductive Sexpr :=
 
 Inductive Sstmt :=
 | SVar (v : string)
-| SGet (v : string) (i : list (Zexpr * Zexpr))
+| SGet (v : string) (i : list (Z * Zexpr))
 | SMul (x y : Sstmt)
 | SAdd (x y : Sstmt)
 | SDiv (x y : Sstmt)
@@ -45,7 +45,7 @@ Fixpoint lowerS (s : Sexpr) (sh : context) : Sstmt :=
   | Var v => SVar v
   | Get v i =>
     match sh $? v with
-    | Some str => SGet v (List.combine str i)
+    | Some str => SGet v (List.combine (map Z.of_nat str) i)
     | None => SVar v
     end    
   | Mul x y => SMul (lowerS x sh) (lowerS y sh)
@@ -77,46 +77,43 @@ Definition bin_scalar_result f r1 r2 :=
   | SX,SX => SS (f 0%R 0%R)
   end.
 
-Inductive eval_Sexpr (sh : context) :
+Inductive eval_Sexpr :
   valuation -> expr_context -> Sexpr -> scalar_result -> Prop :=
 | EvalVar : forall s v ec r,
     ec $? s = Some (S r) ->
-    sh $? s = Some [] ->
-    eval_Sexpr sh v ec (Var s) (match r with
-                                | SS s => r
-                                | _  => SS 0%R
-                                end)
-| EvalGet : forall x l v r ec rs s,
+    eval_Sexpr v ec (Var s) (match r with
+                             | SS s => r
+                             | _  => SS 0%R
+                             end)
+| EvalGet : forall x l v r ec rs,
     ec $? x = Some (V rs) ->
-    sh $? x = Some s ->
-    length s = length l ->
     eval_get v rs l r ->
-    eval_Sexpr sh v ec (Get x l) (match r with
-                                | SS s => r
-                                | _  => SS 0%R
-                                end)
+    eval_Sexpr v ec (Get x l) (match r with
+                               | SS s => r
+                               | _  => SS 0%R
+                               end)
 | EvalMul : forall ec s1 s2 v r1 r2,
-    eval_Sexpr sh v ec s1 r1 ->
-    eval_Sexpr sh v ec s2 r2 ->
-    eval_Sexpr sh v ec (Mul s1 s2) (bin_scalar_result Rmult r1 r2)
+    eval_Sexpr v ec s1 r1 ->
+    eval_Sexpr v ec s2 r2 ->
+    eval_Sexpr v ec (Mul s1 s2) (bin_scalar_result Rmult r1 r2)
 | EvalAdd : forall ec s1 s2 v r1 r2,
-    eval_Sexpr sh v ec s1 r1 ->
-    eval_Sexpr sh v ec s2 r2 ->
-    eval_Sexpr sh v ec (Add s1 s2) (bin_scalar_result Rplus r1 r2)
+    eval_Sexpr v ec s1 r1 ->
+    eval_Sexpr v ec s2 r2 ->
+    eval_Sexpr v ec (Add s1 s2) (bin_scalar_result Rplus r1 r2)
 | EvalDiv : forall ec s1 s2 v r1 r2,
-    eval_Sexpr sh v ec s1 r1 ->
-    eval_Sexpr sh v ec s2 r2 ->
+    eval_Sexpr v ec s1 r1 ->
+    eval_Sexpr v ec s2 r2 ->
     match r2 with
     | SS s => s
     | SX => 0%R
     end <> 0%R ->
-    eval_Sexpr sh v ec (Div s1 s2) (bin_scalar_result Rdiv r1 r2)
+    eval_Sexpr v ec (Div s1 s2) (bin_scalar_result Rdiv r1 r2)
 | EvalSub : forall ec s1 s2 v r1 r2,
-    eval_Sexpr sh v ec s1 r1 ->
-    eval_Sexpr sh v ec s2 r2 ->       
-    eval_Sexpr sh v ec (Sub s1 s2) (bin_scalar_result Rminus r1 r2)
+    eval_Sexpr v ec s1 r1 ->
+    eval_Sexpr v ec s2 r2 ->       
+    eval_Sexpr v ec (Sub s1 s2) (bin_scalar_result Rminus r1 r2)
 |EvalLit : forall v ec r,
-    eval_Sexpr sh v ec (Lit r) (SS r).
+    eval_Sexpr v ec (Lit r) (SS r).
 
 Inductive eval_Sstmt :
   valuation -> stack -> heap -> Sstmt -> R -> Prop :=

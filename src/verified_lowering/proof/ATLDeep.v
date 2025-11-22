@@ -41,9 +41,9 @@ Inductive StoreType :=
 | Reduce.
 
 Inductive stmt :=
-| Store (t : StoreType) (v : string) (i : list (Zexpr * Zexpr)) (rhs : Sstmt)
+| Store (t : StoreType) (v : string) (i : list (Zexpr * Z)) (rhs : Sstmt)
 | If (cond : Bexpr) (body : stmt)
-| AllocV (var : string) (size : Zexpr)
+| AllocV (var : string) (size : nat)
          (* var = calloc(size) *)
 | AllocS (var : string)
          (* var = 0 *)
@@ -70,10 +70,10 @@ Fixpoint vars_of (e : ATLexpr) : set var :=
   | Scalar _ => constant []
   end.
 
-Fixpoint sizeof (e : ATLexpr) :=
+Fixpoint sizeof (e : ATLexpr) : list nat :=
   match e with
   | Gen i lo hi body =>
-    (ZMinus hi lo)::(sizeof body)
+      Z.to_nat (eval_Zexpr_Z_total $0 (ZMinus hi lo)) ::(sizeof body)
   | Sum i lo hi body =>
     sizeof body
   | Guard p body =>
@@ -87,56 +87,55 @@ Fixpoint sizeof (e : ATLexpr) :=
     | n::rest =>
       match sy with
       | m::rest' =>
-        (ZPlus n m)::rest
+        n + m ::rest
       | _ => sx
       end
     | _ =>
       match sy with
       | m::rest' =>
         sy
-      | _ => [ZLit 0]
+      | _ => [0]
       end
     end
   | Flatten e =>
     match sizeof e with
-    | a::b::rest => (ZTimes a b)::rest
-    | [] => [ZLit 0]
+    | a::b::rest => a * b :: rest
+    | [] => [0]
     | s => s
     end
   | Split k e =>
     match sizeof e with
-    | a::rest => (ZDivc a k)::k::rest
-    | [] => [ZLit 0]
+    | a::rest => (a //n (Z.to_nat (eval_Zexpr_Z_total $0 k))):: Z.to_nat (eval_Zexpr_Z_total $0 k) :: rest
+    | [] => [0]
     end
   | Transpose e =>
     match sizeof e with
     | a::b::rest => b::a::rest
-    | [] => [ZLit 0]
+    | [] => [0]
     | s => s
     end
   | Truncr n e =>
     match sizeof e with
     | m::rest  =>
-      (ZMinus m n)::rest
-    | [] => [ZLit 0]
+      m - Z.to_nat (eval_Zexpr_Z_total $0 n) ::rest
+    | [] => [0]
     end
   | Truncl n e =>
     match sizeof e with
     | m::rest  =>
-      (ZMinus m n)::rest
-    | [] => [ZLit 0]
+      m - Z.to_nat (eval_Zexpr_Z_total $0 n) ::rest
+    | [] => [0]
     end           
   | Padr n e =>
     match sizeof e with
-    | m::rest  =>
-      (ZPlus m n)::rest
-    | [] => [ZLit 0]
+    | m :: rest => m + Z.to_nat (eval_Zexpr_Z_total $0 n) ::rest
+    | [] => [0]
     end         
   | Padl n e =>
     match sizeof e with
     | m::rest  =>
-      (ZPlus m n)::rest
-    | [] => [ZLit 0]
+      m + Z.to_nat (eval_Zexpr_Z_total $0 n)::rest
+    | [] => [0]
     end                  
   | Scalar s =>
     []
@@ -144,20 +143,20 @@ Fixpoint sizeof (e : ATLexpr) :=
 
 Definition flat_sizeof e :=
   match sizeof e with
-  | [] => ZLit 0
-  | x::xs => fold_left ZTimes xs x
+  | [] => 0
+  | x::xs => fold_left mul xs x
   end.
 
 Fixpoint lower
          (e : ATLexpr)
-         (f : list (Zexpr * Zexpr) -> list (Zexpr * Zexpr))
-         p asn sh :=
+         (f : list (Zexpr * Z) -> list (Zexpr * Z))
+         p asn (sh : context) :=
   match e with
   | Gen i lo hi body =>
       For i lo hi
           (lower body (fun l =>
-                         f ((ZMinus (ZVar i) lo,
-                              ZMinus hi lo)::l)) p asn sh)
+                         f (((! i ! - | eval_Zexpr_Z_total $0 lo |)%z,
+                              eval_Zexpr_Z_total $0 (hi - lo)%z)::l)) p asn sh)
   | Sum i lo hi body =>
       For i lo hi
           (lower body f p Reduce sh)
@@ -180,21 +179,21 @@ Fixpoint lower
     end
   | Concat x y =>
     let xlen := match sizeof x with
-                | n::_ => n
-                | _ => ZLit 0
+                | n::_ => Z.of_nat n
+                | _ => 0%Z
                 end in 
     let ylen := match sizeof y with
-                | n::_ => n
-                | _ => ZLit 0
+                | n::_ => Z.of_nat n
+                | _ => 0%Z
                 end in   
     Seq (lower x (fun l =>
                     f (match l with
                      | (v,d)::xs =>
-                         ((v,ZPlus d ylen)::xs)
+                         ((v,(d + ylen)%Z)::xs)
                      | _ => l
                      end)) p asn sh)
         (lower y (fun l => f (match l with
-                          | (v,d)::xs => ((ZPlus v xlen,ZPlus d xlen)::xs)
+                          | (v,d)::xs => ((ZPlus v (ZLit xlen),(d + xlen)%Z)::xs)
                           | _ => l
                           end)) p asn sh)
   | Transpose e =>
@@ -203,83 +202,94 @@ Fixpoint lower
                          | _ => l
                          end)) p asn sh
   | Split k e =>
-    lower e (fun l => f (match l with
-                         | (v,d)::xs => (ZDivf v k,ZDivc d k)::(ZMod v k,k)::xs
-                         | _ => l
-                         end)) p asn sh
+      let k := eval_Zexpr_Z_total $0 k in
+      lower e (fun l => f (match l with
+                        | (v,d)::xs => ((v / | k |)%z, (d // k)%Z) ::(ZMod v (ZLit k),k )::xs
+                                     | _ => l
+                                      end)) p asn sh
   | Flatten e =>
     lower e (fun l => f (match l with
                          | (v,d)::(vi,di)::xs =>
-                           (ZPlus (ZTimes v di) vi,ZTimes d di)::xs
+                           ((v * | di | + vi)%z, (d * di)%Z)::xs
                          | _ => l
                          end)) p asn sh          
   | Truncr n e =>
     lower e (fun l => f (match l with
                          | (v,d)::xs =>
-                           (v,ZMinus d n)::xs
+                           (v,(d - eval_Zexpr_Z_total $0 n)%Z)::xs
                          | _ => l
                          end)) p asn sh
   | Truncl n e =>
     lower e (fun l => f (match l with
                          | (v,d)::xs =>
-                             (ZMinus v n,
-                               ZMinus d n)::xs
+                             ((v - | eval_Zexpr_Z_total $0 n |)%z,
+                               (d - eval_Zexpr_Z_total $0 n)%Z)::xs
                          | _ => l
                          end)) p asn sh
   | Padr n e =>
     lower e (fun l => f (match l with
                          | (v,d)::xs =>
-                           (v,ZPlus d n)::xs
+                           (v, (d + eval_Zexpr_Z_total $0 n)%Z)::xs
                          | _ => l
                          end)) p asn sh
   | Padl n e =>
     lower e (fun l => f (match l with
                          | (v,d)::xs =>
-                           (ZPlus v n,ZPlus d n)::xs
+                             ((v + | eval_Zexpr_Z_total $0 n |)%z,
+                               (d + eval_Zexpr_Z_total $0 n)%Z)::xs
                          | _ => l
                          end)) p asn sh
   end.
 
-Inductive size_of : ATLexpr -> list Zexpr -> Prop :=
-| SizeOfGen : forall i lo hi body l,
-    size_of body l ->
-    size_of (Gen i lo hi body) ((ZMinus hi lo)::l)
-| SizeOfSum : forall i lo hi body l,
-    size_of body l ->
-    size_of (Sum i lo hi body) l
-| SizeOfGuard : forall p e l,
-    size_of e l ->
-    size_of (Guard p e) l
-| SizeOfLBind : forall e1 e2 x l2,
-    size_of e2 l2 ->
-    size_of (Lbind x e1 e2) l2
-| SizeOfConcat : forall e1 e2 l1 l2 n m,
-    size_of e1 (n::l1) ->
-    size_of e2 (m::l2) ->
-    (forall v,
-        map (eval_Zexpr_Z_total v) l1 = map (eval_Zexpr_Z_total v) l2) ->
-    size_of (Concat e1 e2) ((ZPlus n m)::l1)
-| SizeOfFlatten : forall e n m l,
-    size_of e (n::m::l) ->
-    size_of (Flatten e) ((ZTimes n m)::l)
-| SizeOfSplit : forall e n l k,
-    size_of e (n::l) ->
-    size_of (Split k e) ((ZDivc n k)::k::l)
-| SizeOfTranspose : forall e n m l,
-    size_of e (n::m::l) ->
-    size_of (Transpose e) (m::n::l)
-| SizeOfTruncr : forall n e m l,
-    size_of e (m::l) ->
-    size_of (Truncr n e) (ZMinus m n::l)
-| SizeOfTruncl : forall n e m l,
-    size_of e (m::l) ->
-    size_of (Truncl n e) (ZMinus m n::l)
-| SizeOfPadr : forall n e m l,
-    size_of e (m::l) ->
-    size_of (Padr n e) ((ZPlus m n)::l)
-| SizeOfPadl : forall n e m l,
-    size_of e (m::l) ->
-    size_of (Padl n e) ((ZPlus m n)::l)
+Inductive size_of : ATLexpr -> list nat -> Prop :=
+| SizeOfGen : forall i lo loz hi hiz body sh,
+    eval_Zexpr $0 lo loz ->
+    eval_Zexpr $0 hi hiz ->
+    size_of body sh ->
+    size_of (Gen i lo hi body) (Z.to_nat (hiz - loz) :: sh)
+| SizeOfSum : forall i lo hi body sh,
+    size_of body sh ->
+    size_of (Sum i lo hi body) sh
+| SizeOfGuard : forall p e sh,
+    size_of e sh ->
+    size_of (Guard p e) sh
+| SizeOfLBind : forall e1 e2 x sh2,
+    size_of e2 sh2 ->
+    size_of (Lbind x e1 e2) sh2
+| SizeOfConcat : forall e1 e2 sh1 sh2 n m,
+    size_of e1 (n::sh1) ->
+    size_of e2 (m::sh2) ->
+    sh1 = sh2 ->
+    size_of (Concat e1 e2) (n + m :: sh1)
+| SizeOfFlatten : forall e n m sh,
+    size_of e (n :: m :: sh) ->
+    size_of (Flatten e) (n * m :: sh)
+| SizeOfSplit : forall e n sh k kz,
+    eval_Zexpr $0 k kz ->
+    (0 < kz)%Z ->
+    size_of e (n::sh) ->
+    size_of (Split k e) (n //n (Z.to_nat kz) :: Z.to_nat kz :: sh)
+| SizeOfTranspose : forall e n m sh,
+    size_of e (n::m::sh) ->
+    size_of (Transpose e) (m::n::sh)
+| SizeOfTruncr : forall k kz e m sh,
+    eval_Zexpr $0 k kz ->
+    size_of e (m::sh) ->
+    (Z.to_nat kz <= m) ->
+    size_of (Truncr k e) (m - Z.to_nat kz :: sh)
+| SizeOfTruncl : forall k kz e m sh,
+    eval_Zexpr $0 k kz ->
+    size_of e (m :: sh) ->
+    (Z.to_nat kz <= m) ->
+    size_of (Truncl k e) (m - Z.to_nat kz :: sh)
+| SizeOfPadr : forall k kz e m sh,
+    eval_Zexpr $0 k kz ->
+    size_of e (m :: sh) ->
+    size_of (Padr k e) (m + Z.to_nat kz :: sh)
+| SizeOfPadl : forall k kz e m sh,
+    eval_Zexpr $0 k kz ->
+    size_of e (m :: sh) ->
+    size_of (Padl k e) (m + Z.to_nat kz :: sh)
 | SizeOfScalar : forall s,
     size_of (Scalar s) [].
 Local Hint Constructors eval_Zexpr eval_Bexpr eval_Sexpr size_of.
@@ -328,10 +338,9 @@ Inductive eval_stmt (v : valuation) :
     eval_stmt v st h (If b s) st h
 | EvalAllocS : forall x st h,
     eval_stmt v st h (AllocS x) (st $+ (x,0%R)) h
-| EvalAllocV : forall x n st h nz,
-    eval_Zexpr v n nz ->
+| EvalAllocV : forall x n st h,
     eval_stmt v st h (AllocV x n) st
-              (alloc_array_in_heap [Z.to_nat nz] h x)
+              (alloc_array_in_heap [n] h x)
 | EvalFree : forall x st h,
     eval_stmt v st h (Free x) st (h $- x)
 | EvalDeallocS : forall x st h,
@@ -357,115 +366,101 @@ Inductive eval_stmt (v : valuation) :
 Local Hint Constructors eval_stmt.
 Local Hint Constructors eval_Zexprlist.
 
-Inductive eval_expr (sh : context) :
+Inductive eval_expr :
   valuation -> expr_context -> ATLexpr -> result -> Prop :=
 | EvalGenBase : forall ec v lo hi loz hiz i body,
     eval_Zexpr_Z v lo = Some loz ->
     eval_Zexpr_Z v hi = Some hiz ->
     (hiz <= loz)%Z ->
-    eval_expr sh v ec (Gen i lo hi body) (V [])
+    eval_expr v ec (Gen i lo hi body) (V [])
 | EvalGenStep : forall ec v lo hi loz hiz i body l r,
     eval_Zexpr_Z v lo = Some loz ->
     eval_Zexpr_Z v hi = Some hiz ->
     (loz < hiz)%Z ->
     ~ i \in dom v ->
     ~ contains_substring "?" i ->
-    eval_expr sh (v $+ (i,loz)) ec body r ->
-    eval_expr sh v ec (Gen i (ZPlus lo (ZLit 1%Z)) hi body) (V l) ->
-    eval_expr sh v ec (Gen i lo hi body) (V (r::l))
+    eval_expr (v $+ (i,loz)) ec body r ->
+    eval_expr v ec (Gen i (ZPlus lo (ZLit 1%Z)) hi body) (V l) ->
+    eval_expr v ec (Gen i lo hi body) (V (r::l))
 | EvalSumStep : forall v ec lo hi loz hiz i body r r' s,
     eval_Zexpr_Z v lo = Some loz ->
     eval_Zexpr_Z v hi = Some hiz ->
     (loz < hiz)%Z ->
     ~ i \in dom v ->
     ~ contains_substring "?" i ->
-    eval_expr sh (v $+ (i,loz)) ec body r ->
-    eval_expr sh v ec (Sum i (ZPlus lo (ZLit 1%Z)) hi body) r' ->
+    eval_expr (v $+ (i,loz)) ec body r ->
+    eval_expr v ec (Sum i (ZPlus lo (ZLit 1%Z)) hi body) r' ->
     add_result r r' s ->
-    eval_expr sh v ec (Sum i lo hi body) s
-| EvalSumBase : forall v ec lo hi loz hiz i body l lz,
+    eval_expr v ec (Sum i lo hi body) s
+| EvalSumBase : forall v ec lo hi loz hiz i body sz,
     eval_Zexpr_Z v lo = Some loz ->
     eval_Zexpr_Z v hi = Some hiz ->
     (hiz <= loz)%Z ->
-    size_of body l ->
-    eval_Zexprlist v l lz ->
-    eval_expr sh v ec (Sum i lo hi body) (gen_pad (List.map Z.to_nat lz))
-| EvalGuardFalse : forall e v ec b l lz,
+    size_of body sz ->
+    eval_expr v ec (Sum i lo hi body) (gen_pad sz)
+| EvalGuardFalse : forall e v ec b sz,
     eval_Bexpr v b false ->
-    size_of e l ->
-    eval_Zexprlist v l lz ->
-    eval_expr sh v ec (Guard b e) (gen_pad (List.map Z.to_nat lz))
+    size_of e sz ->
+    eval_expr v ec (Guard b e) (gen_pad sz)
 | EvalGuardTrue : forall e ec v b r,
     eval_Bexpr v b true ->
-    eval_expr sh v ec e r ->
-    eval_expr sh v ec (Guard b e) r
-| EvalLbindS : forall v e1 e2 x r1 l2 ec,
-    size_of e1 [] ->
+    eval_expr v ec e r ->
+    eval_expr v ec (Guard b e) r
+| EvalLbind : forall v e1 e2 x l1 l2 ec sz1,
+    size_of e1 sz1 ->
     ec $? x = None ->
     ~ x \in vars_of e1 /\ ~ x \in vars_of e2 ->
     vars_of e1 \cap vars_of e2 = constant nil ->
-    eval_expr sh v ec e1 (S r1) ->
-    eval_expr (sh $+ (x,[])) v (ec $+ (x,S r1)) e2 l2 ->
-    eval_expr sh v ec (Lbind x e1 e2) l2              
-| EvalLbindV : forall v e1 e2 x l1 l2 ec esh1 esh1z,
-    esh1 <> [] ->
-    size_of e1 esh1 ->
-    eval_Zexprlist v esh1 esh1z ->
-    ec $? x = None ->
-    ~ x \in vars_of e1 /\ ~ x \in vars_of e2 ->
-    vars_of e1 \cap vars_of e2 = constant nil ->
-    eval_expr sh v ec e1 (V l1) ->
-    eval_expr (sh $+ (x, esh1)) v
-              (ec $+ (x,V l1)) e2 l2 ->
-    eval_expr sh v ec (Lbind x e1 e2) l2
+    eval_expr v ec e1 l1 ->
+    eval_expr v
+              (ec $+ (x,l1)) e2 l2 ->
+    eval_expr v ec (Lbind x e1 e2) l2
 | EvalConcat : forall ec v e1 e2 l1 l2,
-    eval_expr sh v ec e1 (V l1) ->
-    eval_expr sh v ec e2 (V l2) ->
-    eval_expr sh v ec (Concat e1 e2) (V (l1++l2))
-| EvalTranspose : forall e v ec l n nz m mz esh eshz,
-    eval_expr sh v ec e (V l) ->
+    eval_expr v ec e1 (V l1) ->
+    eval_expr v ec e2 (V l2) ->
+    eval_expr v ec (Concat e1 e2) (V (l1++l2))
+| EvalTranspose : forall e v ec l n m esh,
+    eval_expr v ec e (V l) ->
     size_of e (n::m::esh) ->
-    eval_Zexprlist v (n::m::esh) (nz::mz::eshz) ->
-    eval_expr sh v ec (Transpose e)
-              (transpose_result l (map Z.to_nat (mz::nz::eshz)))
+    eval_expr v ec (Transpose e)
+              (transpose_result l (m::n::esh))
 | EvalFlatten : forall e v ec l,
-    eval_expr sh v ec e (V l) ->
+    eval_expr v ec e (V l) ->
     Forall (fun x => exists v, x = V v) l ->
-    eval_expr sh v ec (Flatten e) (V (flatten_result l))
-| EvalSplit : forall e v ec l k,
-    eval_expr sh v ec e (V l) ->
+    eval_expr v ec (Flatten e) (V (flatten_result l))
+| EvalSplit : forall e v ec l k kz,
+    eval_expr v ec e (V l) ->
+    eval_Zexpr_Z $0 k = Some kz ->
     Forall (fun x => exists v, x = V v) l ->
-    eval_expr sh v ec (Split k e) (V (split_result (Z.to_nat (eval_Zexpr_Z_total $0 k)) l))
+    eval_expr v ec (Split k e) (V (split_result (Z.to_nat kz) l))
 | EvalTruncr : forall e v ec k kz l,
     eval_Zexpr_Z v k = Some kz ->
     (0 <= kz)%Z ->
-    eval_expr sh v ec e (V l) ->
-    eval_expr sh v ec (Truncr k e)
+    eval_expr v ec e (V l) ->
+    eval_expr v ec (Truncr k e)
               (V (List.rev (truncl_list (Z.to_nat kz) (List.rev l))))
 | EvalTruncl : forall e v ec k kz l,
     eval_Zexpr_Z v k = Some kz ->
     (0 <= kz)%Z ->
-    eval_expr sh v ec e (V l) ->
-    eval_expr sh v ec (Truncl k e) (V (truncl_list (Z.to_nat kz) l))
-| EvalPadr : forall e v ec l s n k kz sz,
+    eval_expr v ec e (V l) ->
+    eval_expr v ec (Truncl k e) (V (truncl_list (Z.to_nat kz) l))
+| EvalPadr : forall e v ec l s n k kz,
     eval_Zexpr_Z v k = Some kz ->
     (0 <= kz)%Z ->
     size_of e (n::s) ->
-    eval_expr sh v ec e (V l) ->
-    eval_Zexprlist v s sz ->
-    eval_expr sh v ec (Padr k e)
-              (V (l++gen_pad_list ((Z.to_nat kz)::(List.map Z.to_nat sz))))
-| EvalPadl : forall e v ec l s n k kz sz,
+    eval_expr v ec e (V l) ->
+    eval_expr v ec (Padr k e)
+              (V (l++gen_pad_list ((Z.to_nat kz)::s)))
+| EvalPadl : forall e v ec l s n k kz,
     eval_Zexpr_Z v k = Some kz ->
     (0 <= kz)%Z ->
     size_of e (n::s) ->
-    eval_expr sh v ec e (V l) ->
-    eval_Zexprlist v s sz ->
-    eval_expr sh v ec (Padl k e)
-              (V (gen_pad_list ((Z.to_nat kz)::(List.map Z.to_nat sz))++l))
+    eval_expr v ec e (V l) ->
+    eval_expr v ec (Padl k e)
+              (V (gen_pad_list ((Z.to_nat kz)::s)++l))
 | EvalScalar : forall s v ec r,
-    eval_Sexpr sh v ec s r ->
-    eval_expr sh v ec (Scalar s) (S r).
+    eval_Sexpr v ec s r ->
+    eval_expr v ec (Scalar s) (S r).
 
 Ltac invs :=
   repeat
@@ -494,49 +489,28 @@ Ltac invs :=
     | H : Some _ = Some _ |- _ => invert H
   end.
 
+(*because invs is slow sometimes*)
+Ltac invs' :=
+  repeat match goal with
+    | H:_ /\ _ |- _ => invert H
+    | H:exists _, _ |- _ => invert H
+    | H:Some _ = Some _ |- _ => invert H
+    | H: _ :: _ = _ :: _ |- _ => invert H
+    end.
+
 Lemma size_of_deterministic : forall e l1 l2,
     size_of e l1 ->
     size_of e l2 ->
     l1 = l2.
 Proof.
-  induction e; intros.
-  - invert H. invert H0.
-    eq_eval_Z.
-    f_equal. eauto.
-  - invert H. invert H0.
-    eq_eval_Z.
-    eauto.
-  - invert H. invert H0. eauto.
-  - invert H. invert H0. eauto.
-  - invert H. invert H0.
-    specialize (IHe1 _ _ H3 H2).
-    specialize (IHe2 _ _ H4 H5).
-    invert IHe1. invert IHe2. eauto.
-  - invert H. invert H0.
-    specialize (IHe _ _ H2 H1).
-    invert IHe.
-    eauto.
-  - invert H. invert H0. simpl. eapply IHe in H4; eauto. invert H4.
-    eauto.
-  - invert H. invert H0.
-    eapply IHe in H2. 2: apply H1. invert H2. auto.
-  - invert H. invert H0.
-    specialize (IHe _ _ H4 H3).
-    invert IHe.
-    reflexivity.
-  - invert H. invert H0.
-    specialize (IHe _ _ H4 H3).
-    invert IHe.
-    reflexivity.
-  - invert H. invert H0.
-    specialize (IHe _ _ H4 H3).
-    invert IHe.
-    reflexivity.
-  - invert H. invert H0.
-    specialize (IHe _ _ H4 H3).
-    invert IHe.
-    reflexivity.
-  - invert H. invert H0.
+  induction e; intros;
+    try match goal with
+      | H1: size_of _ _, H2: size_of _ _ |- _ => invert H1; invert H2
+      end;
+    do 2 try match goal with
+      | IH: _, H1: _, H2: _ |- _ => specialize (IH _ _ H1 H2); invert IH
+      end;
+    eq_eval_Z;
     reflexivity.
 Qed.
 
@@ -552,52 +526,17 @@ Theorem size_of_sizeof : forall e1 l,
     size_of e1 l ->
     sizeof e1 = l.
 Proof.
-  induction e1; intros; simpl; invert H; try f_equal; eauto.
-  - destruct (sizeof e1_1) eqn:e;
-      destruct (sizeof e1_2) eqn:ee.
-    + eapply IHe1_1 in H2. discriminate.
-    + eapply IHe1_1 in H2. discriminate.
-    + eapply IHe1_2 in H3. discriminate.
-    + eapply IHe1_1 in H2.
-      eapply IHe1_2 in H3.
-      invert H2. invert H3.
-      reflexivity.
-  - destruct (sizeof e1) eqn:e.
-    eapply IHe1 in H1. discriminate.
-    destruct l.
-    eapply IHe1 in H1. discriminate.
-    eapply IHe1 in H1. invert H1.
-    reflexivity.
-  - erewrite IHe1 by eassumption. reflexivity.
-  - eapply IHe1 in H1; eauto. rewrite H1. reflexivity.
-  - destruct (sizeof e1) eqn:e.
-    eapply IHe1 in H3. discriminate.
-    destruct l.
-    eapply IHe1 in H3. invert H3.
-    reflexivity.
-    eapply IHe1 in H3. invert H3.
-    reflexivity.
-  - destruct (sizeof e1) eqn:e.
-    eapply IHe1 in H3. discriminate.
-    destruct l.
-    eapply IHe1 in H3. invert H3.
-    reflexivity.
-    eapply IHe1 in H3. invert H3.
-    reflexivity.
-  - destruct (sizeof e1) eqn:e.
-    eapply IHe1 in H3. discriminate.
-    destruct l.
-    eapply IHe1 in H3. invert H3.
-    reflexivity.
-    eapply IHe1 in H3. invert H3.
-    reflexivity.
-  - destruct (sizeof e1) eqn:e.
-    eapply IHe1 in H3. discriminate.
-    destruct l.
-    eapply IHe1 in H3. invert H3.
-    reflexivity.
-    eapply IHe1 in H3. invert H3.
-    reflexivity.
+  induction e1; intros; simpl; invert H; try f_equal; eauto;
+    repeat match goal with
+      | H: eval_Zexpr _ _ _ |- _ => apply eval_Zexpr_Z_eval_Zexpr in H
+      end;
+    cbv [eval_Zexpr_Z_total]; simpl;
+    repeat match goal with
+      | H: eval_Zexpr_Z _ _ = _ |- _ => rewrite H
+      end; try lia;
+    repeat match goal with
+      | IHe: forall _, _ -> sizeof _ = _ |- _ => erewrite IHe by eauto; simpl
+      end; reflexivity.
 Qed.
 
 Theorem dom_alloc_array_in_heap : forall h x l,
@@ -610,8 +549,8 @@ Proof.
   rewrite dom_add. reflexivity.
 Qed.
 
-Lemma length_eval_expr_gen : forall sh c v e l i lo hi,
-    eval_expr sh v c (Gen i lo hi e) (V l) ->
+Lemma length_eval_expr_gen : forall c v e l i lo hi,
+    eval_expr v c (Gen i lo hi e) (V l) ->
     forall z,
       eval_Zexpr_Z v (ZMinus hi lo) = Some z ->
       length l = Z.to_nat z.
@@ -639,8 +578,8 @@ Hint Extern 3 (Datatypes.length _ = Datatypes.length _) =>
        rewrite length_map; rewrite length_nat_range_rec;
        eapply length_mesh_grid_indices; eassumption : reindexers.
 
-Lemma result_shape_gen_length : forall i lo hi body c v sh l,
-    eval_expr c v sh (Gen i lo hi body) (V l) ->
+Lemma result_shape_gen_length : forall i lo hi body v sh l,
+    eval_expr v sh (Gen i lo hi body) (V l) ->
     forall hiz loz,
     eval_Zexpr_Z v lo = Some loz ->
     eval_Zexpr_Z v hi = Some hiz ->
@@ -716,7 +655,7 @@ Proof.
   - invert H.
     + specialize (H0 []). econstructor. eauto. eauto.
       rewrite H11 in *. invert H0. invs.
-      cases (reindexer2 []). auto. simpl in *. lia.
+      cases (reindexer2 []). auto. simpl in *. invert H.
     + eapply EvalAssignV; eauto.
       * specialize (H0 []); simpl in *.
         unfold not in *. intros. apply H8.
@@ -725,8 +664,9 @@ Proof.
           try lia; try discriminate; propositional.
       * rewrite <- H12.
         eapply eq_eval_Zexpr_Z.
-        eapply eq_zexpr_flatten_shape_index;
-        eapply eq_Z_index_list_sym; apply H0. 
+        apply eq_zexpr_flatten_shape_index.
+        2: eapply eq_Z_index_list_sym; apply H0.
+        edestruct H0; eauto.
     + specialize (H0 []); simpl in *.
       pose proof H0. unfold eq_Z_tuple_index_list in *. invs.
       econstructor; eauto.
@@ -741,56 +681,20 @@ Proof.
           try lia; try discriminate; propositional.
       * rewrite <- H12.
         eapply eq_eval_Zexpr_Z.
-        eapply eq_zexpr_flatten_shape_index;
-        eapply eq_Z_index_list_sym; apply H0. 
+        apply eq_zexpr_flatten_shape_index.
+        2: eapply eq_Z_index_list_sym; apply H0.
+        edestruct H0; eauto.
 Qed.
 
-Fixpoint constant_nonneg_bounds (e : ATLexpr) : Prop :=
-  match e with
-  | Gen i lo hi e =>
-      vars_of_Zexpr lo = [] /\ vars_of_Zexpr hi = [] /\
-        (0 <= eval_Zexpr_Z_total $0 hi - eval_Zexpr_Z_total $0 lo)%Z /\
-        constant_nonneg_bounds e
-  | Sum i lo hi e =>
-      vars_of_Zexpr lo = [] /\ vars_of_Zexpr hi = [] /\
-        constant_nonneg_bounds e
-  | Guard p e => constant_nonneg_bounds e
-  | Lbind x e1 e2 => constant_nonneg_bounds e1 /\ constant_nonneg_bounds e2
-  | Concat e1 e2 => constant_nonneg_bounds e1 /\ constant_nonneg_bounds e2
-  | Flatten e => constant_nonneg_bounds e
-  | Split k e => vars_of_Zexpr k = [] /\ constant_nonneg_bounds e /\
-                   (0 < eval_Zexpr_Z_total $0 k)%Z 
-  | Transpose e => constant_nonneg_bounds e
-  | Truncr k e => constant_nonneg_bounds e /\ vars_of_Zexpr k = [] /\
-                    (0 <= eval_Zexpr_Z_total $0 k)%Z /\
-                                    (0 <= match (sizeof e) with
-                                          | dim::_ => eval_Zexpr_Z_total $0 dim
-                                          | _ => 0%Z
-                                          end -
-                                            eval_Zexpr_Z_total $0 k)%Z
-  | Truncl k e => constant_nonneg_bounds e /\ vars_of_Zexpr k = [] /\
-                    (0 <= eval_Zexpr_Z_total $0 k)%Z /\
-                                    (0 <= match (sizeof e) with
-                                          | dim::_ => eval_Zexpr_Z_total $0 dim
-                                          | _ => 0%Z
-                                          end -
-                                            eval_Zexpr_Z_total $0 k)%Z
-  | Padr k e => constant_nonneg_bounds e /\ vars_of_Zexpr k = [] /\
-                    (0 <= eval_Zexpr_Z_total $0 k)%Z
-  | Padl k e => constant_nonneg_bounds e /\ vars_of_Zexpr k = [] /\
-                  (0 <= eval_Zexpr_Z_total $0 k)%Z
-  | Scalar s => True
-  end.
-
 Lemma eval_expr_for_gen_result_has_shape :
-  forall n c v ec i lo hi loz hiz e v0,
+  forall n v ec i lo hi loz hiz e v0,
     eval_Zexpr_Z v lo = Some loz ->
     eval_Zexpr_Z v hi = Some hiz ->
     (hiz -loz)%Z = Z.of_nat n ->
-    eval_expr c v ec (Gen i lo hi e) (V v0) ->
+    eval_expr v ec (Gen i lo hi e) (V v0) ->
     (forall ii,
         0 <= ii < n ->
-        eval_expr c (v$+(i,Z.of_nat ii+loz))%Z ec e
+        eval_expr (v$+(i,Z.of_nat ii+loz))%Z ec e
                   (nth ii v0 (S (SS 0%R)))).
 Proof.
   induct n; intros.
@@ -807,362 +711,36 @@ Proof.
     simpl. rewrite H. auto. eauto. lia. lia.
 Qed.
 
-Lemma constant_nonneg_bounds_size_of_no_vars :
-  forall e l,
-    constant_nonneg_bounds e ->    
-    size_of e l ->
-    Forall (fun z => vars_of_Zexpr z = []) l.
-Proof.
-  induct e; simpl; intros; propositional; invert H0; eauto.
-  - econstructor. simpl. rewrite H,H1.
-    rewrite app_no_dups_empty_r. auto. eauto.
-  - eapply IHe1 in H1. 2: apply H4.
-    eapply IHe2 in H2. 2: apply H5.
-    invert H1. invert H2.
-    econstructor. simpl. rewrite H3, H1. rewrite app_no_dups_empty_r. auto.
-    auto.
-  - eapply IHe in H. 2: apply H2. invert H. invert H4.
-    econstructor. simpl. rewrite H3,H1. rewrite app_no_dups_empty_r. auto.
-    auto.
-  - eapply IHe in H6; eauto. invert H6.
-    econstructor. simpl. rewrite H4,H1. eauto. eauto.
-  - eapply IHe in H2; auto. invert H2. invert H4.
-    eauto.
-  - eapply IHe in H1. 2: eassumption. invert H1.
-    econstructor. simpl. erewrite size_of_sizeof in * by eauto.
-    simpl in *. rewrite H,H5.
-    eauto. eauto.
-  - eapply IHe in H1. 2: eassumption. invert H1.
-    econstructor. simpl. rewrite H,H5.
-    eauto. eauto.
-  - eapply IHe in H1. 2: eassumption. invert H1.
-    econstructor. simpl. rewrite H, H4.
-    rewrite app_no_dups_empty_r. auto. auto.
-  - eapply IHe in H1. 2: eassumption. invert H1.
-    econstructor. simpl. rewrite H, H4.
-    rewrite app_no_dups_empty_r. auto. auto.
-Qed.
-
-Lemma constant_nonneg_bounds_sizeof_no_vars :
-  forall e,
-    constant_nonneg_bounds e ->    
-    Forall (fun z => vars_of_Zexpr z = []) (sizeof e).
-Proof.
-  induct e; simpl; intros; propositional.
-  - econstructor. simpl. rewrite H,H0. 
-    rewrite app_no_dups_empty_r. auto. eauto.
-  - cases (sizeof e1); cases (sizeof e2).
-    + econstructor. reflexivity. econstructor.
-    + eauto.
-    + eauto.
-    + invert H. invert H2. econstructor. simpl.
-      rewrite H4,H5. rewrite app_no_dups_empty_r. auto. auto.
-  - cases (sizeof e).
-    + econstructor. reflexivity. eauto.
-    + invert H0. cases l. econstructor. rewrite H3. eauto. eauto.
-      invert H4.
-      econstructor. simpl. rewrite H2,H3.
-      rewrite app_no_dups_empty_r. auto. auto.
-  - cases (sizeof e).
-    + econstructor. reflexivity. eauto.
-    + econstructor. invert H1. simpl. rewrite H5,H0. reflexivity.
-      invert H1. eauto.
-  - cases (sizeof e).
-    + econstructor. reflexivity. eauto.
-    + invert H0. cases l. econstructor. rewrite H3. eauto. eauto.
-      invert H4.
-      econstructor. auto. econstructor. auto. eauto.
-  - invs. cases (sizeof e). econstructor. reflexivity. eauto.
-    invert H2.
-    econstructor. simpl. rewrite H,H6. reflexivity.
-    eauto.
-  - invs. cases (sizeof e). econstructor. reflexivity. eauto.
-    invert H2.
-    econstructor. simpl. rewrite H,H6. reflexivity.
-    eauto.
-  - cases (sizeof e).
-    + econstructor. reflexivity. eauto.
-    + invert H1.
-      econstructor. simpl. rewrite H,H5.
-      rewrite app_no_dups_empty_r. auto. auto.
-  - cases (sizeof e).
-    + econstructor; eauto.
-    + invert H1. econstructor.
-      simpl. rewrite H,H5.
-      rewrite app_no_dups_empty_r. auto. auto.
-  - eauto.
-Qed.
-
 Lemma result_has_shape_for_sum :
-  forall e lz v ,
-    (forall l : list Zexpr,
-        constant_nonneg_bounds e ->
-        size_of e l ->
+  forall e v ,
+    (forall sz : list nat,
+        size_of e sz ->
         forall v : valuation,
-        eval_Zexprlist v l (map (eval_Zexpr_Z_total $0) l) ->
-        forall (sh : context) (ec : expr_context) (r : result),
-        eval_expr sh v ec e r ->
-        result_has_shape r (map Z.to_nat (map (eval_Zexpr_Z_total $0) l))) ->
-    forall n l r sh ec i lo hi loz hiz,
-    constant_nonneg_bounds e ->
-    size_of e l ->
-    eval_Zexprlist v l lz ->
+        forall (ec : expr_context) (r : result),
+        eval_expr v ec e r ->
+        result_has_shape r sz) ->
+    forall n sz r ec i lo hi loz hiz,
+    size_of e sz ->
     eval_Zexpr_Z v lo = Some loz ->
     eval_Zexpr_Z v hi = Some hiz ->
     Z.of_nat n = (hiz - loz)%Z ->
-    eval_expr sh v ec (Sum i lo hi e) r ->
-    result_has_shape r (map Z.to_nat (map (eval_Zexpr_Z_total $0) l)).
+    eval_expr v ec (Sum i lo hi e) r ->
+    result_has_shape r sz.
 Proof.
   intros ? ? ? ?.
   induct n; propositional.
-  - invert H6.
-    rewrite H3,H4 in *. invert H11. invert H12. lia.
-    rewrite H3,H4 in *. invert H11. invert H14.
-    eq_size_of. eq_eval_Zlist.
-    eapply constant_nonneg_bounds_size_of_no_vars in H0; eauto.
-    eapply forall_no_vars_eval_Zexpr_Z_total with (v:=v) in H0; eauto.
-    eq_eval_Zlist.
+  - invert H4.
+    rewrite H1, H2 in *. invert H9. invert H10. lia.
+    rewrite H1, H2 in *. invert H11. invert H13.
+    eq_size_of.
     eapply result_has_shape_gen_pad.
-  - invert H6.
-    rewrite H3,H4 in *. invert H11. invert H12.
+  - invert H4.
+    rewrite H1,H2 in *. invert H9. invert H10.
     pose proof H0.
-    eapply constant_nonneg_bounds_size_of_no_vars in H0; eauto.
-    eapply forall_no_vars_eval_Zexpr_Z_total with (v:=v) in H0; eauto.
-    eq_eval_Zlist.
     eapply result_has_shape_add_result. eassumption.
-    2: { eapply IHn in H20. auto. eassumption. eassumption. eassumption.
-         eauto.
-         simpl. rewrite H3. reflexivity.
+    2: { eapply IHn in H18. auto. eassumption. eassumption.
+         simpl. rewrite H1. reflexivity.
          eauto. lia. } 
-    eapply H. 4: eassumption. eassumption. eassumption.
-    eapply eval_Zexprlist_add. eassumption. auto.
-    eq_size_of. eq_eval_Zlist.
-    eapply constant_nonneg_bounds_size_of_no_vars in H0; eauto.
-    eapply forall_no_vars_eval_Zexpr_Z_total with (v:=v) in H0; eauto.
-    eq_eval_Zlist.
-    eapply result_has_shape_gen_pad.
+    eapply H. 2: eassumption. eassumption.
+    eq_size_of. apply result_has_shape_gen_pad.
 Qed.      
-
-Lemma constant_nonneg_bounds_size_of_nonneg :
-  forall e,
-    constant_nonneg_bounds e ->
-    forall l,
-    size_of e l ->
-    forall v lz,
-      eval_Zexprlist v l lz ->
-      Forall (fun x => 0 <= x)%Z lz.
-Proof.
-  induct e; intros; simpl in *.
-  - invert H0. invert H. invert H1. invs.
-    econstructor. unfold eval_Zexpr_Z_total in *.
-    eapply vars_of_Zexpr_empty_eval_Zexpr_literal in H0,H.
-    invs.
-    pose proof (H1 v). pose proof (H v). eq_eval_Z.
-    specialize (H1 $0). specialize (H $0).
-    eapply eval_Zexpr_Z_eval_Zexpr in H,H1.
-    rewrite H,H1 in *. lia.
-    eapply IHe; eauto.
-  - invs. eauto.
-  - invs. eauto.
-  - invs. eauto.
-  - invs. 
-    eapply IHe1 in H2. 2: eassumption. 2: eauto.
-    invert H2.
-    econstructor. 2: eauto.
-    pose proof H3 as Hc.
-    eapply IHe2 in H3. 2: eassumption.
-    2: { eapply forall_no_vars_eval_Zexpr_Z_total with (v:=$0).
-         eapply constant_nonneg_bounds_size_of_no_vars. eauto. eauto. }
-    invert H3.
-    eapply constant_nonneg_bounds_size_of_no_vars in H6; eauto. invert H6.
-    eapply vars_of_Zexpr_empty_eq_zexpr_eval_Zexpr_Z_total with (v:=$0) in H3.
-    eapply H3 in H9. invert H9. lia.
-  - invs.
-    eapply IHe in H.
-    2: eassumption.
-    2: econstructor; eauto.
-    invert H. invert H5. econstructor. lia. auto.
-  - invs. eq_eval_Z. eapply IHe in H.
-    2: eauto. 2: econstructor.
-    2: eauto. 2: eauto.
-    invert H. 
-    eapply vars_of_Zexpr_empty_eq_zexpr_eval_Zexpr_Z_total
-      with (v:=$0) in H2.
-    eapply H2 in H5. invert H5.
-    econstructor. 2: eauto.
-    eapply ceil_div_nonneg; lia.
-    econstructor. lia. eauto.
-  - invs. 
-    eapply IHe in H. 2: eassumption.
-    2: econstructor; eauto. invert H. invert H6.
-    eauto.
-  - invs. pose proof H2. erewrite size_of_sizeof in * by eauto. simpl in *.
-    eapply IHe in H0. 2: eassumption.
-    2: { econstructor. eassumption. eassumption. }
-    eapply constant_nonneg_bounds_size_of_no_vars in H2.
-    2: { eassumption. } invert H2.
-    eapply vars_of_Zexpr_empty_eval_Zexpr_literal in H,H7. invs.
-    pose proof (H1 $0). pose proof (H2 $0).
-    pose proof (H1 v). pose proof (H2 v). eq_eval_Z.
-    eapply eval_Zexpr_Z_eval_Zexpr in H,H6.
-    unfold eval_Zexpr_Z_total in *.
-    rewrite H6,H in *. invert H0.
-    econstructor. lia. eauto.
-  - invs. pose proof H2. erewrite size_of_sizeof in * by eauto. simpl in *.
-    eapply IHe in H0. 2: eassumption.
-    2: { econstructor. eassumption. eassumption. }
-    eapply constant_nonneg_bounds_size_of_no_vars in H2.
-    2: { eassumption. } invert H2.
-    eapply vars_of_Zexpr_empty_eval_Zexpr_literal in H,H7. invs.
-    pose proof (H1 $0). pose proof (H2 $0).
-    pose proof (H1 v). pose proof (H2 v). eq_eval_Z.
-    eapply eval_Zexpr_Z_eval_Zexpr in H,H6.
-    unfold eval_Zexpr_Z_total in *.
-    rewrite H6,H in *. invert H0.
-    econstructor. lia. eauto.
-  - invs. pose proof H2.
-    eapply IHe in H2. 2: eassumption. 2: eauto. invert H2.
-    unfold eval_Zexpr_Z_total in *.
-    eapply constant_nonneg_bounds_size_of_no_vars in H0.
-    2: eassumption. invert H0.
-    eapply vars_of_Zexpr_empty_eval_Zexpr_literal in H,H5. invs.
-    pose proof (H0 $0). pose proof (H1 $0).
-    pose proof (H0 v). pose proof (H1 v). eq_eval_Z.
-    eapply eval_Zexpr_Z_eval_Zexpr in H,H1.
-    rewrite H1 in *.
-    econstructor. lia. eauto.
-  - invs. pose proof H2.
-    eapply IHe in H2. 2: eassumption. 2: eauto. invert H2.
-    unfold eval_Zexpr_Z_total in *.
-    eapply constant_nonneg_bounds_size_of_no_vars in H0.
-    2: eassumption. invert H0.
-    eapply vars_of_Zexpr_empty_eval_Zexpr_literal in H,H5. invs.
-    pose proof (H0 $0). pose proof (H1 $0).
-    pose proof (H0 v). pose proof (H1 v). eq_eval_Z.
-    eapply eval_Zexpr_Z_eval_Zexpr in H,H1.
-    rewrite H1 in *.
-    econstructor. lia. eauto.
-  - invs. eauto.
-Qed.
-
-Lemma constant_nonneg_bounds_sizeof_nonneg :
-  forall e,
-    constant_nonneg_bounds e ->
-    forall v lz,
-      eval_Zexprlist v (sizeof e) lz ->
-      Forall (fun x => 0 <= x)%Z lz.
-Proof.
-  induct e; intros; simpl in *.
-  - invs. unfold eval_Zexpr_Z_total in *.
-    eapply vars_of_Zexpr_empty_eval_Zexpr_literal in H1,H.
-    invs.
-    pose proof (H0 v). pose proof (H v). eq_eval_Z.
-    specialize (H0 $0). specialize (H $0).
-    eapply eval_Zexpr_Z_eval_Zexpr in H,H0.
-    rewrite H,H0 in *. econstructor. lia. eauto.
-  - invs. eauto.
-  - invs. eauto.
-  - invs. eauto.
-  - invs. cases (sizeof e1); cases (sizeof e2).
-    + invert H0. invert H5. invert H7. econstructor; eauto. lia.
-    + invert H0. eapply IHe2 with (v:=v) in H2.
-      2: econstructor; eauto. eauto.
-    + invert H0.
-      eapply IHe1 in H1. 2: econstructor; eauto. eauto.
-    + invert H0. invert H5.
-      eapply IHe1 in H1. 2: econstructor; eauto.
-      invert H1.
-      pose proof H2.
-      eapply constant_nonneg_bounds_sizeof_no_vars in H. rewrite Heq0 in *.
-      invert H.
-      eapply IHe2 in H2.
-      2: { econstructor. eassumption.
-           eapply forall_no_vars_eval_Zexpr_Z_total. eauto. }
-      invert H2.
-      econstructor. lia. auto.
-  - cases (sizeof e).
-    + invert H0.
-      invert H4. invert H6. econstructor; eauto. lia.
-    + cases l. invert H0. eapply IHe in H. 2: econstructor; eauto.
-      eauto. invert H0. invert H4.
-      eapply IHe in H. 2: econstructor; eauto.
-      invert H. invert H4. econstructor. lia. auto.
-  - cases (sizeof e).
-    + invert H0.
-      invert H4. invert H6. econstructor; eauto. lia.
-    + invert H0. invert H4. invert H6. invs.
-      eapply IHe in H.
-      2: econstructor; eauto. invert H.
-      eapply vars_of_Zexpr_empty_eq_zexpr_eval_Zexpr_Z_total
-        with (v:=$0) in H0; eauto. eapply H0 in H5. invert H5.
-      econstructor.
-      eapply ceil_div_nonneg. lia.
-      lia.
-      econstructor. eapply H0 in H4. invert H4. lia. eauto.
-  - cases (sizeof e).
-    + invert H0. invert H4. invert H6. econstructor; eauto. lia.
-    + cases l.
-      * invert H0. invert H6. econstructor.
-        eapply IHe in H. 2: econstructor.
-        2: eauto. 2: eauto. 2: econstructor. invert H. lia.
-      * invert H0. invert H6.
-        eapply IHe in H. 2: econstructor. 3: econstructor.
-        2: eassumption. 2: eassumption. 2: eassumption.
-        invert H. invert H5. eauto.
-  - invs. cases (sizeof e). invert H0. invert H7. invert H9.
-    econstructor. lia. eauto. 
-    invert H0. invert H7.
-    pose proof H1. eapply IHe in H1. 
-    2: econstructor; eauto. invert H1. 
-    pose proof H0.
-    eapply constant_nonneg_bounds_sizeof_no_vars in H0; eauto.
-    rewrite Heq in *.
-    invert H0.
-    eapply vars_of_Zexpr_empty_eval_Zexpr_literal in H,H11. invs.
-    pose proof (H0 $0). pose proof (H3 $0).
-    pose proof (H0 v). pose proof (H3 v). eq_eval_Z.
-    unfold eval_Zexpr_Z_total in *.
-    eapply eval_Zexpr_Z_eval_Zexpr in H,H6. rewrite H,H6 in *.
-    econstructor. lia. eauto.
-  - invs. cases (sizeof e). invert H0. invert H7. invert H9.
-    econstructor. lia. eauto. 
-    invert H0. invert H7.
-    pose proof H1. eapply IHe in H1. 
-    2: econstructor; eauto. invert H1. 
-    pose proof H0.
-    eapply constant_nonneg_bounds_sizeof_no_vars in H0; eauto.
-    rewrite Heq in *.
-    invert H0.
-    eapply vars_of_Zexpr_empty_eval_Zexpr_literal in H,H11. invs.
-    pose proof (H0 $0). pose proof (H3 $0).
-    pose proof (H0 v). pose proof (H3 v). eq_eval_Z.
-    unfold eval_Zexpr_Z_total in *.
-    eapply eval_Zexpr_Z_eval_Zexpr in H,H6. rewrite H,H6 in *.
-    econstructor. lia. eauto.
-  - invs. cases (sizeof e).
-    + invs. econstructor; eauto; lia.
-    + invs. pose proof H1.
-      eapply constant_nonneg_bounds_sizeof_no_vars in H1.
-      rewrite Heq in *. invert H1.
-      eapply vars_of_Zexpr_empty_eval_Zexpr_literal in H,H6. invs.
-      pose proof (H1 $0). pose proof (H2 $0).
-      pose proof (H1 v). pose proof (H2 v). eq_eval_Z.
-      unfold eval_Zexpr_Z_total in *.
-      eapply eval_Zexpr_Z_eval_Zexpr in H,H5. rewrite H5 in *.
-      eapply IHe in H0. 2: econstructor; eauto. invert H0.
-      econstructor. lia. eauto.
-  - invs. cases (sizeof e).
-    + invs. econstructor; eauto; lia.
-    + invs. pose proof H1.
-      eapply constant_nonneg_bounds_sizeof_no_vars in H1.
-      rewrite Heq in *. invert H1.
-      eapply vars_of_Zexpr_empty_eval_Zexpr_literal in H,H6. invs.
-      pose proof (H1 $0). pose proof (H2 $0).
-      pose proof (H1 v). pose proof (H2 v). eq_eval_Z.
-      unfold eval_Zexpr_Z_total in *.
-      eapply eval_Zexpr_Z_eval_Zexpr in H,H5. rewrite H5 in *.
-      eapply IHe in H0. 2: econstructor; eauto. invert H0.
-      econstructor. lia. eauto.
-  -  invert H0. eauto.
-Qed.
-

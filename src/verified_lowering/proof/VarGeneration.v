@@ -15,11 +15,11 @@ Definition shape_to_vars (shape : list Z) :=
                (nat_range (length shape))).
 
 Definition shape_to_index (shape : list Z) (vars : list var) :=
-  combine (map ZVar vars) (map ZLit shape).  
+  combine (map ZVar vars) shape.  
         
 Lemma shape_to_index_cons : forall var vars s sh,
     shape_to_index (s::sh) (var::vars) =
-      (! var !,| s |)%z :: (shape_to_index sh vars).
+      (! var !, s)%z :: (shape_to_index sh vars).
 Proof. auto. Qed.
 
 Lemma map_subst_var_in_Zexpr_shape_to_index_id :
@@ -287,11 +287,11 @@ Lemma map_partially_eval_Z_tup_combine : forall sh v k,
         (combine
            (map ZVar
                 (map (fun k => String.concat "" (repeat "?" (k + 1)))
-                     (nat_range_rec (length sh) k))) (map ZLit sh)) =
+                     (nat_range_rec (length sh) k))) sh) =
       combine
         (map ZVar
              (map (fun k => String.concat "" (repeat "?" (k + 1)))
-                  (nat_range_rec (length sh) k))) (map ZLit sh).
+                  (nat_range_rec (length sh) k))) sh.
 Proof.
   induct sh; intros; auto.
   simpl. rewrite IHsh; auto.
@@ -321,7 +321,7 @@ Lemma map_fold_left_subst_var_in_Z_tup_shape_to_index :
            (fun a t0 =>
               subst_var_in_Z_tup (fst t0) (snd t0) a) (combine vars x) y)
       (shape_to_index sh vars) =
-      combine (map ZLit x) (map ZLit sh).
+      combine (map ZLit x) sh.
 Proof.
   unfold shape_to_index.
   intros. eapply map_fold_left_subst_var_in_Z_tup_combine; eauto.
